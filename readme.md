@@ -4,9 +4,9 @@
 </p>
 <p align="center">
     <br />
-    <a href="https://npmjs.org/package/grab-api">
+    <a href="https://npmjs.org/package/grab-api.js">
         <img src="https://i.imgur.com/ifE8SbX.png"
-            alt="NPM badge for ai-research-agent" />
+            alt="NPM badge" />
     </a>
 </p>
 <p align="center">
@@ -24,10 +24,10 @@
 <h3 align="center">
   <a href="https://grab.js.org"> 📑 Docs (grab.js.org)</a>
 </h3>
+
 ```
 npm i grab-api.js
 ```
-
 ### GRAB: General Request APIs from Browser
 1. **Data Retrieval**: Fetches data from server APIs using JSON parameters and returns JSON responses or error objects
 2. **Request/Response Format**: Standardized JSON communication for both input parameters and output data
