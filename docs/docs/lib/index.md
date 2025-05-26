@@ -2,6 +2,13 @@
     <img width="350px" src="https://i.imgur.com/TE7jBZm.png" />
 </p>
 <p align="center">
+    <br />
+    <a href="https://npmjs.org/package/grab-api.js">
+        <img src="https://i.imgur.com/ifE8SbX.png"
+            alt="NPM badge for ai-research-agent" />
+    </a>
+</p>
+<p align="center">
     <a href="https://github.com/vtempest/grab-API/discussions">
     <img alt="GitHub Discussions"
         src="https://img.shields.io/github/discussions/vtempest/grab-API" />
