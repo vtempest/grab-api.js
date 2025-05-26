@@ -7,13 +7,13 @@ function grab(
    options?: object): Promise<any>;
 ```
 
-Defined in: [grab-api.js:86](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L86)
+Defined in: [grab-api.js:85](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L85)
 
 ### GRAB: General Request APIs from Browser
 ![grabAPILogo](https://i.imgur.com/TE7jBZm.png)
 
 1. **Data Retrieval**: Fetches data from server APIs using JSON parameters and returns JSON responses or error objects
-2. **Request/Response Format**: Standardized JSON communication for both input parameters and output data
+2. **Minimalist One Function**: 1.8Kb min.js with no dependencies, less boilerplate and complexity than axios, SuperAgent, Tanstack, Alova
 3. **Automatic Loading States**: Sets `isLoading` to `true` during data fetching operations and `false` upon completion
 4. **Mock Server Support**: Configure `window.grabMockServer` for development and testing environments
 5. **Concurrent Request Handling**: Cancels duplicate or overlapping requests automatically
@@ -26,8 +26,7 @@ Defined in: [grab-api.js:86](https://github.com/vtempest/grab-api/tree/master/sr
 12. **Frontend Caching**: Intelligent caching system that prevents redundant API calls for repeat requests
 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
 14. **Framework Agnostic**: No dependency on React hooks or component lifecycle - works with any JavaScript framework
-15. **Universal Usage**:  More flexible than TanStack Query - works outside component initialization, 
-16. **Minimalist Single Function**: Less boilerplate and complexity than axios, SuperAgent, Got, Alova
+15. **Universal Usage**:  More flexible than TanStack Query - works outside component initialization,
 
 ### Parameters
 
@@ -352,7 +351,7 @@ function log(
    style?: string): void;
 ```
 
-Defined in: [grab-api.js:284](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L284)
+Defined in: [grab-api.js:283](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L283)
 
 Logs messages to the console with custom styling,
 showing debug output in development and standard logs in production.
@@ -452,7 +451,7 @@ default="color: blue; font-size: 15px;"] - CSS style string for the console outp
 function printStructureJSON(obj: any): string;
 ```
 
-Defined in: [grab-api.js:306](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L306)
+Defined in: [grab-api.js:305](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L305)
 
 Generates TypeDoc-like string of layout of nested JSON object.
 

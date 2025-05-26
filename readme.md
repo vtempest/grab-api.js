@@ -30,7 +30,6 @@ npm i grab-api.js
 ```
 
 ### GRAB: General Request APIs from Browser
-![grabAPILogo](https://i.imgur.com/TE7jBZm.png)
 
 1. **Data Retrieval**: Fetches data from server APIs using JSON parameters and returns JSON responses or error objects
 2. **Request/Response Format**: Standardized JSON communication for both input parameters and output data
@@ -103,7 +102,7 @@ Pre-initialized object to store the response in,
 </td>
 <td>
 
-\{ `method`: `string`; `cancelPrevious`: `boolean`; `cancelIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; \}
+ `method`: `string`; `cancelPrevious`: `boolean`; `cancelIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; 
 
 </td>
 <td>
