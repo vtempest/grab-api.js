@@ -1,5 +1,5 @@
 export default {
-  "11b43341": [() => import(/* webpackChunkName: "11b43341" */ "@generated/docusaurus-plugin-content-docs/default/p/docs-7fc.json"), "@generated/docusaurus-plugin-content-docs/default/p/docs-7fc.json", require.resolveWeak("@generated/docusaurus-plugin-content-docs/default/p/docs-7fc.json")],
+  "22dd74f7": [() => import(/* webpackChunkName: "22dd74f7" */ "@generated/docusaurus-plugin-content-docs/default/p/index-466.json"), "@generated/docusaurus-plugin-content-docs/default/p/index-466.json", require.resolveWeak("@generated/docusaurus-plugin-content-docs/default/p/index-466.json")],
   "378f8b4d": [() => import(/* webpackChunkName: "378f8b4d" */ "@site/docs/lib/index.md"), "@site/docs/lib/index.md", require.resolveWeak("@site/docs/lib/index.md")],
   "4c5e977b": [() => import(/* webpackChunkName: "4c5e977b" */ "@theme/ApiItem"), "@theme/ApiItem", require.resolveWeak("@theme/ApiItem")],
   "5e95c892": [() => import(/* webpackChunkName: "5e95c892" */ "@theme/DocsRoot"), "@theme/DocsRoot", require.resolveWeak("@theme/DocsRoot")],

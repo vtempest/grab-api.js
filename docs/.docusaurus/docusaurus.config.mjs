@@ -21,7 +21,7 @@ export default {
   },
   "title": "GRAB-API API Routes Docs",
   "url": "https://grab.js.org",
-  "baseUrl": "/docs/",
+  "baseUrl": "/",
   "onBrokenLinks": "ignore",
   "onBrokenMarkdownLinks": "ignore",
   "favicon": "https://grab.js.org/favicon.ico",

@@ -5,7 +5,7 @@
   "source": "@site/docs/lib/globals.md",
   "sourceDirName": "lib",
   "slug": "/lib/globals",
-  "permalink": "/docs/lib/globals",
+  "permalink": "/lib/globals",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/vtempest/ai-research-agent/blob/main/docs/lib/globals.md",
@@ -15,6 +15,6 @@
   "sidebar": "default",
   "next": {
     "title": "index",
-    "permalink": "/docs/lib/"
+    "permalink": "/lib/"
   }
 }

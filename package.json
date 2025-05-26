@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vtempest/grab-api"
+    "url": "https://github.com/vtempest/grab-api.js"
   },
   "keywords": [
     "api",
