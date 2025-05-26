@@ -5,8 +5,7 @@
   "private": true,
   "scripts": {
     "docs": "concurrently \"npx docusaurus serve --dir ./docs-dist\" \"wait-on http://localhost:3000 && opener http://localhost:3000\"",
-    "docs:build": "rm -rf ./docs-dist; mkdir ./docs-dist;DOCUSAURUS_IGNORE_SSG_WARNINGS=true npx docusaurus build --out-dir ./docs-dist; npm run docs",
-    "docs:copy": "cp ./docs-dist/lib/index.html ./docs-dist/index.html; rm -rf ../web-app/static/docs; cp -r ./docs-dist ../web-app/static; mv ../web-app/static/docs-dist ../web-app/static/docs"
+    "docs:build": "rm -rf ./docs-dist; mkdir ./docs-dist;DOCUSAURUS_IGNORE_SSG_WARNINGS=true npx docusaurus build --out-dir ./docs-dist"
   },
   "dependencies": {
     "@docusaurus/core": "^3.7.0",
