@@ -7,7 +7,7 @@ function grab(
    options?: object): Promise<any>;
 ```
 
-Defined in: grab-api.js:86
+Defined in: [grab-api.js:86](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L86)
 
 ### GRAB: General Request APIs from Browser
 ![grabAPILogo](https://i.imgur.com/TE7jBZm.png)
@@ -27,7 +27,7 @@ Defined in: grab-api.js:86
 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
 14. **Framework Agnostic**: No dependency on React hooks or component lifecycle - works with any JavaScript framework
 15. **Universal Usage**:  More flexible than TanStack Query - works outside component initialization, 
-16. **Minimalist Single Function**: Less boilerplate and complexity than axios, SuperAgent, Got
+16. **Minimalist Single Function**: Less boilerplate and complexity than axios, SuperAgent, Got, Alova
 
 ### Parameters
 
@@ -83,97 +83,12 @@ Pre-initialized object to store the response in,
 </td>
 <td>
 
-\{ `baseURL`: `string`; `cache`: `boolean`; `cancelIfOngoing`: `boolean`; `cancelPrevious`: `boolean`; `debug`: `boolean`; `method`: `string`; `paginateKey`: `string`; `paginateResult`: `string`; `rateLimit`: `number`; `setDefaults`: `boolean`; `timeout`: `number`; \}
+\{ `method`: `string`; `cancelPrevious`: `boolean`; `cancelIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; \}
 
 </td>
 <td>
 
 Request params for GET or POST and more options
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.baseURL?`
-
-</td>
-<td>
-
-`string`
-
-</td>
-<td>
-
-default='/api/' base url prefix, override with SERVER_API_URL env
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.cache?`
-
-</td>
-<td>
-
-`boolean`
-
-</td>
-<td>
-
-default=false Whether to cache the request and from frontend cache
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.cancelIfOngoing?`
-
-</td>
-<td>
-
-`boolean`
-
-</td>
-<td>
-
-default=false Cancel if a request to path is in progress
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.cancelPrevious?`
-
-</td>
-<td>
-
-`boolean`
-
-</td>
-<td>
-
-default=true Cancel previous requests to same path
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.debug?`
-
-</td>
-<td>
-
-`boolean`
-
-</td>
-<td>
-
-default=false Whether to log the request and response
 
 </td>
 </tr>
@@ -197,34 +112,85 @@ default="GET" The HTTP method to use
 <tr>
 <td>
 
-`options.paginateKey?`
+`options.cancelPrevious?`
 
 </td>
 <td>
 
-`string`
+`boolean`
 
 </td>
 <td>
 
-default="page" The key to paginate the request by
+default=true Cancel previous requests to same path
 
 </td>
 </tr>
 <tr>
 <td>
 
-`options.paginateResult?`
+`options.cancelIfOngoing?`
 
 </td>
 <td>
 
-`string`
+`boolean`
 
 </td>
 <td>
 
-default=null The key to paginate result data by
+default=false Cancel if a request to path is in progress
+
+</td>
+</tr>
+<tr>
+<td>
+
+`options.cache?`
+
+</td>
+<td>
+
+`boolean`
+
+</td>
+<td>
+
+default=false Whether to cache the request and from frontend cache
+
+</td>
+</tr>
+<tr>
+<td>
+
+`options.debug?`
+
+</td>
+<td>
+
+`boolean`
+
+</td>
+<td>
+
+default=false Whether to log the request and response
+
+</td>
+</tr>
+<tr>
+<td>
+
+`options.timeout?`
+
+</td>
+<td>
+
+`number`
+
+</td>
+<td>
+
+default=20 The timeout for the request in seconds
 
 </td>
 </tr>
@@ -248,6 +214,57 @@ default=0 If set, how many seconds to wait between requests
 <tr>
 <td>
 
+`options.paginateResult?`
+
+</td>
+<td>
+
+`string`
+
+</td>
+<td>
+
+default=null The key to paginate result data by
+
+</td>
+</tr>
+<tr>
+<td>
+
+`options.paginateKey?`
+
+</td>
+<td>
+
+`string`
+
+</td>
+<td>
+
+default="page" The key to paginate the request by
+
+</td>
+</tr>
+<tr>
+<td>
+
+`options.baseURL?`
+
+</td>
+<td>
+
+`string`
+
+</td>
+<td>
+
+default='/api/' base url prefix, override with SERVER_API_URL env
+
+</td>
+</tr>
+<tr>
+<td>
+
 `options.setDefaults?`
 
 </td>
@@ -263,23 +280,6 @@ default=false Pass this with options to set
 
 </td>
 </tr>
-<tr>
-<td>
-
-`options.timeout?`
-
-</td>
-<td>
-
-`number`
-
-</td>
-<td>
-
-default=20 The timeout for the request in seconds
-
-</td>
-</tr>
 </tbody>
 </table>
 
@@ -291,12 +291,12 @@ The response from the server API
 
 ### Author
 
-[vtempest (2025)](https://github.com/vtempest)
+[vtempest (2025)](https://github.com/vtempest/grab-api)
 
 ### Example
 
 ```ts
-import {grab} from "./grab-api";
+import { grab } from "grab-api.js";
  let responseData = $state({}) as {
      results: Array<{title:string}>,
      isLoading: boolean,
@@ -307,7 +307,7 @@ import {grab} from "./grab-api";
    query: "search words",
    method: 'POST'
  })
- 
+ //in svelte component
  {#if responseData.results}
      {responseData.results}
  {:else if responseData.isLoading}
@@ -352,10 +352,11 @@ function log(
    style?: string): void;
 ```
 
-Defined in: grab-api.js:279
+Defined in: [grab-api.js:284](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L284)
 
 Logs messages to the console with custom styling,
 showing debug output in development and standard logs in production.
+Pretty print JSON with description of structure layout.
 
 ### Parameters
 
@@ -451,7 +452,7 @@ default="color: blue; font-size: 15px;"] - CSS style string for the console outp
 function printStructureJSON(obj: any): string;
 ```
 
-Defined in: grab-api.js:303
+Defined in: [grab-api.js:306](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L306)
 
 Generates TypeDoc-like string of layout of nested JSON object.
 

@@ -2,24 +2,24 @@
  * ### GRAB: General Request APIs from Browser
  * ![grabAPILogo](https://i.imgur.com/TE7jBZm.png)
  * 
-1. **Data Retrieval**: Fetches data from server APIs using JSON parameters and returns JSON responses or error objects
-2. **Request/Response Format**: Standardized JSON communication for both input parameters and output data
-3. **Automatic Loading States**: Sets `isLoading` to `true` during data fetching operations and `false` upon completion
-4. **Mock Server Support**: Configure `window.grabMockServer` for development and testing environments
-5. **Concurrent Request Handling**: Cancels duplicate or overlapping requests automatically
-6. **Timeout Configuration**: Customizable request timeout settings
-7. **Rate Limiting**: Built-in rate limiting to prevent API abuse
-8. **Debug Logging**: Comprehensive logging system for request monitoring
-9. **Request History**: Stores all request and response data in global `grabLog` object
-10. **Pagination Support**: Built-in pagination handling for large datasets
-11. **Environment Configuration**: Configurable base URLs for development and production environments
-12. **Frontend Caching**: Intelligent caching system that prevents redundant API calls for repeat requests
-13. **Modular Design**: Single, flexible function that can be called from any part of your application.
-14. **Framework Agnostic**: No dependency on React hooks or component lifecycle - works with any JavaScript framework
-15. **Universal Usage**:  More flexible than TanStack Query - works outside component initialization, 
-16. **Minimalist Single Function**: Less boilerplate and complexity than axios, SuperAgent, Got, Alova
-
-* @param {string} path The path in the API after base url
+ * 1. **Data Retrieval**: Fetches data from server APIs using JSON parameters and returns JSON responses or error objects
+ * 2. **Request/Response Format**: Standardized JSON communication for both input parameters and output data
+ * 3. **Automatic Loading States**: Sets `isLoading` to `true` during data fetching operations and `false` upon completion
+ * 4. **Mock Server Support**: Configure `window.grabMockServer` for development and testing environments
+ * 5. **Concurrent Request Handling**: Cancels duplicate or overlapping requests automatically
+ * 6. **Timeout Configuration**: Customizable request timeout settings
+ * 7. **Rate Limiting**: Built-in rate limiting to prevent API abuse
+ * 8. **Debug Logging**: Comprehensive logging system for request monitoring
+ * 9. **Request History**: Stores all request and response data in global `grabLog` object
+ * 10. **Pagination Support**: Built-in pagination handling for large datasets
+ * 11. **Environment Configuration**: Configurable base URLs for development and production environments
+ * 12. **Frontend Caching**: Intelligent caching system that prevents redundant API calls for repeat requests
+ * 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
+ * 14. **Framework Agnostic**: No dependency on React hooks or component lifecycle - works with any JavaScript framework
+ * 15. **Universal Usage**:  More flexible than TanStack Query - works outside component initialization, 
+ * 16. **Minimalist Single Function**: Less boilerplate and complexity than axios, SuperAgent, Got, Alova
+ * 
+ * @param {string} path The path in the API after base url
  * @param {object} response Pre-initialized object to store the response in,
  *  isLoading and error are also set on this object.
  * @param {object} [options={}] Request params for GET or POST and more options
@@ -27,19 +27,19 @@
  * @param {boolean} [options.cancelPrevious]  default=true Cancel previous requests to same path
  * @param {boolean} [options.cancelIfOngoing] default=false Cancel if a request to path is in progress
  * @param {boolean}[options.cache] default=false Whether to cache the request and from frontend cache
-* @param {boolean} [options.debug] default=false Whether to log the request and response
-* @param {number} [options.timeout] default=20 The timeout for the request in seconds
-* @param {number} [options.rateLimit] default=0 If set, how many seconds to wait between requests
-* @param {string} [options.paginateResult] default=null The key to paginate result data by
-* @param {string} [options.paginateKey] default="page" The key to paginate the request by
-* @param {string} [options.baseURL] default='/api/' base url prefix, override with SERVER_API_URL env
-* @param {boolean} [options.setDefaults] default=false Pass this with options to set
+ * @param {boolean} [options.debug] default=false Whether to log the request and response
+ * @param {number} [options.timeout] default=20 The timeout for the request in seconds
+ * @param {number} [options.rateLimit] default=0 If set, how many seconds to wait between requests
+ * @param {string} [options.paginateResult] default=null The key to paginate result data by
+ * @param {string} [options.paginateKey] default="page" The key to paginate the request by
+ * @param {string} [options.baseURL] default='/api/' base url prefix, override with SERVER_API_URL env
+ * @param {boolean} [options.setDefaults] default=false Pass this with options to set
  *  those options as defaults for all requests.
- *@param {any} *
- *  @returns {Promise<Object>} The response from the server API
- * @author [vtempest (2025)](https://github.com/vtempest)
+ * @param {any} *
+ * @returns {Promise<Object>} The response from the server API
+ * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
  * @example 
-  import {grab} from "./grab-api";
+  import { grab } from "grab-api.js";
   let responseData = $state({}) as {
       results: Array<{title:string}>,
       isLoading: boolean,
@@ -50,7 +50,7 @@
     query: "search words",
     method: 'POST'
   })
-  
+  //in svelte component
   {#if responseData.results}
       {responseData.results}
   {:else if responseData.isLoading}
@@ -85,61 +85,62 @@
  */
 export async function grab(path, response = {}, options = {}) {
   try {
+    // Destructure options with defaults, merging with any globally set defaults
     let {
       headers,
       method = "GET",
-      cache = false,
-      timeout = 20,
+      cache = false, // Enable/disable frontend caching
+      timeout = 20, // Request timeout in seconds
       baseURL = (typeof process !== "undefined" &&
         process?.env?.SERVER_API_URL) ||
-        "/api/",
-      cancelPrevious = true,
-      cancelIfOngoing = false,
-      rateLimit = 0,
-      debug = window?.location?.hostname?.includes("localhost"),
-      paginateResult = null,
-      paginateKey = "page",
-      setDefaults = false,
-      retryOnError = false,
-      ...body // body is all other params passed to request
-      //merge user-set defaults if present with core defaults
+        "/api/", // Use env var or default to /api/
+      cancelPrevious = true, // Cancel previous request for same path
+      cancelIfOngoing = false, // Don't make new request if one is ongoing
+      rateLimit = 0, // Minimum seconds between requests
+      debug = window?.location?.hostname?.includes("localhost"), // Auto-enable debug on localhost
+      paginateResult = null, // Key to paginate in response
+      paginateKey = "page", // Request param for pagination
+      setDefaults = false, // Set these options as defaults for future requests
+      retryOnError = false, // Retry failed requests once
+      ...body // All other params become request body/query
     } = { ...window.grabDefaults, ...options };
 
-    //set defaults for all requests
+    // Store options as defaults if setDefaults flag is true
     if (options?.setDefaults) {
       window.grabDefaults = { ...options, setDefaults: undefined };
       return {};
     }
 
-    //if resp is provided, clear it and set isLoading to true
+    // Initialize response object if not provided
     if (!response) response = {};
 
-    //Create a new controller for this request if it doesn't exist
+    // Initialize tracking for this request path
     let logEntry = grabLog;
-
-    if (!(path in grabLog))
+    if (!(path in grabLog)) {
       grabLog[path] = {
         requestData: body || {},
       };
+    }
 
-    //see if vars changed since last fetch
+    // Check if this is a repeat request by comparing params
     if (grabLog[path].requestData)
       grabLog[path].requestData[paginateKey] = undefined;
     const isRepeatRequest =
       JSON.stringify(grabLog[path].requestData) == JSON.stringify(body);
 
+    // Handle response clearing/caching based on pagination
     if (!paginateKey) {
-      //load from frontend cache if repeat request
+      // Return cached response if enabled and request is identical
       if (cache && isRepeatRequest) {
         for (let key of Object.keys(grabLog[path].responseData))
           response[key] = grabLog[path].responseData[key];
         return response;
       }
 
-      //clear response object
+      // Clear previous response data
       for (let key of Object.keys(response)) response[key] = undefined;
     } else {
-      // increment page number if paginating
+      // Handle pagination - track current page and append results
       var pageNumber = grabLog[path].currentPage || body?.[paginateKey] || 0;
 
       if (!isRepeatRequest) {
@@ -150,10 +151,10 @@ export async function grab(path, response = {}, options = {}) {
       body[paginateKey] = pageNumber;
     }
 
-    //set isLoading on the passedin object, responsive in component
+    // Set loading state
     response.isLoading = true;
 
-    //check if rate limit is exceeded
+    // Enforce rate limiting if enabled
     if (
       rateLimit > 0 &&
       grabLog[path]?.lastFetchTime &&
@@ -161,15 +162,16 @@ export async function grab(path, response = {}, options = {}) {
     )
       throw new Error("Fetch rate limit exceeded");
 
-    //Cancel any previous ongoing request of that path or cancel current
+    // Handle request cancellation logic
     if (grabLog[path]?.controller && isRepeatRequest)
       if (cancelPrevious) grabLog[path].controller.abort();
       else if (cancelIfOngoing) return { isLoading: true };
 
-    //set up new request
+    // Setup new request tracking
     grabLog[path].lastFetchTime = Date.now();
     grabLog[path].controller = new AbortController();
 
+    // Configure fetch parameters
     const fetchParams = {
       method,
       headers: {
@@ -185,17 +187,17 @@ export async function grab(path, response = {}, options = {}) {
         : AbortSignal.timeout(timeout * 1000),
     };
 
+    // Format request body/query params based on method
     let paramsGETRequest = "";
     if (["POST", "PUT", "PATCH"].includes(method))
       fetchParams.body = JSON.stringify(body);
     else paramsGETRequest = "?" + new URLSearchParams(body).toString();
 
-    let startTime = new Date();
+    // Handle mock server responses if configured
+    let responseData = null,
+      startTime = new Date(),
+      mockHandler = grabMockServer?.[path];
 
-    let responseData = null;
-    let mockHandler = grabMockServer?.[path];
-
-    // Handle mock server if enabled, must match params if set
     if (
       mockHandler &&
       mockHandler.method == method &&
@@ -208,25 +210,27 @@ export async function grab(path, response = {}, options = {}) {
       responseData = mockHandler.response;
       if (typeof responseData === "function") responseData = responseData(body);
     } else {
-      //execute the request if no mock handler
+      // Make actual API request if no mock
       responseData = await fetch(baseURL + path + paramsGETRequest, fetchParams)
         .catch((e) => {
           throw new Error(e);
         })
         .then((res) => res.text());
-    }
 
-    if (responseData.startsWith("{")) responseData = JSON.parse(responseData);
-    else if (responseData.includes("error")) throw new Error(responseData);
-    // return non-json response as is
-    else return responseData;
+        // Parse response based on content type
+        if (responseData.startsWith("{")) responseData = JSON.parse(responseData);
+        else if (responseData.includes("error")) throw new Error(responseData);
+        else return responseData;
+      }
 
+
+    // Clear loading state
     if (response) response.isLoading = false;
 
-    // Log the response and the time it took to fetch
+    // Log debug information if enabled
     if (debug) {
       log(
-          "Path:" +
+        "Path:" +
           baseURL +
           path +
           paramsGETRequest +
@@ -237,25 +241,25 @@ export async function grab(path, response = {}, options = {}) {
           "s\nResponse: " +
           printStructureJSON(responseData)
       );
+      // allows user to expand and collapse the object in console
       console.log(responseData);
     }
-    // set output on the passed in resp object
+
+    // Update response object with results, handling pagination
     for (let key of Object.keys(responseData))
       response[key] =
         paginateResult == key && response[key]?.length
           ? [...response[key], ...responseData[key]]
           : responseData[key];
 
-    // store the request data for future use
-    grab;
+    // Store request/response data for future reference
     grabLog[path].controller = undefined;
     grabLog[path].responseData = response;
     grabLog[path].requestData = body || {};
 
     return response;
   } catch (error) {
-    // console.error(error?.message);
-    //retry once
+    // Handle errors, with optional retry
     if (options.retryOnError)
       return await grab(path, response, { ...options, retryOnError: false });
 
@@ -271,6 +275,7 @@ export async function grab(path, response = {}, options = {}) {
 /**
  * Logs messages to the console with custom styling,
  * showing debug output in development and standard logs in production.
+ * Pretty print JSON with description of structure layout.
  * @param {string|object} message - The message to log. If an object is provided, it will be stringified.
  * @param {boolean} [hideInProduction] -  default = auto-detects based on hostname.
  *  If true, uses `console.debug` (hidden in production). If false, uses `console.log`.
@@ -283,15 +288,13 @@ export function log(
 ) {
   if (typeof hideInProduction === "undefined")
     hideInProduction = window?.location.hostname.includes("localhost");
-  // pretty print JSON
+  // pretty print JSON with description of structure layout
   if (typeof message === "object")
     message =
-      printStructureJSON(message) +
-      "\n\n" +
-      JSON.stringify(message, null, 2);
+      printStructureJSON(message) + "\n\n" + JSON.stringify(message, null, 2);
 
-  if (hideInProduction) console.debug((style?"%c":"") + message, style);
-  else console.log((style?"%c":"") + message, style);
+  if (hideInProduction) console.debug((style ? "%c" : "") + message, style);
+  else console.log((style ? "%c" : "") + message, style);
 }
 
 /**
@@ -336,4 +339,3 @@ if (typeof window !== "undefined") {
   const grabMockServer = (window.grabMockServer = {});
   window.grabDefaults = {};
 }
-

@@ -20,7 +20,7 @@
               "sidebar": "default"
             },
             {
-              "id": "lib/index",
+              "id": "lib/README",
               "path": "/lib/",
               "sidebar": "default"
             }
@@ -29,14 +29,14 @@
           "sidebars": {
             "lib": {
               "link": {
-                "path": "/lib/globals",
-                "label": "lib/globals"
+                "path": "/lib/",
+                "label": "lib/README"
               }
             },
             "default": {
               "link": {
-                "path": "/lib/globals",
-                "label": "lib/globals"
+                "path": "/lib/",
+                "label": "lib/README"
               }
             }
           }
@@ -57,8 +57,8 @@
   "docusaurus-lunr-search": {
     "default": {
       "fileNames": {
-        "searchDoc": "search-doc-1748274611483.json",
-        "lunrIndex": "lunr-index-1748274611483.json"
+        "searchDoc": "search-doc-1748278971930.json",
+        "lunrIndex": "lunr-index-1748278971930.json"
       }
     }
   }

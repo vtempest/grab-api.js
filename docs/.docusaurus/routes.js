@@ -4,19 +4,19 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 export default [
   {
     path: '/',
-    component: ComponentCreator('/', 'c5c'),
+    component: ComponentCreator('/', 'e86'),
     routes: [
       {
         path: '/',
-        component: ComponentCreator('/', 'a6a'),
+        component: ComponentCreator('/', '8a6'),
         routes: [
           {
             path: '/',
-            component: ComponentCreator('/', '278'),
+            component: ComponentCreator('/', 'f8f'),
             routes: [
               {
                 path: '/lib/',
-                component: ComponentCreator('/lib/', 'e95'),
+                component: ComponentCreator('/lib/', 'd92'),
                 exact: true,
                 sidebar: "default"
               },

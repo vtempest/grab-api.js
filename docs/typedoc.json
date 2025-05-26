@@ -1,8 +1,7 @@
 {
-  "entryPoints": ["./src/**/*"],
+  "entryPoints": ["../src/**/*"],
   "plugin": ["typedoc-plugin-markdown"],
 
-  "outDir": "./docs",
   "tsconfig": "./tsconfig.json",
   "entryPointStrategy": "expand",
   "navigation": {
@@ -41,6 +40,6 @@
   "hostedBaseUrl": "https://grab.js.org",
   "searchInDocuments": true,
   "searchInComments": true,
-  "sourceLinkTemplate": "https://github.com/vtempest/ai-research-agent/tree/master/{path}#L{line}",
+  "sourceLinkTemplate": "https://github.com/vtempest/grab-api/tree/master/{path}#L{line}",
   "excludePrivate": true
 }

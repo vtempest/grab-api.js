@@ -33,7 +33,7 @@ export default {
         "docs": {
           "routeBasePath": "/",
           "sidebarPath": "./sidebars.ts",
-          "editUrl": "https://github.com/vtempest/ai-research-agent/blob/main/",
+          "editUrl": "https://github.com/vtempest/grab-api.js/blob/main/",
           "docItemComponent": "@theme/ApiItem"
         },
         "blog": false,
@@ -56,7 +56,7 @@ export default {
         "entryPoints": [
           "../src/**/*"
         ],
-        "tsconfig": "../tsconfig.json",
+        "tsconfig": "./tsconfig.json",
         "out": "./docs/lib",
         "readme": "../readme.md",
         "disableSources": false,
@@ -81,7 +81,7 @@ export default {
         "hideGroupHeadings": true,
         "hidePageHeader": true,
         "hidePageTitle": true,
-        "gitRemote": "https://github.com/vtempest/ai-research-agent/blob/main/",
+        "gitRemote": "https://github.com/vtempest/grab-api.js/blob/main/",
         "outputFileStrategy": "modules",
         "useCodeBlocks": true
       }
