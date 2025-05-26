@@ -1,0 +1,20 @@
+{
+  "id": "lib/index",
+  "title": "index",
+  "description": "<img alt=\"GitHub Discussions\"",
+  "source": "@site/docs/lib/index.md",
+  "sourceDirName": "lib",
+  "slug": "/lib/",
+  "permalink": "/docs/lib/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/vtempest/ai-research-agent/blob/main/docs/lib/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "default",
+  "previous": {
+    "title": "globals",
+    "permalink": "/docs/lib/globals"
+  }
+}
