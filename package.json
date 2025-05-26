@@ -1,12 +1,32 @@
 {
   "name": "grab-api.js",
   "description": "General Request APIs from Browser",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "author": "vtempest",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/vtempest/grab-api"
+  },
+  "main": "./dist/grab-api.umd.js",
+  "module": "./dist/grab-api.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/grab-api.es.js",
+      "require": "./dist/grab-api.umd.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "vitest --ui"
+  },
+  "devDependencies": {
+    "@vitest/ui": "^3.1.4",
+    "terser": "^5.39.2",
+    "vite": "^6.3.5",
+    "vitest": "^3.1.4"
   },
   "keywords": [
     "api",
@@ -15,10 +35,5 @@
     "fetch",
     "http"
   ],
-  "main": "src/grab-api.js",
-  "type": "module",
-  "scripts": {
-    "start": "bun run src/grab-api.js",
-    "dev": "bun run src/grab-api.js --watch"
-  }
+  "type": "module"
 }

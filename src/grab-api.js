@@ -3,7 +3,7 @@
  * ![grabAPILogo](https://i.imgur.com/TE7jBZm.png)
  * 
  * 1. **Data Retrieval**: Fetches data from server APIs using JSON parameters and returns JSON responses or error objects
- * 2. **Request/Response Format**: Standardized JSON communication for both input parameters and output data
+ * 2. **Minimalist One Function**: 1.8Kb min.js with no dependencies, less boilerplate and complexity than axios, SuperAgent, Tanstack, Alova
  * 3. **Automatic Loading States**: Sets `isLoading` to `true` during data fetching operations and `false` upon completion
  * 4. **Mock Server Support**: Configure `window.grabMockServer` for development and testing environments
  * 5. **Concurrent Request Handling**: Cancels duplicate or overlapping requests automatically
@@ -17,7 +17,6 @@
  * 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
  * 14. **Framework Agnostic**: No dependency on React hooks or component lifecycle - works with any JavaScript framework
  * 15. **Universal Usage**:  More flexible than TanStack Query - works outside component initialization, 
- * 16. **Minimalist Single Function**: Less boilerplate and complexity than axios, SuperAgent, Got, Alova
  * 
  * @param {string} path The path in the API after base url
  * @param {object} response Pre-initialized object to store the response in,
@@ -99,7 +98,7 @@ export async function grab(path, response = {}, options = {}) {
       rateLimit = 0, // Minimum seconds between requests
       debug = window?.location?.hostname?.includes("localhost"), // Auto-enable debug on localhost
       paginateResult = null, // Key to paginate in response
-      paginateKey = "page", // Request param for pagination
+      paginateKey = null, // Request param for pagination
       setDefaults = false, // Set these options as defaults for future requests
       retryOnError = false, // Retry failed requests once
       ...body // All other params become request body/query
@@ -225,7 +224,7 @@ export async function grab(path, response = {}, options = {}) {
 
 
     // Clear loading state
-    if (response) response.isLoading = false;
+    if (response) response.isLoading = undefined;
 
     // Log debug information if enabled
     if (debug) {
@@ -268,7 +267,7 @@ export async function grab(path, response = {}, options = {}) {
       response.isLoading = false;
     }
     if (path in grabLog) grabLog[path].error = error.message;
-    return { error: error.message, isLoading: false };
+    return { error: error.message};
   }
 }
 
@@ -333,9 +332,18 @@ export function printStructureJSON(obj) {
   return result;
 }
 
-//add globals to window
+const grabLog = [];
+const grabMockServer = {};
+const grabDefaults = {};
+
+// Add globals to window in browser, or global in Node.js
 if (typeof window !== "undefined") {
-  const grabLog = (window.grabLog = []);
-  const grabMockServer = (window.grabMockServer = {});
-  window.grabDefaults = {};
+  window.grabLog = grabLog;
+  window.grabMockServer = grabMockServer;
+  window.grabDefaults = grabDefaults;
+} else if (typeof global !== "undefined") {
+  global.grabLog = grabLog;
+  global.grabMockServer = grabMockServer;
+  global.grabDefaults = grabDefaults;
 }
+
