@@ -4,7 +4,7 @@
 </p>
 <p align="center">
     <br />
-    <a href="https://npmjs.org/package/grab-api.js">
+    <a href="https://npmjs.org/package/grab-api">
         <img src="https://i.imgur.com/ifE8SbX.png"
             alt="NPM badge for ai-research-agent" />
     </a>
@@ -24,9 +24,11 @@
 <h3 align="center">
   <a href="https://grab.js.org"> 📑 Docs (grab.js.org)</a>
 </h3>
+```
+npm i grab-api.js
+```
 
 ### GRAB: General Request APIs from Browser
-
 1. **Data Retrieval**: Fetches data from server APIs using JSON parameters and returns JSON responses or error objects
 2. **Request/Response Format**: Standardized JSON communication for both input parameters and output data
 3. **Automatic Loading States**: Sets `isLoading` to `true` during data fetching operations and `false` upon completion
@@ -43,6 +45,7 @@
 14. **Framework Agnostic**: No dependency on React hooks or component lifecycle - works with any JavaScript framework
 15. **Universal Usage**:  More flexible than TanStack Query - works outside component initialization, 
 16. **Minimalist Single Function**: Less boilerplate and complexity than axios, SuperAgent, Got
+
 
 ### Parameters
 

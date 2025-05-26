@@ -17,7 +17,7 @@
 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
 14. **Framework Agnostic**: No dependency on React hooks or component lifecycle - works with any JavaScript framework
 15. **Universal Usage**:  More flexible than TanStack Query - works outside component initialization, 
-16. **Minimalist Single Function**: Less boilerplate and complexity than axios, SuperAgent, Got
+16. **Minimalist Single Function**: Less boilerplate and complexity than axios, SuperAgent, Got, Alova
 
 * @param {string} path The path in the API after base url
  * @param {object} response Pre-initialized object to store the response in,

@@ -1,12 +1,15 @@
 {
   "name": "grab-api.js",
   "description": "General Request APIs from Browser",
-  "version": "0.9.0",
+  "version": "0.9.4",
   "author": "vtempest",
   "license": "MIT",
+  "exports": {
+    ".": "./src/grab-api.js"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/vtempest/grab-api.js"
+    "url": "https://github.com/vtempest/grab-api"
   },
   "keywords": [
     "api",
@@ -15,11 +18,10 @@
     "fetch",
     "http"
   ],
-  "module": "src/grab-api.js",
+  "main": "src/grab-api.js",
   "type": "module",
   "scripts": {
     "start": "bun run src/grab-api.js",
     "dev": "bun run src/grab-api.js --watch"
-  },
-  "private": false
+  }
 }
