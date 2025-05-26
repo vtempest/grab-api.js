@@ -2,7 +2,6 @@
   "name": "docusaurus-openapi-typedoc",
   "version": "4.2.0",
   "description": "Docusaurus with OpenAPI and Typedoc and Lunr Search",
-  "private": true,
   "scripts": {
     "docs": "concurrently \"npx docusaurus serve --dir ./docs-dist\" \"wait-on http://localhost:3000 && opener http://localhost:3000\"",
     "docs:build": "rm -rf ./docs-dist; mkdir ./docs-dist;DOCUSAURUS_IGNORE_SSG_WARNINGS=true npx docusaurus build --out-dir ./docs-dist"

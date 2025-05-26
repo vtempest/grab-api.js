@@ -4,7 +4,7 @@
 </p>
 <p align="center">
     <br />
-    <a href="https://npmjs.org/package/grab-api.js">
+    <a href="https://npmjs.org/package/grab-api">
         <img src="https://i.imgur.com/ifE8SbX.png"
             alt="NPM badge for ai-research-agent" />
     </a>
