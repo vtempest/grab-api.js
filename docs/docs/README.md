@@ -1,39 +1,53 @@
----
-sidebar_position: 1
-sidebar_label:  Introduction
-title:  Grab API
-slug: /
----
-    ## grab()
+<p align="center">
+    <img width="400px" src="https://i.imgur.com/qrQWkeb.png" />
+</p>
+<p align="center">
+    <br />
+    <a href="https://npmjs.org/package/grab-api.js">
+        <img src="https://i.imgur.com/ifE8SbX.png"
+            alt="NPM badge" />
+    </a>
+</p>
+<p align="center">
+   <a href="https://npmjs.org/package/grab-api.js">
+    <img alt="NPM Version" src="https://img.shields.io/npm/v/grab-api.js" />
+  </a>
+    <a href="https://github.com/vtempest/grab-API/discussions">
+    <img alt="GitHub Discussions"
+        src="https://img.shields.io/github/discussions/vtempest/grab-API" />
+    </a>
+    <a href="http://makeapullrequest.com">
+        <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" alt="PRs Welcome"/>
+    </a>
+    <a href="https://codespaces.new/vtempest/grab-API">
+    <img src="https://github.com/codespaces/badge.svg" width="150" height="20"/>
+    </a>
+</p>
+<h3 align="center">
+  <a href="https://grab.js.org"> 📑 Docs (grab.js.org)</a>
+</h3>
 
-```ts
-function grab(
-   path: string, 
-   response: any, 
-   options?: object): Promise<any>;
+```
+npm i grab-api.js
 ```
 
-Defined in: [grab-api.js:86](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L86)
-
-### GRAB: General Request APIs from Browser
-![grabAPILogo](https://i.imgur.com/TE7jBZm.png)
+### GRAB: Generate Request to API from Browser
 
 1. **Data Retrieval**: Fetches data from server APIs using JSON parameters and returns JSON responses or error objects
-2. **Request/Response Format**: Standardized JSON communication for both input parameters and output data
+2. **Minimalist One Function**: 2Kb min.js less boilerplate complexity than axios, SuperAgent, Tanstack, Alova, SWR, TanStack, apisauce
 3. **Automatic Loading States**: Sets `isLoading` to `true` during data fetching operations and `false` upon completion
-4. **Mock Server Support**: Configure `window.grabMockServer` for development and testing environments
-5. **Concurrent Request Handling**: Cancels duplicate or overlapping requests automatically
-6. **Timeout Configuration**: Customizable request timeout settings
+4. **Mock Server Support**: Configure `window.grab.server` for development and testing environments
+5. **Concurrency Handling**: Cancel ongoing or new request automatically
 7. **Rate Limiting**: Built-in rate limiting to prevent API abuse
-8. **Debug Logging**: Comprehensive logging system for request monitoring
+6. **Timeout**: Customizable request timeout settings
+8. **Debug Logging**: Detailed colored log of JSON structure, response, request, timing
 9. **Request History**: Stores all request and response data in global `grabLog` object
 10. **Pagination Support**: Built-in pagination handling for large datasets
 11. **Environment Configuration**: Configurable base URLs for development and production environments
 12. **Frontend Caching**: Intelligent caching system that prevents redundant API calls for repeat requests
 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
 14. **Framework Agnostic**: No dependency on React hooks or component lifecycle - works with any JavaScript framework
-15. **Universal Usage**:  More flexible than TanStack Query - works outside component initialization, 
-16. **Minimalist Single Function**: Less boilerplate and complexity than axios, SuperAgent, Got, Alova
+15. **Universal Usage**:  More flexible than TanStack Query - works outside component initialization,
 
 ### Parameters
 
@@ -89,7 +103,7 @@ Pre-initialized object to store the response in,
 </td>
 <td>
 
-\{ `method`: `string`; `cancelPrevious`: `boolean`; `cancelIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; \}
+ `method`: `string`; `cancelOngoingIfNew`: `boolean`; `cancelNewIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; 
 
 </td>
 <td>
@@ -118,7 +132,7 @@ default="GET" The HTTP method to use
 <tr>
 <td>
 
-`options.cancelPrevious?`
+`options.cancelOngoingIfNew?`
 
 </td>
 <td>
@@ -135,7 +149,7 @@ default=true Cancel previous requests to same path
 <tr>
 <td>
 
-`options.cancelIfOngoing?`
+`options.cancelNewIfOngoing?`
 
 </td>
 <td>
@@ -247,7 +261,7 @@ default=null The key to paginate result data by
 </td>
 <td>
 
-default="page" The key to paginate the request by
+default="" The key to paginate the request by
 
 </td>
 </tr>
@@ -303,27 +317,27 @@ The response from the server API
 
 ```ts
 import { grab } from "grab-api.js";
- let responseData = $state({}) as {
+ let res = $state({}) as {
      results: Array<{title:string}>,
      isLoading: boolean,
      error: string,
  };
   
- await grab('search', responseData, {
+ await grab('search', res, {
    query: "search words",
    method: 'POST'
  })
  //in svelte component
- {#if responseData.results}
-     {responseData.results}
- {:else if responseData.isLoading}
+ {#if res.results}
+     {res.results}
+ {:else if res.isLoading}
      ...
- {:else if responseData.error}
-     {responseData.error}
+ {:else if res.error}
+     {res.error}
  {/if}
 
  //Setup Mock testing server, response is object or function
- window.grabMockServer["search"] = {
+ window.grab.server["search"] = {
    response: (params) => {
      return { results: [{title:`Result about ${params.query}`}] };
    },
@@ -342,8 +356,7 @@ import { grab } from "grab-api.js";
    debug: true,
    rateLimit: 1,
    cache: true,
-   cancelPrevious: true,
-   cancelIfOngoing: true,
+   cancelOngoingIfNew: true,
+   cancelNewIfOngoing: true,
  });
 ```
-

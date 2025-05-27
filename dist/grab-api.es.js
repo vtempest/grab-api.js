@@ -1,73 +1,78 @@
 async function grab(path, response = {}, options = {}) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+  let {
+    headers,
+    method = "GET",
+    cache = false,
+    // Enable/disable frontend caching
+    timeout = 20,
+    // Request timeout in seconds
+    baseURL = typeof process !== "undefined" && ((_a = process == null ? void 0 : process.env) == null ? void 0 : _a.SERVER_API_URL) || "/api/",
+    // Use env var or default to /api/
+    cancelOngoingIfNew = true,
+    // Cancel previous request for same path
+    cancelNewIfOngoing = false,
+    // Don't make new request if one is ongoing
+    rateLimit = 0,
+    // Minimum seconds between requests
+    debug = (_c = (_b = window == null ? void 0 : window.location) == null ? void 0 : _b.hostname) == null ? void 0 : _c.includes("localhost"),
+    // Auto-enable debug on localhost
+    paginateResult = null,
+    // Key to paginate in response
+    paginateKey = null,
+    // Request param for pagination
+    setDefaults = false,
+    // Set these options as defaults for future requests
+    retryOnError = false,
+    // Retry failed requests once
+    ...params
+    // All other params become request params/query
+  } = {
+    // Destructure options with defaults, merging with any globally set defaults
+    ...((_d = window == null ? void 0 : window.grab) == null ? void 0 : _d.defaults) || ((_e = global == null ? void 0 : global.grab) == null ? void 0 : _e.defaults) || {},
+    ...options
+  };
   try {
-    let {
-      headers,
-      method = "GET",
-      cache = false,
-      // Enable/disable frontend caching
-      timeout = 20,
-      // Request timeout in seconds
-      baseURL = typeof process !== "undefined" && ((_a = process == null ? void 0 : process.env) == null ? void 0 : _a.SERVER_API_URL) || "/api/",
-      // Use env var or default to /api/
-      cancelPrevious = true,
-      // Cancel previous request for same path
-      cancelIfOngoing = false,
-      // Don't make new request if one is ongoing
-      rateLimit = 0,
-      // Minimum seconds between requests
-      debug = (_c = (_b = window == null ? void 0 : window.location) == null ? void 0 : _b.hostname) == null ? void 0 : _c.includes("localhost"),
-      // Auto-enable debug on localhost
-      paginateResult = null,
-      // Key to paginate in response
-      paginateKey = "page",
-      // Request param for pagination
-      setDefaults = false,
-      // Set these options as defaults for future requests
-      retryOnError = false,
-      // Retry failed requests once
-      ...body
-      // All other params become request body/query
-    } = { ...window.grabDefaults, ...options };
     if (options == null ? void 0 : options.setDefaults) {
-      window.grabDefaults = { ...options, setDefaults: void 0 };
+      window.grab.defaults = { ...options, setDefaults: void 0 };
       return {};
     }
     if (!response) response = {};
-    let logEntry = grabLog;
-    if (!(path in grabLog)) {
-      grabLog[path] = {
-        requestData: body || {}
-      };
-    }
-    if (grabLog[path].requestData)
-      grabLog[path].requestData[paginateKey] = void 0;
-    const isRepeatRequest = JSON.stringify(grabLog[path].requestData) == JSON.stringify(body);
+    let paramsAsText = JSON.stringify({ ...params, paginateKey: void 0 });
+    let priorRequest = grabLog == null ? void 0 : grabLog.find(
+      (e) => e.request == paramsAsText && e.path == path
+    );
+    const isRepeatRequest = (priorRequest == null ? void 0 : priorRequest.request) == paramsAsText;
     if (!paginateKey) {
       if (cache && isRepeatRequest) {
-        for (let key of Object.keys(grabLog[path].responseData))
-          response[key] = grabLog[path].responseData[key];
+        for (let key of Object.keys(priorRequest.res))
+          response[key] = priorRequest.res[key];
         return response;
       }
       for (let key of Object.keys(response)) response[key] = void 0;
     } else {
-      var pageNumber = grabLog[path].currentPage || (body == null ? void 0 : body[paginateKey]) || 0;
+      let pageNumber = (priorRequest == null ? void 0 : priorRequest.currentPage) + 1 || (params == null ? void 0 : params[paginateKey]) || 1;
       if (!isRepeatRequest) {
         response[paginateResult] = [];
-        pageNumber = 0;
+        pageNumber = 1;
       }
-      grabLog[path].currentPage = ++pageNumber;
-      body[paginateKey] = pageNumber;
+      if (priorRequest)
+        priorRequest.currentPage = pageNumber;
+      params[paginateKey] = pageNumber;
     }
     response.isLoading = true;
-    if (rateLimit > 0 && ((_d = grabLog[path]) == null ? void 0 : _d.lastFetchTime) && ((_e = grabLog[path]) == null ? void 0 : _e.lastFetchTime) > Date.now() - 1e3 * rateLimit)
+    if (rateLimit > 0 && (priorRequest == null ? void 0 : priorRequest.lastFetchTime) && priorRequest.lastFetchTime > Date.now() - 1e3 * rateLimit)
       throw new Error("Fetch rate limit exceeded");
-    if (((_f = grabLog[path]) == null ? void 0 : _f.controller) && isRepeatRequest) {
-      if (cancelPrevious) grabLog[path].controller.abort();
-      else if (cancelIfOngoing) return { isLoading: true };
+    if ((priorRequest == null ? void 0 : priorRequest.controller) && isRepeatRequest) {
+      if (cancelOngoingIfNew) priorRequest.controller.abort();
+      else if (cancelNewIfOngoing) return { isLoading: true };
     }
-    grabLog[path].lastFetchTime = Date.now();
-    grabLog[path].controller = new AbortController();
+    grabLog.unshift({
+      path,
+      request: paramsAsText,
+      lastFetchTime: Date.now(),
+      controller: new AbortController()
+    });
     const fetchParams = {
       method,
       headers: {
@@ -78,48 +83,66 @@ async function grab(path, response = {}, options = {}) {
       body: null,
       redirect: "follow",
       cache: cache ? "force-cache" : "no-store",
-      signal: cancelPrevious ? (_h = (_g = grabLog[path]) == null ? void 0 : _g.controller) == null ? void 0 : _h.signal : AbortSignal.timeout(timeout * 1e3)
+      signal: cancelOngoingIfNew ? (_g = (_f = grabLog[0]) == null ? void 0 : _f.controller) == null ? void 0 : _g.signal : AbortSignal.timeout(timeout * 1e3)
     };
     let paramsGETRequest = "";
     if (["POST", "PUT", "PATCH"].includes(method))
-      fetchParams.body = JSON.stringify(body);
-    else paramsGETRequest = "?" + new URLSearchParams(body).toString();
-    let responseData = null, startTime = /* @__PURE__ */ new Date(), mockHandler = grabMockServer == null ? void 0 : grabMockServer[path];
-    if (mockHandler && mockHandler.method == method && (!mockHandler.params || JSON.stringify(body) == JSON.stringify(mockHandler.params))) {
-      if (mockHandler.delay > 0)
-        await new Promise((resolve) => setTimeout(resolve, mockHandler.delay));
-      responseData = mockHandler.response;
-      if (typeof responseData === "function") responseData = responseData(body);
+      fetchParams.body = JSON.stringify(params);
+    else paramsGETRequest = "?" + new URLSearchParams(params).toString();
+    let res = null, startTime = /* @__PURE__ */ new Date(), mockHandler = (_h = grab.server) == null ? void 0 : _h[path];
+    if (mockHandler && (!mockHandler.params || mockHandler.method == method) && (!mockHandler.params || paramsAsText == JSON.stringify(mockHandler.params))) {
+      await new Promise(
+        (resolve) => setTimeout(resolve, mockHandler.delay * 1e3 || 0)
+      );
+      res = typeof mockHandler.response === "function" ? mockHandler.response(params) : mockHandler.response;
     } else {
-      responseData = await fetch(baseURL + path + paramsGETRequest, fetchParams).catch((e) => {
+      res = await fetch(
+        (!path.startsWith("http") && baseURL) + path + paramsGETRequest,
+        fetchParams
+      ).catch((e) => {
         throw new Error(e);
-      }).then((res) => res.text());
-      if (responseData.startsWith("{")) responseData = JSON.parse(responseData);
-      else if (responseData.includes("error")) throw new Error(responseData);
-      else return responseData;
+      });
+      let type = res.headers.get("content-type");
+      res = await (type ? type.includes("application/json") ? res.json() : type.includes("application/pdf") || type.includes("application/octet-stream") ? res.blob() : res.text() : res.json()).catch((e) => {
+        throw new Error("Error parsing response: " + e);
+      });
+      if ((res == null ? void 0 : res.startsWith) && (res == null ? void 0 : res.startsWith("{"))) res = JSON.parse(res);
     }
-    if (response) response.isLoading = void 0;
+    delete response.isLoading;
+    const elapsedTime = ((Number(/* @__PURE__ */ new Date()) - Number(startTime)) / 1e3).toFixed(1);
     if (debug) {
       log(
-        "Path:" + baseURL + path + paramsGETRequest + "\n" + JSON.stringify(options, null, 2) + "\nTime: " + ((Number(/* @__PURE__ */ new Date()) - Number(startTime)) / 1e3).toFixed(1) + "s\nResponse: " + printStructureJSON(responseData)
+        "Path:" + baseURL + path + paramsGETRequest + "\n" + JSON.stringify(options, null, 2) + "\nTime: " + elapsedTime + "s\nResponse: " + printStructureJSON(res)
       );
-      console.log(responseData);
+      console.log(res);
     }
-    for (let key of Object.keys(responseData))
-      response[key] = paginateResult == key && ((_i = response[key]) == null ? void 0 : _i.length) ? [...response[key], ...responseData[key]] : responseData[key];
-    grabLog[path].controller = void 0;
-    grabLog[path].responseData = response;
-    grabLog[path].requestData = body || {};
+    if (typeof res === "undefined") return;
+    for (let key of Object.keys(res))
+      response[key] = paginateResult == key && ((_i = response[key]) == null ? void 0 : _i.length) ? [...response[key], ...res[key]] : res[key];
+    grabLog.unshift({
+      path,
+      request: JSON.stringify({ ...params, paginateKey: void 0 }),
+      response,
+      lastFetchTime: Date.now()
+    });
     return response;
   } catch (error) {
+    log(
+      "Error: " + error.message + "\nPath:" + baseURL + path + JSON.stringify(params),
+      true,
+      "color: red;"
+    );
     if (options.retryOnError)
       return await grab(path, response, { ...options, retryOnError: false });
-    if (response) {
-      if (!error.message.includes("signal")) response.error = error.message;
-      response.isLoading = false;
-    }
-    if (path in grabLog) grabLog[path].error = error.message;
-    return { error: error.message };
+    if (!error.message.includes("signal"))
+      response.error = error.message;
+    delete response.isLoading;
+    grabLog == null ? void 0 : grabLog.unshift({
+      path,
+      request: JSON.stringify(params),
+      error: error.message
+    });
+    return response;
   }
 }
 function log(message, hideInProduction = void 0, style = "color: blue; font-size: 14px;") {
@@ -133,12 +156,15 @@ function log(message, hideInProduction = void 0, style = "color: blue; font-size
 function printStructureJSON(obj) {
   function getType(value) {
     if (Array.isArray(value)) {
-      if (value.length === 0) return "Array<unknown>";
-      return `Array<${getType(value[0])}>`;
+      return "[" + getType(value[0]) + "]";
     } else if (value === null) {
       return "null";
     } else if (typeof value === "object") {
       return printStructureJSON(value);
+    } else if (typeof value === "string") {
+      return `""`;
+    } else if (typeof value === "boolean") {
+      return `bool`;
     } else {
       return typeof value;
     }
@@ -146,7 +172,7 @@ function printStructureJSON(obj) {
   if (typeof obj !== "object" || obj === null) {
     return getType(obj);
   }
-  let result = "{ ";
+  let result = "{";
   const keys = Object.keys(obj);
   keys.forEach((key, index) => {
     result += `${key}: ${getType(obj[key])}`;
@@ -154,22 +180,27 @@ function printStructureJSON(obj) {
       result += ", ";
     }
   });
-  result += " }";
+  result += "}";
   return result;
 }
 const grabLog = [];
-const grabMockServer = {};
+const grabServer = {};
 const grabDefaults = {};
 if (typeof window !== "undefined") {
+  window.grab = grab;
+  window.log = log;
   window.grabLog = grabLog;
-  window.grabMockServer = grabMockServer;
-  window.grabDefaults = grabDefaults;
+  window.grab.server = grabServer;
+  window.grab.defaults = grabDefaults;
 } else if (typeof global !== "undefined") {
   global.grabLog = grabLog;
-  global.grabMockServer = grabMockServer;
-  global.grabDefaults = grabDefaults;
+  global.grab.server = grab.server;
+  global.grab.defaults = grab.defaults;
+  global.grab = grab;
+  global.log = log;
 }
 export {
+  grab as default,
   grab,
   log,
   printStructureJSON

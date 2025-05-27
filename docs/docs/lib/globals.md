@@ -9,17 +9,17 @@ function grab(
 
 Defined in: [grab-api.js:85](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L85)
 
-### GRAB: General Request APIs from Browser
-![grabAPILogo](https://i.imgur.com/TE7jBZm.png)
+### GRAB: Generate Request to API from Browser
+![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
 
 1. **Data Retrieval**: Fetches data from server APIs using JSON parameters and returns JSON responses or error objects
-2. **Minimalist One Function**: 1.8Kb min.js with no dependencies, less boilerplate and complexity than axios, SuperAgent, Tanstack, Alova
+2. **Minimalist One Function**: 2Kb min.js less boilerplate complexity than axios, SuperAgent, Tanstack, Alova, SWR, TanStack, apisauce
 3. **Automatic Loading States**: Sets `isLoading` to `true` during data fetching operations and `false` upon completion
-4. **Mock Server Support**: Configure `window.grabMockServer` for development and testing environments
-5. **Concurrent Request Handling**: Cancels duplicate or overlapping requests automatically
-6. **Timeout Configuration**: Customizable request timeout settings
+4. **Mock Server Support**: Configure `window.grab.server` for development and testing environments
+5. **Concurrency Handling**: Cancel ongoing or new request automatically
 7. **Rate Limiting**: Built-in rate limiting to prevent API abuse
-8. **Debug Logging**: Comprehensive logging system for request monitoring
+6. **Timeout**: Customizable request timeout settings
+8. **Debug Logging**: Detailed colored log of JSON structure, response, request, timing
 9. **Request History**: Stores all request and response data in global `grabLog` object
 10. **Pagination Support**: Built-in pagination handling for large datasets
 11. **Environment Configuration**: Configurable base URLs for development and production environments
@@ -82,7 +82,7 @@ Pre-initialized object to store the response in,
 </td>
 <td>
 
-\{ `method`: `string`; `cancelPrevious`: `boolean`; `cancelIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; \}
+\{ `method`: `string`; `cancelOngoingIfNew`: `boolean`; `cancelNewIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; \}
 
 </td>
 <td>
@@ -111,7 +111,7 @@ default="GET" The HTTP method to use
 <tr>
 <td>
 
-`options.cancelPrevious?`
+`options.cancelOngoingIfNew?`
 
 </td>
 <td>
@@ -128,7 +128,7 @@ default=true Cancel previous requests to same path
 <tr>
 <td>
 
-`options.cancelIfOngoing?`
+`options.cancelNewIfOngoing?`
 
 </td>
 <td>
@@ -240,7 +240,7 @@ default=null The key to paginate result data by
 </td>
 <td>
 
-default="page" The key to paginate the request by
+default="" The key to paginate the request by
 
 </td>
 </tr>
@@ -296,27 +296,27 @@ The response from the server API
 
 ```ts
 import { grab } from "grab-api.js";
- let responseData = $state({}) as {
+ let res = $state({}) as {
      results: Array<{title:string}>,
      isLoading: boolean,
      error: string,
  };
   
- await grab('search', responseData, {
+ await grab('search', res, {
    query: "search words",
    method: 'POST'
  })
  //in svelte component
- {#if responseData.results}
-     {responseData.results}
- {:else if responseData.isLoading}
+ {#if res.results}
+     {res.results}
+ {:else if res.isLoading}
      ...
- {:else if responseData.error}
-     {responseData.error}
+ {:else if res.error}
+     {res.error}
  {/if}
 
  //Setup Mock testing server, response is object or function
- window.grabMockServer["search"] = {
+ window.grab.server["search"] = {
    response: (params) => {
      return { results: [{title:`Result about ${params.query}`}] };
    },
@@ -335,8 +335,8 @@ import { grab } from "grab-api.js";
    debug: true,
    rateLimit: 1,
    cache: true,
-   cancelPrevious: true,
-   cancelIfOngoing: true,
+   cancelOngoingIfNew: true,
+   cancelNewIfOngoing: true,
  });
 ```
 
@@ -351,7 +351,7 @@ function log(
    style?: string): void;
 ```
 
-Defined in: [grab-api.js:283](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L283)
+Defined in: [grab-api.js:322](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L322)
 
 Logs messages to the console with custom styling,
 showing debug output in development and standard logs in production.
@@ -451,7 +451,7 @@ default="color: blue; font-size: 15px;"] - CSS style string for the console outp
 function printStructureJSON(obj: any): string;
 ```
 
-Defined in: [grab-api.js:305](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L305)
+Defined in: [grab-api.js:344](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L344)
 
 Generates TypeDoc-like string of layout of nested JSON object.
 
@@ -497,3 +497,9 @@ A string of the object's structure.
 ```ts
 { name: string, age: number, pets: Array<string>}
 ```
+
+***
+
+## default
+
+Renames and re-exports [grab](#grab)

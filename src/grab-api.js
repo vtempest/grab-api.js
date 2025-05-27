@@ -1,15 +1,15 @@
 /**
- * ### GRAB: General Request APIs from Browser
- * ![grabAPILogo](https://i.imgur.com/TE7jBZm.png)
+ * ### GRAB: Generate Request to API from Browser
+ * ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
  * 
  * 1. **Data Retrieval**: Fetches data from server APIs using JSON parameters and returns JSON responses or error objects
- * 2. **Minimalist One Function**: 1.8Kb min.js with no dependencies, less boilerplate and complexity than axios, SuperAgent, Tanstack, Alova
+ * 2. **Minimalist One Function**: 2Kb min.js less boilerplate complexity than axios, SuperAgent, Tanstack, Alova, SWR, TanStack, apisauce
  * 3. **Automatic Loading States**: Sets `isLoading` to `true` during data fetching operations and `false` upon completion
- * 4. **Mock Server Support**: Configure `window.grabMockServer` for development and testing environments
- * 5. **Concurrent Request Handling**: Cancels duplicate or overlapping requests automatically
- * 6. **Timeout Configuration**: Customizable request timeout settings
+ * 4. **Mock Server Support**: Configure `window.grab.server` for development and testing environments
+ * 5. **Concurrency Handling**: Cancel ongoing or new request automatically
  * 7. **Rate Limiting**: Built-in rate limiting to prevent API abuse
- * 8. **Debug Logging**: Comprehensive logging system for request monitoring
+ * 6. **Timeout**: Customizable request timeout settings
+ * 8. **Debug Logging**: Detailed colored log of JSON structure, response, request, timing
  * 9. **Request History**: Stores all request and response data in global `grabLog` object
  * 10. **Pagination Support**: Built-in pagination handling for large datasets
  * 11. **Environment Configuration**: Configurable base URLs for development and production environments
@@ -23,14 +23,14 @@
  *  isLoading and error are also set on this object.
  * @param {object} [options={}] Request params for GET or POST and more options
  * @param {string} [options.method] default="GET" The HTTP method to use
- * @param {boolean} [options.cancelPrevious]  default=true Cancel previous requests to same path
- * @param {boolean} [options.cancelIfOngoing] default=false Cancel if a request to path is in progress
+ * @param {boolean} [options.cancelOngoingIfNew]  default=true Cancel previous requests to same path
+ * @param {boolean} [options.cancelNewIfOngoing] default=false Cancel if a request to path is in progress
  * @param {boolean}[options.cache] default=false Whether to cache the request and from frontend cache
  * @param {boolean} [options.debug] default=false Whether to log the request and response
  * @param {number} [options.timeout] default=20 The timeout for the request in seconds
  * @param {number} [options.rateLimit] default=0 If set, how many seconds to wait between requests
  * @param {string} [options.paginateResult] default=null The key to paginate result data by
- * @param {string} [options.paginateKey] default="page" The key to paginate the request by
+ * @param {string} [options.paginateKey] default="" The key to paginate the request by
  * @param {string} [options.baseURL] default='/api/' base url prefix, override with SERVER_API_URL env
  * @param {boolean} [options.setDefaults] default=false Pass this with options to set
  *  those options as defaults for all requests.
@@ -39,27 +39,27 @@
  * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
  * @example 
   import { grab } from "grab-api.js";
-  let responseData = $state({}) as {
+  let res = $state({}) as {
       results: Array<{title:string}>,
       isLoading: boolean,
       error: string,
   };
    
-  await grab('search', responseData, {
+  await grab('search', res, {
     query: "search words",
     method: 'POST'
   })
   //in svelte component
-  {#if responseData.results}
-      {responseData.results}
-  {:else if responseData.isLoading}
+  {#if res.results}
+      {res.results}
+  {:else if res.isLoading}
       ...
-  {:else if responseData.error}
-      {responseData.error}
+  {:else if res.error}
+      {res.error}
   {/if}
 
   //Setup Mock testing server, response is object or function
-  window.grabMockServer["search"] = {
+  window.grab.server["search"] = {
     response: (params) => {
       return { results: [{title:`Result about ${params.query}`}] };
     },
@@ -78,61 +78,61 @@
     debug: true,
     rateLimit: 1,
     cache: true,
-    cancelPrevious: true,
-    cancelIfOngoing: true,
+    cancelOngoingIfNew: true,
+    cancelNewIfOngoing: true,
   });
  */
 export async function grab(path, response = {}, options = {}) {
-  try {
-    // Destructure options with defaults, merging with any globally set defaults
     let {
       headers,
       method = "GET",
       cache = false, // Enable/disable frontend caching
       timeout = 20, // Request timeout in seconds
-      baseURL = (typeof process !== "undefined" &&
-        process?.env?.SERVER_API_URL) ||
-        "/api/", // Use env var or default to /api/
-      cancelPrevious = true, // Cancel previous request for same path
-      cancelIfOngoing = false, // Don't make new request if one is ongoing
+      baseURL = (typeof process !== "undefined" && process?.env?.SERVER_API_URL) || "/api/", // Use env var or default to /api/
+      cancelOngoingIfNew = true, // Cancel previous request for same path
+      cancelNewIfOngoing = false, // Don't make new request if one is ongoing
       rateLimit = 0, // Minimum seconds between requests
       debug = window?.location?.hostname?.includes("localhost"), // Auto-enable debug on localhost
       paginateResult = null, // Key to paginate in response
       paginateKey = null, // Request param for pagination
       setDefaults = false, // Set these options as defaults for future requests
       retryOnError = false, // Retry failed requests once
-      ...body // All other params become request body/query
-    } = { ...window.grabDefaults, ...options };
+      ...params // All other params become request params/query
+    } = {
+      // Destructure options with defaults, merging with any globally set defaults
+      ...(window?.grab?.defaults || global?.grab?.defaults || {}),
+      ...options,
+    };
 
+  try {
+  
     // Store options as defaults if setDefaults flag is true
     if (options?.setDefaults) {
-      window.grabDefaults = { ...options, setDefaults: undefined };
+      window.grab.defaults = { ...options, setDefaults: undefined };
       return {};
     }
 
     // Initialize response object if not provided
     if (!response) response = {};
 
-    // Initialize tracking for this request path
-    let logEntry = grabLog;
-    if (!(path in grabLog)) {
-      grabLog[path] = {
-        requestData: body || {},
-      };
-    }
+    let paramsAsText = JSON.stringify({...params, paginateKey: undefined});
 
+    // Initialize tracking for this request path
+    let priorRequest = grabLog?.find(
+      e => e.request == paramsAsText && e.path == path
+    );
+    
     // Check if this is a repeat request by comparing params
-    if (grabLog[path].requestData)
-      grabLog[path].requestData[paginateKey] = undefined;
-    const isRepeatRequest =
-      JSON.stringify(grabLog[path].requestData) == JSON.stringify(body);
+    // if (priorRequest?.request)
+    //   priorRequest.request[paginateKey] = undefined;
+    const isRepeatRequest = priorRequest?.request == paramsAsText;
 
     // Handle response clearing/caching based on pagination
     if (!paginateKey) {
       // Return cached response if enabled and request is identical
       if (cache && isRepeatRequest) {
-        for (let key of Object.keys(grabLog[path].responseData))
-          response[key] = grabLog[path].responseData[key];
+        for (let key of Object.keys(priorRequest.res))
+          response[key] = priorRequest.res[key];
         return response;
       }
 
@@ -140,14 +140,18 @@ export async function grab(path, response = {}, options = {}) {
       for (let key of Object.keys(response)) response[key] = undefined;
     } else {
       // Handle pagination - track current page and append results
-      var pageNumber = grabLog[path].currentPage || body?.[paginateKey] || 0;
+      let pageNumber = priorRequest?.currentPage + 1|| params?.[paginateKey] || 1;
 
+      //clear response if not repeat request, new params
       if (!isRepeatRequest) {
         response[paginateResult] = [];
-        pageNumber = 0;
+        pageNumber = 1;
       }
-      grabLog[path].currentPage = ++pageNumber;
-      body[paginateKey] = pageNumber;
+
+      //update current page on prior request
+      if (priorRequest) 
+        priorRequest.currentPage = pageNumber;
+      params[paginateKey] = pageNumber;
     }
 
     // Set loading state
@@ -156,19 +160,23 @@ export async function grab(path, response = {}, options = {}) {
     // Enforce rate limiting if enabled
     if (
       rateLimit > 0 &&
-      grabLog[path]?.lastFetchTime &&
-      grabLog[path]?.lastFetchTime > Date.now() - 1000 * rateLimit
+      priorRequest?.lastFetchTime &&
+      priorRequest.lastFetchTime > Date.now() - 1000 * rateLimit
     )
       throw new Error("Fetch rate limit exceeded");
 
     // Handle request cancellation logic
-    if (grabLog[path]?.controller && isRepeatRequest)
-      if (cancelPrevious) grabLog[path].controller.abort();
-      else if (cancelIfOngoing) return { isLoading: true };
+    if (priorRequest?.controller && isRepeatRequest)
+      if (cancelOngoingIfNew) priorRequest.controller.abort();
+      else if (cancelNewIfOngoing) return { isLoading: true };
 
     // Setup new request tracking
-    grabLog[path].lastFetchTime = Date.now();
-    grabLog[path].controller = new AbortController();
+    grabLog.unshift({
+      path,
+      request: paramsAsText,
+      lastFetchTime: Date.now(),
+      controller: new AbortController(),
+    });
 
     // Configure fetch parameters
     const fetchParams = {
@@ -181,50 +189,65 @@ export async function grab(path, response = {}, options = {}) {
       body: null,
       redirect: "follow",
       cache: cache ? "force-cache" : "no-store",
-      signal: cancelPrevious
-        ? grabLog[path]?.controller?.signal
+      signal: cancelOngoingIfNew
+        ? grabLog[0]?.controller?.signal
         : AbortSignal.timeout(timeout * 1000),
     };
 
-    // Format request body/query params based on method
+    // Format request params/query params based on method
     let paramsGETRequest = "";
     if (["POST", "PUT", "PATCH"].includes(method))
-      fetchParams.body = JSON.stringify(body);
-    else paramsGETRequest = "?" + new URLSearchParams(body).toString();
+      fetchParams.body = JSON.stringify(params);
+    else paramsGETRequest = "?" + new URLSearchParams(params).toString();
 
     // Handle mock server responses if configured
-    let responseData = null,
+    let res = null,
       startTime = new Date(),
-      mockHandler = grabMockServer?.[path];
+      mockHandler = grab.server?.[path];
 
     if (
       mockHandler &&
-      mockHandler.method == method &&
+      (!mockHandler.params || mockHandler.method == method) &&
       (!mockHandler.params ||
-        JSON.stringify(body) == JSON.stringify(mockHandler.params))
+        paramsAsText == JSON.stringify(mockHandler.params))
     ) {
-      if (mockHandler.delay > 0)
-        await new Promise((resolve) => setTimeout(resolve, mockHandler.delay));
+      await new Promise((resolve) =>
+        setTimeout(resolve, mockHandler.delay * 1000 || 0)
+      );
 
-      responseData = mockHandler.response;
-      if (typeof responseData === "function") responseData = responseData(body);
+      res =
+        typeof mockHandler.response === "function"
+          ? mockHandler.response(params)
+          : mockHandler.response;
     } else {
-      // Make actual API request if no mock
-      responseData = await fetch(baseURL + path + paramsGETRequest, fetchParams)
-        .catch((e) => {
-          throw new Error(e);
-        })
-        .then((res) => res.text());
+      // Make actual API request 
+      res = await fetch(
+        (!path.startsWith("http") && baseURL) + path + paramsGETRequest,
+        fetchParams
+      ).catch((e) => {
+        throw new Error(e);
+      });
 
-        // Parse response based on content type
-        if (responseData.startsWith("{")) responseData = JSON.parse(responseData);
-        else if (responseData.includes("error")) throw new Error(responseData);
-        else return responseData;
-      }
+      //get response type
+      let type = res.headers.get("content-type");
+      res = await (type ? type.includes("application/json")
+        ? res.json()
+        : type.includes("application/pdf") ||
+          type.includes("application/octet-stream")
+        ? res.blob()
+        : res.text() : res.json() ).catch(e => {
+          throw new Error("Error parsing response: " + e);
+        });
 
+      if (res?.startsWith && res?.startsWith("{")) res = JSON.parse(res);
+    }
 
     // Clear loading state
-    if (response) response.isLoading = undefined;
+    delete response.isLoading;
+    const elapsedTime = (
+      (Number(new Date()) - Number(startTime)) /
+      1000
+    ).toFixed(1);
 
     // Log debug information if enabled
     if (debug) {
@@ -236,38 +259,54 @@ export async function grab(path, response = {}, options = {}) {
           "\n" +
           JSON.stringify(options, null, 2) +
           "\nTime: " +
-          ((Number(new Date()) - Number(startTime)) / 1000).toFixed(1) +
+          elapsedTime +
           "s\nResponse: " +
-          printStructureJSON(responseData)
+          printStructureJSON(res)
       );
       // allows user to expand and collapse the object in console
-      console.log(responseData);
+      console.log(res);
     }
 
+    //if not object, return 
+    if (typeof res === "undefined") return;
+
     // Update response object with results, handling pagination
-    for (let key of Object.keys(responseData))
+    for (let key of Object.keys(res))
       response[key] =
         paginateResult == key && response[key]?.length
-          ? [...response[key], ...responseData[key]]
-          : responseData[key];
+          ? [...response[key], ...res[key]]
+          : res[key];
 
     // Store request/response data for future reference
-    grabLog[path].controller = undefined;
-    grabLog[path].responseData = response;
-    grabLog[path].requestData = body || {};
+    grabLog.unshift({
+      path,
+      request: JSON.stringify({...params, paginateKey: undefined}),
+      response,
+      lastFetchTime: Date.now(),
+    });
 
     return response;
   } catch (error) {
+    log(
+      "Error: " + error.message + "\nPath:" + baseURL + path + JSON.stringify(params),
+      true,
+      "color: red;"
+    );
+
     // Handle errors, with optional retry
     if (options.retryOnError)
       return await grab(path, response, { ...options, retryOnError: false });
-
-    if (response) {
-      if (!error.message.includes("signal")) response.error = error.message;
-      response.isLoading = false;
-    }
-    if (path in grabLog) grabLog[path].error = error.message;
-    return { error: error.message};
+    // update error in response
+    if (!error.message.includes("signal")) 
+        response.error = error.message;
+    delete response.isLoading;
+    // update error in log
+    grabLog?.unshift({
+      path,
+      request: JSON.stringify(params),
+      error: error.message,
+    });
+    return response;
   }
 }
 
@@ -305,12 +344,15 @@ export function log(
 export function printStructureJSON(obj) {
   function getType(value) {
     if (Array.isArray(value)) {
-      if (value.length === 0) return "Array<unknown>";
-      return `Array<${getType(value[0])}>`;
+      return '['+getType(value[0]) + ']';
     } else if (value === null) {
       return "null";
     } else if (typeof value === "object") {
       return printStructureJSON(value);
+    } else if (typeof value === "string") {
+      return `""`;
+    } else if (typeof value === "boolean") {
+      return `bool`;
     } else {
       return typeof value;
     }
@@ -320,7 +362,7 @@ export function printStructureJSON(obj) {
     return getType(obj);
   }
 
-  let result = "{ ";
+  let result = "{";
   const keys = Object.keys(obj);
   keys.forEach((key, index) => {
     result += `${key}: ${getType(obj[key])}`;
@@ -328,22 +370,27 @@ export function printStructureJSON(obj) {
       result += ", ";
     }
   });
-  result += " }";
+  result += "}";
   return result;
 }
 
 const grabLog = [];
-const grabMockServer = {};
+const grabServer = {};
 const grabDefaults = {};
 
 // Add globals to window in browser, or global in Node.js
 if (typeof window !== "undefined") {
+  window.grab = grab;
+  window.log = log;
   window.grabLog = grabLog;
-  window.grabMockServer = grabMockServer;
-  window.grabDefaults = grabDefaults;
+  window.grab.server = grabServer;
+  window.grab.defaults = grabDefaults;
 } else if (typeof global !== "undefined") {
   global.grabLog = grabLog;
-  global.grabMockServer = grabMockServer;
-  global.grabDefaults = grabDefaults;
+  global.grab.server = grab.server;
+  global.grab.defaults = grab.defaults;
+  global.grab = grab;
+  global.log = log;
 }
 
+export default grab;
