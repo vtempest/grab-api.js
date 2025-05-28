@@ -8,17 +8,41 @@
           "label": "Next",
           "isLast": true,
           "path": "/",
-          "mainDocId": "lib/README",
+          "mainDocId": "README",
           "docs": [
             {
-              "id": "lib/globals",
-              "path": "/lib/globals",
+              "id": "lib/global/namespaces/NodeJS",
+              "path": "/lib/global/namespaces/NodeJS",
+              "sidebar": "default"
+            },
+            {
+              "id": "lib/global/README",
+              "path": "/lib/global/",
+              "sidebar": "default"
+            },
+            {
+              "id": "lib/grab-api",
+              "path": "/lib/grab-api",
+              "sidebar": "default"
+            },
+            {
+              "id": "lib/index",
+              "path": "/lib/",
+              "sidebar": "default"
+            },
+            {
+              "id": "lib/modules",
+              "path": "/lib/modules",
               "sidebar": "default"
             },
             {
               "id": "lib/README",
               "path": "/lib/",
               "sidebar": "default"
+            },
+            {
+              "id": "README",
+              "path": "/"
             }
           ],
           "draftIds": [],
@@ -53,8 +77,8 @@
   "docusaurus-lunr-search": {
     "default": {
       "fileNames": {
-        "searchDoc": "search-doc-1748432786854.json",
-        "lunrIndex": "lunr-index-1748432786854.json"
+        "searchDoc": "search-doc-1748443358188.json",
+        "lunrIndex": "lunr-index-1748443358188.json"
       }
     }
   }

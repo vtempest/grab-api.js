@@ -1,20 +1,24 @@
 {
   "id": "lib/index",
   "title": "index",
-  "description": "<img src=\"https://i.imgur.com/ifE8SbX.png\"",
+  "description": "Documentation / index",
   "source": "@site/docs/lib/index.md",
   "sourceDirName": "lib",
   "slug": "/lib/",
   "permalink": "/lib/",
   "draft": false,
   "unlisted": false,
-  "editUrl": "https://github.com/vtempest/ai-research-agent/blob/main/docs/lib/index.md",
+  "editUrl": "https://github.com/vtempest/grab-api.js/blob/main/docs/lib/index.md",
   "tags": [],
   "version": "current",
   "frontMatter": {},
   "sidebar": "default",
   "previous": {
-    "title": "globals",
-    "permalink": "/lib/globals"
+    "title": "grab-api",
+    "permalink": "/lib/grab-api"
+  },
+  "next": {
+    "title": "modules",
+    "permalink": "/lib/modules"
   }
 }

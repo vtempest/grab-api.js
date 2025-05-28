@@ -1,13 +1,12 @@
+[Documentation](modules.md) / grab-api
+
 ## grab()
 
 ```ts
-function grab(
-   path: string, 
-   response: any, 
-   options?: object): Promise<any>;
+function grab(path: string, options?: object): Promise<any>;
 ```
 
-Defined in: [grab-api.js:91](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L91)
+Defined in: [src/grab-api.js:89](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L89)
 
 ### GRAB: Generate Request to API from Browser
 ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
@@ -59,30 +58,12 @@ The path in the API after base url
 <tr>
 <td>
 
-`response`
-
-</td>
-<td>
-
-`any`
-
-</td>
-<td>
-
-Pre-initialized object to set the ,
-response in. isLoading and error are also set on this object.
-
-</td>
-</tr>
-<tr>
-<td>
-
 `options?`
 
 </td>
 <td>
 
-\{ `method`: `string`; `cancelOngoingIfNew`: `boolean`; `cancelNewIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; `onBeforeRequest`: `Function`; \}
+\{ `method`: `string`; `response`: `any`; `cancelOngoingIfNew`: `boolean`; `cancelNewIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; `retryAttempts`: `number`; `onBeforeRequest`: `Function`; \}
 
 </td>
 <td>
@@ -105,6 +86,23 @@ Request params for GET or body for POST and utility options
 <td>
 
 default="GET" The HTTP method to use
+
+</td>
+</tr>
+<tr>
+<td>
+
+`options.response?`
+
+</td>
+<td>
+
+`any`
+
+</td>
+<td>
+
+Pre-initialized object to set the response in. isLoading and error are also set on this object.
 
 </td>
 </tr>
@@ -282,6 +280,23 @@ default=false Pass this with options to set
 <tr>
 <td>
 
+`options.retryAttempts?`
+
+</td>
+<td>
+
+`number`
+
+</td>
+<td>
+
+default=0 Retry failed requests this many times
+
+</td>
+</tr>
+<tr>
+<td>
+
 `options.onBeforeRequest?`
 
 </td>
@@ -319,12 +334,13 @@ import { grab } from "grab-api.js";
      error: string,
  };
   
- await grab('search', res, {
+ await grab('search', {
+   response: res,
    query: "search words",
    method: 'POST'
  })
  
- grab('user').then(log)
+ let user = await grab('user').then(log)
 
  //in svelte component
  {#if res.results}
@@ -336,19 +352,16 @@ import { grab } from "grab-api.js";
  {/if}
 
  //Setup Mock testing server, response is object or function
- window.grab.mock["search"] = {
+ grab.mock.search = {
    response: (params) => {
      return { results: [{title:`Result about ${params.query}`}] };
    },
-   method: "POST",
-   params: {
-     query: "search words"
-   },
+   method: "POST"
    delay : 1,
  };
 
  //set defaults for all requests
- grab("", {}, { 
+ grab("", { 
    setDefaults: true,
    baseURL: "http://localhost:8080",
    timeout: 30,
@@ -373,7 +386,7 @@ function log(
    style?: string): void;
 ```
 
-Defined in: [grab-api.js:353](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L353)
+Defined in: [src/grab-api.js:353](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L353)
 
 Logs messages to the console with custom styling,
 showing debug output in development and standard logs in production.
@@ -473,7 +486,7 @@ default="color: blue; font-size: 15px;"] - CSS style string for the console outp
 function printStructureJSON(obj: any): string;
 ```
 
-Defined in: [grab-api.js:375](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L375)
+Defined in: [src/grab-api.js:375](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L375)
 
 Generates TypeDoc-like string of layout of nested JSON object.
 

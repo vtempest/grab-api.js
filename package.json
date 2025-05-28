@@ -13,8 +13,11 @@
   "exports": {
     ".": {
       "types": "./src/index.d.ts",
-      "import": "./dist/grab-api.esm.js",
-      "require": "./dist/grab-api.js"
+      "import": "./src/grab-api.js",
+      "require": "./src/grab-api.js"
+    },
+    "./global": {
+      "types": "./src/global.d.ts"
     },
     "./types": {
       "types": "./dist/types.d.ts"
