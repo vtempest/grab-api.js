@@ -1,0 +1,24 @@
+{
+  "id": "lib/log",
+  "title": "log",
+  "description": "Documentation / log",
+  "source": "@site/docs/lib/log.md",
+  "sourceDirName": "lib",
+  "slug": "/lib/log",
+  "permalink": "/lib/log",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/vtempest/grab-api.js/blob/main/docs/lib/log.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "default",
+  "previous": {
+    "title": "index",
+    "permalink": "/lib/"
+  },
+  "next": {
+    "title": "modules",
+    "permalink": "/lib/modules"
+  }
+}

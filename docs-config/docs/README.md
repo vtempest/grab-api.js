@@ -1,3 +1,4 @@
+
 <p align="center">
     <img width="400px" src="https://i.imgur.com/qrQWkeb.png" />
 </p>
@@ -9,6 +10,12 @@
     </a>
 </p>
 <p align="center">
+  <a href="https://discord.gg/SJdBqBz3tV">
+      <img src="https://img.shields.io/discord/1110227955554209923.svg?label=Chat&logo=Discord&colorB=7289da&style=flat"
+            alt="Join Discord" />
+    </a>
+     <a href="https://github.com/vtempest/grab-api/discussions">
+     <img alt="GitHub Stars" src="https://img.shields.io/github/stars/vtempest/grab-api" /></a>
    <a href="https://npmjs.org/package/grab-api.js">
     <img alt="NPM Version" src="https://img.shields.io/npm/v/grab-api.js" />
   </a>
@@ -25,27 +32,12 @@
 </p>
 <h3 align="center">
   <a href="https://grab.js.org"> 📑 Docs (grab.js.org)</a>
+  <a href="https://grab.js.org/guide/Examples"> 🎯 Examples </a>
 </h3>
 
 ```
 npm i grab-api.js
 ```
-
-### GRAB: Generate Request to API from Browser
-![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
-
-
-- 🚀 2KB minified size
-- 📦 Zero dependencies  
-- 🔄 Reactive state management
-- 🧪 Built-in mocking
-- ⚡ Request deduplication
-- 🎯 Rate limiting
-- 🔄 Auto-retry
-- 📊 Request history
-- 🎨 Framework agnostic
-
-## Features
 
 1. **One Function**: 2Kb min.js less boilerplate complexity than axios, SuperAgent, Tanstack, Alova, SWR, TanStack, apisauce
 2. **Auto-JSON Convert**: Pass parameters and get response or error in JSON, handling other data types as is.
@@ -62,8 +54,9 @@ npm i grab-api.js
 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
 14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
 15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.default`
+16. **TypeScript Tooltips**: Developers can hover over option names and autocomplete TypeScript. Add to top of file: `import 'grab-api.js/globals'`
 
-### Example
+### Examples
 
 ```ts
 import { grab } from "grab-api.js";
@@ -392,6 +385,32 @@ Set with defaults to modify each request data. Takes and returns in order: path,
 
 The response object with resulting data or .error if error.
 
+
+##  Comparison of HTTP Request Libraries
+
+
+| Feature | GRAB | Axios | TanStack Query | SWR | Alova | SuperAgent | Apisauce |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Size | ✅ 2KB | ❌ 13KB | ❌ 39KB | ❌ 4.2KB | ⚠️ 4KB | ❌ 19KB | ❌ 15KB (with axios) |
+| Zero Dependencies | ✅ Yes | ❌ No | ❌ No | ❌ No | ✅ Yes | ❌ No | ❌ Needs Axios |
+| Framework Support | ✅ All frameworks | ✅ All frameworks | ⚠️ React-focused | ⚠️ React-focused | ✅ All frameworks | ✅ All frameworks | ✅ All frameworks |
+| isLoading State Handling | ✅ Auto-managed | ❌ Manual | ✅ Yes | ✅ Yes | ✅ Yes | ❌ Manual | ❌ Manual |
+| Auto JSON Handling | ✅ Automatic | ✅ Configurable | ❌ Manual | ❌ Manual | ✅ Automatic | ✅ Automatic | ✅ Automatic |
+| Request Deduplication | ✅ Built-in | ❌ No | ✅ Yes | ✅ Yes | ✅ Yes | ❌ No | ❌ No |
+| Caching | ✅ Memory cache | ❌ No | ✅ Advanced | ✅ Advanced | ✅ Multi-level | ❌ No | ❌ No |
+| Mock Testing | ✅ Easy setup | ❌ Needs MSW/etc | ❌ Needs MSW/etc | ❌ Needs MSW/etc | ⚠️ Basic | ❌ Needs separate lib | ❌ Needs separate lib |
+| Rate Limiting | ✅ Built-in | ❌ Manual | ❌ Manual | ❌ Manual | ⚠️ Basic | ❌ Manual | ❌ Manual |
+| Automatic Retry | ✅ Configurable | ⚠️ Via interceptors | ✅ Built-in | ✅ Built-in | ✅ Built-in | ✅ Built-in | ❌ Manual |
+| Request Cancellation | ✅ Auto + manual | ✅ Manual | ✅ Automatic | ✅ Automatic | ✅ Manual | ✅ Manual | ✅ Manual |
+| Pagination Support | ✅ Infinite scroll | ❌ Manual | ✅ Advanced | ⚠️ Basic | ✅ Built-in | ❌ Manual | ❌ Manual |
+| TypeScript Support |  ✅ Excellent  | ✅ Excellent | ✅ Excellent | ✅ Excellent | ✅ Good | ✅ Good | ✅ Good |
+| Interceptors | ✅ Advanced | ✅ Advanced | ⚠️ Limited | ⚠️ Limited | ✅ Advanced | ✅ Plugins | ✅ Transforms |
+| Debug Logging | ✅ Colored output | ⚠️ Basic | ✅ DevTools | ✅ DevTools | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic |
+| Request History | ✅ Built-in | ❌ Manual | ✅ DevTools | ✅ DevTools | ❌ Manual | ❌ Manual | ❌ Manual |
+| Easy Syntax | ✅ Minimal | ⚠️ Medium | ❌ High | ❌ High | ⚠️ Medium | ⚠️ Medium | ✅ Low |
+
+
 ### Author
 
 [vtempest (2025)](https://github.com/vtempest/grab-api)
+

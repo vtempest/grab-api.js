@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "default",
   "previous": {
-    "title": "grab-api",
-    "permalink": "/lib/grab-api"
+    "title": "icons",
+    "permalink": "/lib/icons"
   },
   "next": {
-    "title": "modules",
-    "permalink": "/lib/modules"
+    "title": "log",
+    "permalink": "/lib/log"
   }
 }

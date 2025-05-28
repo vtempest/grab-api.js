@@ -30,7 +30,7 @@ export default {
   "baseUrl": "/",
   "onBrokenLinks": "ignore",
   "onBrokenMarkdownLinks": "ignore",
-  "favicon": "https://grab.js.org/favicon.ico",
+  "favicon": "/favicon.ico",
   "projectName": "grab-api",
   "presets": [
     [
@@ -103,6 +103,11 @@ export default {
     },
     "navbar": {
       "title": "GRAB-API Docs",
+      "logo": {
+        "alt": "logo",
+        "src": "/apple-touch-icon.png",
+        "href": "/lib"
+      },
       "items": [
         {
           "to": "/lib",

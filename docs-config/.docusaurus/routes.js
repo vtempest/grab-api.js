@@ -4,15 +4,15 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 export default [
   {
     path: '/',
-    component: ComponentCreator('/', 'e42'),
+    component: ComponentCreator('/', '2d7'),
     routes: [
       {
         path: '/',
-        component: ComponentCreator('/', '246'),
+        component: ComponentCreator('/', '9c8'),
         routes: [
           {
             path: '/',
-            component: ComponentCreator('/', '7fd'),
+            component: ComponentCreator('/', '94c'),
             routes: [
               {
                 path: '/guide/Comparisons',
@@ -40,13 +40,43 @@ export default [
               },
               {
                 path: '/lib/',
+                component: ComponentCreator('/lib/', 'e95'),
+                exact: true,
+                sidebar: "default"
+              },
+              {
+                path: '/lib/',
                 component: ComponentCreator('/lib/', 'd92'),
                 exact: true,
                 sidebar: "default"
               },
               {
-                path: '/lib/globals',
-                component: ComponentCreator('/lib/globals', 'aff'),
+                path: '/lib/grab-api',
+                component: ComponentCreator('/lib/grab-api', 'f4d'),
+                exact: true,
+                sidebar: "default"
+              },
+              {
+                path: '/lib/icons',
+                component: ComponentCreator('/lib/icons', 'a65'),
+                exact: true,
+                sidebar: "default"
+              },
+              {
+                path: '/lib/icons-1',
+                component: ComponentCreator('/lib/icons-1', 'd72'),
+                exact: true,
+                sidebar: "default"
+              },
+              {
+                path: '/lib/log',
+                component: ComponentCreator('/lib/log', 'f79'),
+                exact: true,
+                sidebar: "default"
+              },
+              {
+                path: '/lib/modules',
+                component: ComponentCreator('/lib/modules', '28a'),
                 exact: true,
                 sidebar: "default"
               },

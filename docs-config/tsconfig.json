@@ -16,6 +16,7 @@
   },
   "include": [
     "../src/grab-api.js",
+    "../src/index.js",
    ],
   "exclude": [
     "../docs",

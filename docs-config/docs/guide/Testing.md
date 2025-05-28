@@ -3,7 +3,7 @@
 
 ```javascript
 // setup-tests.js
-import { grab } from 'grab-api';
+import { grab } from 'grab-api.js';
 
 // Setup global mocks for testing
 beforeEach(() => {
@@ -13,7 +13,7 @@ beforeEach(() => {
 });
 
 // user.test.js
-import { grab } from 'grab-api';
+import { grab } from 'grab-api.js';
 
 describe('User API', () => {
   test('should fetch user data', async () => {

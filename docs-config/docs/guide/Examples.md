@@ -66,7 +66,7 @@ const newUser = await grab('users', {
 
 ```jsx
 import React, { useState } from 'react';
-import { grab } from 'grab-api';
+import { grab } from 'grab-api.js';
 
 function UserProfile() {
   const [userState, setUserState] = useState({
@@ -106,6 +106,7 @@ function UserProfile() {
 
 ```jsx
 import React, { useState } from 'react';
+import { grab } from 'grab-api.js'
 
 function SearchComponent() {
   const [results, setResults] = useState({
@@ -155,7 +156,7 @@ function SearchComponent() {
 
 ```svelte
 <script>
-  import { grab } from 'grab-api';
+  import { grab } from 'grab-api.js';
   
   let searchResults = $state({
     results: [],
@@ -228,7 +229,7 @@ function SearchComponent() {
 
 <script setup>
 import { ref, reactive } from 'vue';
-import { grab } from 'grab-api';
+import { grab } from 'grab-api.js';
 
 const searchTerm = ref('');
 const userResults = reactive({

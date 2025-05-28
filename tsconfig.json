@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",  // Recommended for Vite/ESM
+    "resolveJsonModule": true,
+    "allowJs": true,                // Allow JS files
+    "checkJs": false,               // Disable JS type checking
+    "declaration": true,            // Required for .d.ts generation
+    "declarationDir": "./dist",     // Output dir for .d.ts files
+    "emitDeclarationOnly": false,   // Allow JS emission if needed
+    "outDir": "./dist",             // Output directory
+    "strict": false,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true         // Required for Vite
+  },
+  "include": [
+    "./src/**/*.ts",                // Include all TS files
+    "./src/**/*.js"                 // Include JS files if needed
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "docs"
+  ]
+}

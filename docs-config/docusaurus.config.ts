@@ -60,7 +60,7 @@ export default async function createConfig(options: any = {}) {
     tsconfig = "./tsconfig.json",
     readme = "../readme.md",
     sanitizeComments = false,
-    appLogoURL = domain + "/icons/app-icon.svg",
+    appLogoURL =  "/apple-touch-icon.png",
   } = options;
 
   // foldersWithFunctions - should also add to tsconfig.json include:[]
@@ -80,7 +80,7 @@ export default async function createConfig(options: any = {}) {
     baseUrl: compileForSubdomain ? "/" : "/",
     onBrokenLinks: "ignore",
     onBrokenMarkdownLinks: "ignore",
-    favicon: domain + "/favicon.ico",
+    favicon: "/favicon.ico",
     projectName: "grab-api",
     presets: [
       [
@@ -151,7 +151,11 @@ export default async function createConfig(options: any = {}) {
       },
       navbar: {
         title: name + " Docs",
-        // logo:null,
+        logo: {
+          alt: "logo",
+          src: appLogoURL,
+          href: "/lib",
+        },
         items: [
 
           {

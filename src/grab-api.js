@@ -1,3 +1,5 @@
+import { printStructureJSON, log } from './log.js';
+
 /**
  * ### GRAB: Generate Request to API from Browser
  * ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
@@ -35,7 +37,9 @@
  * @param {boolean} [options.setDefaults] default=false Pass this with options to set
  *  those options as defaults for all requests.
  * @param {number} [options.retryAttempts] default=0 Retry failed requests this many times
+ * @param {function} [options.logger] default=log Custom logger to override the built-in color JSON log()
  * @param {function} [options.onBeforeRequest] Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams
+ * @param {function} [options.onAfterRequest] Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams
  * @param {any} [...params] All other params become GET params, POST body, and other methods.
  * @returns {Promise<Object>} The response object with resulting data or .error if error.
  * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
@@ -65,6 +69,7 @@ export async function grab(path, options = {}) {
     paginateKey = null, // Request param for pagination
     setDefaults = false, // Set these options as defaults for future requests
     retryAttempts = 0, // Retry failed requests once
+    logger = log, // Custom logger to override the built-in color JSON log()
     onBeforeRequest = null, // Hook to modify request data before request is made
     ...params // All other params become request params/query
   } = {
@@ -150,7 +155,7 @@ export async function grab(path, options = {}) {
     });
 
     // Configure fetch parameters
-    const fetchParams = {
+    let fetchParams = {
       method,
       headers: {
         "Content-Type": "application/json",
@@ -227,6 +232,16 @@ export async function grab(path, options = {}) {
       if (res?.startsWith && res?.startsWith("{")) res = JSON.parse(res);
     }
 
+    //hook all requests before request intercept to modify data
+    if (typeof afterRequest === "function")
+      [path, response, params, fetchParams] = onAfterRequest(
+        path,
+        response,
+        params,
+        fetchParams
+      );
+
+
     // Clear loading state
     delete response.isLoading;
 
@@ -302,96 +317,31 @@ export async function grab(path, options = {}) {
   }
 }
 
-/**
- * Logs messages to the console with custom styling,
- * showing debug output in development and standard logs in production.
- * Pretty print JSON with description of structure layout.
- * @param {string|object} message - The message to log. If an object is provided, it will be stringified.
- * @param {boolean} [hideInProduction] -  default = auto-detects based on hostname.
- *  If true, uses `console.debug` (hidden in production). If false, uses `console.log`.
- * @param {string} [style] default='color: blue; font-size: 15px' - CSS style string for the console output.
- */
-export function log(
-  message,
-  hideInProduction = undefined,
-  style = "color: blue; font-size: 14px;"
-) {
-  if (typeof hideInProduction === "undefined")
-    hideInProduction = window?.location.hostname.includes("localhost");
-  // pretty print JSON with description of structure layout
-  if (typeof message === "object")
-    message =
-      printStructureJSON(message) + "\n\n" + JSON.stringify(message, null, 2);
-
-  if (hideInProduction) console.debug((style ? "%c" : "") + message, style);
-  else console.log((style ? "%c" : "") + message, style);
-}
-
-/**
- * Generates TypeDoc-like string of layout of nested JSON object.
- * @param {Object} obj - The JSON object to describe.
- * @returns {string} A string of the object's structure.
- * @example { name: string, age: number, pets: Array<string>}
- */
-export function printStructureJSON(obj) {
-  function getType(value) {
-    if (Array.isArray(value)) {
-      return "[" + getType(value[0]) + "]";
-    } else if (value === null) {
-      return "null";
-    } else if (typeof value === "object") {
-      return printStructureJSON(value);
-    } else if (typeof value === "string") {
-      return `""`;
-    } else if (typeof value === "boolean") {
-      return `bool`;
-    } else {
-      return typeof value;
-    }
+  // Add globals to window in browser, or global in Node.js
+  if (typeof window !== "undefined") {
+    window.grab = grab;
+    window.log = log;
+    window.grab.log = [];
+    window.grab.mock = {};
+    window.grab.default = {};
+  } else if (typeof global !== "undefined") {
+    global.grab = grab;
+    global.log = log;
+    global.grab.log = [];
+    global.grab.mock = {};
+    global.grab.default = {};
   }
-
-  if (typeof obj !== "object" || obj === null) {
-    return getType(obj);
-  }
-
-  let result = "{";
-  const keys = Object.keys(obj);
-  keys.forEach((key, index) => {
-    result += `${key}: ${getType(obj[key])}`;
-    if (index < keys.length - 1) {
-      result += ", ";
-    }
-  });
-  result += "}";
-  return result;
-}
-
-// Add globals to window in browser, or global in Node.js
-if (typeof window !== "undefined") {
-  window.grab = grab;
-  window.log = log;
-  window.grab.log = [];
-  window.grab.mock = {};
-  window.grab.default = {};
-} else if (typeof global !== "undefined") {
-  global.grab.log = [];
-  global.grab.mock = {};
-  global.grab.default = {};
-  global.grab = grab;
-  global.log = log;
-}
+  
+  
 
 export default grab;
-
-/**
- * Todo:
- *  - pagination working
- *  - progress
- *  - create new Grab()
- *  - grab error popup and dev tool
- *  - comaprison table 
- *  - docs
- *  - tests
- *  - examples
- *  - loading icons
- */
+  
+  /**
+   * Todo:
+   *  - pagination working
+   *  - progress
+   *  - create new Grab()
+   *  - grab error popup and dev tool
+   *  - tests
+   *  - loading icons
+   */

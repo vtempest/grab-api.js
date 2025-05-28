@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "default",
   "previous": {
-    "title": "NodeJS",
-    "permalink": "/lib/global/namespaces/NodeJS"
+    "title": "README",
+    "permalink": "/lib/"
   },
   "next": {
-    "title": "index",
-    "permalink": "/lib/"
+    "title": "icons-1",
+    "permalink": "/lib/icons-1"
   }
 }
