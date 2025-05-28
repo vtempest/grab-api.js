@@ -106,11 +106,11 @@ export default {
       "logo": {
         "alt": "logo",
         "src": "/apple-touch-icon.png",
-        "href": "/lib"
+        "href": "/"
       },
       "items": [
         {
-          "to": "/lib",
+          "to": "/lib/grab-api",
           "label": "📚 API Spec",
           "position": "left"
         },

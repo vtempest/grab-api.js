@@ -6,7 +6,7 @@
 function getLoadingIcon(name: string): Promise<any>;
 ```
 
-Defined in: icons/index.js:6
+Defined in: [icons/index.js:6](https://github.com/vtempest/grab-api/tree/master/src/icons/index.js#L6)
 
 Dynamically imports an SVG icon from the same folder by name.
 

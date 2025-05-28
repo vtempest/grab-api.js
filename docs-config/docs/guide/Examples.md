@@ -1,16 +1,18 @@
-# Examples
-
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
 
-## Installation
-
-```bash npm2yarn
-npm install grab-api
-```
+## Basic Examples
 
 ### Basic Import
+
+```bash npm2yarn
+npm install grab-api.js
+```
+
+```bash npm2yarn
+bun i grab-api.js
+```
 
 ```javascript
 import grab from 'grab-api.js';
@@ -57,12 +59,11 @@ const newUser = await grab('users', {
 });
 ```
 
-## Reactive State Management
+### Reactive Loading Status
 
-### With React
 
 <Tabs>
-<TabItem value="react-hooks" label="React Hooks">
+<TabItem value="react" label="React">
 
 ```jsx
 import React, { useState } from 'react';
@@ -101,58 +102,12 @@ function UserProfile() {
 }
 ```
 
-</TabItem>
-<TabItem value="react-functional" label="Functional Component">
+---
 
-```jsx
-import React, { useState } from 'react';
-import { grab } from 'grab-api.js'
-
-function SearchComponent() {
-  const [results, setResults] = useState({
-    items: [],
-    isLoading: false,
-    error: null
-  });
-
-  const handleSearch = async (searchTerm) => {
-    await grab('search', {
-      response: results,
-      method: 'POST',
-      query: searchTerm,
-      filters: ['active', 'published']
-    });
-    setResults({...results});
-  };
-
-  return (
-    <div>
-      <input 
-        type="text" 
-        onChange={(e) => handleSearch(e.target.value)}
-        placeholder="Search..."
-      />
-      
-      {results.isLoading ? (
-        <div className="spinner">Loading...</div>
-      ) : results.error ? (
-        <div className="error">Error: {results.error}</div>
-      ) : (
-        <ul>
-          {results.items?.map(item => (
-            <li key={item.id}>{item.title}</li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-```
 
 </TabItem>
-</Tabs>
 
-### With Svelte
+<TabItem value="svelte" label="Svelte">
 
 ```svelte
 <script>
@@ -196,7 +151,9 @@ function SearchComponent() {
 {/if}
 ```
 
-### With Vue 3
+</TabItem>
+
+<TabItem value="vue3" label="Vue 3">
 
 ```vue
 <template>
@@ -249,6 +206,9 @@ const searchUsers = async () => {
 };
 </script>
 ```
+
+</TabItem>
+</Tabs>
 
 ## Advanced Features
 

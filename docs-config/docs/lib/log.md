@@ -9,7 +9,7 @@ function log(
    style?: string): void;
 ```
 
-Defined in: log.js:11
+Defined in: [log.js:11](https://github.com/vtempest/grab-api/tree/master/src/log.js#L11)
 
 Logs messages to the console with custom styling,
 showing debug output in development and standard logs in production.
@@ -109,7 +109,7 @@ default='color: blue; font-size: 15px' - CSS style string for the console output
 function printStructureJSON(obj: any, indent: number): string;
 ```
 
-Defined in: log.js:71
+Defined in: [log.js:71](https://github.com/vtempest/grab-api/tree/master/src/log.js#L71)
 
 ### Parameters
 

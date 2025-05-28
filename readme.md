@@ -38,7 +38,7 @@
 ```
 npm i grab-api.js
 ```
-
+### GRAB: Generate Request to API from Browser
 1. **One Function**: 2Kb min.js less boilerplate complexity than axios, SuperAgent, Tanstack, Alova, SWR, TanStack, apisauce
 2. **Auto-JSON Convert**: Pass parameters and get response or error in JSON, handling other data types as is.
 3. **Reactive isLoading State**: Sets `.isLoading=true` on the pre-initialized response object so you can show a "Loading..." in any component framework.
@@ -386,7 +386,7 @@ Set with defaults to modify each request data. Takes and returns in order: path,
 The response object with resulting data or .error if error.
 
 
-##  Comparison of HTTP Request Libraries
+### Comparison of HTTP Request Libraries
 
 
 | Feature | GRAB | Axios | TanStack Query | SWR | Alova | SuperAgent | Apisauce |

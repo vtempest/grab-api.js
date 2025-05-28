@@ -21,7 +21,8 @@
     },
     "./types": {
       "types": "./dist/types.d.ts"
-    }
+    },
+    "./icons":  "./src/icons/index.js"
   },
   "files": [
     "dist",

@@ -154,12 +154,12 @@ export default async function createConfig(options: any = {}) {
         logo: {
           alt: "logo",
           src: appLogoURL,
-          href: "/lib",
+          href: "/",
         },
         items: [
 
           {
-            to: "/lib",
+            to: "/lib/grab-api",
             label: "📚 API Spec",
             position: "left",
           },

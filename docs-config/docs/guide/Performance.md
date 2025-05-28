@@ -5,18 +5,16 @@
 ### 1. **Use Response Objects for UI State**
 
 ```javascript
-// ✅ Good - Use response object for reactive UI
-let userProfile = { data: null, isLoading: false, error: null };
+let userProfile = { };
 await grab('users/me', { response: userProfile });
 
-// ❌ Avoid - Direct assignment loses reactivity
+// Direct assignment is supported but loses .isLoading status
 let user = await grab('users/me');
 ```
 
 ### 2. **Configure Defaults Early**
 
 ```javascript
-// ✅ Good - Set defaults at app initialization
 grab('', {
   setDefaults: true,
   baseURL: process.env.API_URL,
@@ -28,7 +26,6 @@ grab('', {
 ### 3. **Use Mocks for Development**
 
 ```javascript
-// ✅ Good - Comprehensive mocks for development
 if (process.env.NODE_ENV === 'development') {
   grab.mock = {
     'users/me': { response: mockUser },
@@ -41,7 +38,6 @@ if (process.env.NODE_ENV === 'development') {
 ### 4. **Handle Loading States**
 
 ```javascript
-// ✅ Good - Always handle loading states
 {state.isLoading ? (
   <LoadingSpinner />
 ) : state.error ? (
@@ -54,7 +50,6 @@ if (process.env.NODE_ENV === 'development') {
 ### 5. **Use Rate Limiting for User Interactions**
 
 ```javascript
-// ✅ Good - Prevent spam clicks
 await grab('save-data', {
   method: 'POST',
   rateLimit: 2, // 2 seconds between saves
@@ -62,7 +57,7 @@ await grab('save-data', {
 });
 ```
 
-### Development vs Production
+### 6. **Development vs Production**
 
 ```javascript
 // config.js
