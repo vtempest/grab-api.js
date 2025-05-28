@@ -11,6 +11,11 @@
           "mainDocId": "README",
           "docs": [
             {
+              "id": "guide/Comparisons",
+              "path": "/guide/Comparisons",
+              "sidebar": "default"
+            },
+            {
               "id": "guide/Examples",
               "path": "/guide/Examples",
               "sidebar": "default"
@@ -18,6 +23,11 @@
             {
               "id": "guide/Performance",
               "path": "/guide/Performance",
+              "sidebar": "default"
+            },
+            {
+              "id": "guide/Testing",
+              "path": "/guide/Testing",
               "sidebar": "default"
             },
             {
@@ -39,14 +49,14 @@
           "sidebars": {
             "lib": {
               "link": {
-                "path": "/guide/Examples",
-                "label": "guide/Examples"
+                "path": "/guide/Comparisons",
+                "label": "guide/Comparisons"
               }
             },
             "default": {
               "link": {
-                "path": "/guide/Examples",
-                "label": "guide/Examples"
+                "path": "/guide/Comparisons",
+                "label": "guide/Comparisons"
               }
             }
           }
@@ -67,8 +77,8 @@
   "docusaurus-lunr-search": {
     "default": {
       "fileNames": {
-        "searchDoc": "search-doc-1748461785951.json",
-        "lunrIndex": "lunr-index-1748461785951.json"
+        "searchDoc": "search-doc-1748463414505.json",
+        "lunrIndex": "lunr-index-1748463414505.json"
       }
     }
   }

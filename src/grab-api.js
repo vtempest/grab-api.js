@@ -39,53 +39,13 @@
  * @param {any} [...params] All other params become GET params, POST body, and other methods.
  * @returns {Promise<Object>} The response object with resulting data or .error if error.
  * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
- * @example 
-  import { grab } from "grab-api.js";
-  let res = $state({}) as {
-      results: Array<{title:string}>,
-      isLoading: boolean,
-      error: string,
-  };
-   
+ * @see [Examples](https://grab.js.org/guide/Examples) [Docs](https://grab.js.org/lib)
+ * @example import { grab } from "grab-api.js";
+  let res = $state({}) 
   await grab('search', {
     response: res,
-    query: "search words",
-    method: 'POST'
+    query: "search words"
   })
-  
-  let user = await grab('user').then(log)
-
-  //in svelte component
-  {#if res.results}
-      {res.results}
-  {:else if res.isLoading}
-      ...
-  {:else if res.error}
-      {res.error}
-  {/if}
-
-  //Setup Mock testing server, response is object or function
-  grab.mock.search = {
-    response: (params) => {
-      return { results: [{title:`Result about ${params.query}`}] };
-    },
-    method: "POST"
-    delay : 1,
-  };
-
-  //set defaults for all requests
-  grab("", { 
-    setDefaults: true,
-    baseURL: "http://localhost:8080",
-    timeout: 30,
-    debug: true,
-    rateLimit: 1,
-    cache: true,
-    cancelOngoingIfNew: true,
-    cancelNewIfOngoing: false
-  });
-
-  grab.default.baseURL = "http://localhost:8080/api/";
  */
 export async function grab(path, options = {}) {
   let {

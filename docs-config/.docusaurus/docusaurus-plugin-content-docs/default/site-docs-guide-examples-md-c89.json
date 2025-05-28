@@ -13,6 +13,10 @@
   "version": "current",
   "frontMatter": {},
   "sidebar": "default",
+  "previous": {
+    "title": "Comparisons",
+    "permalink": "/guide/Comparisons"
+  },
   "next": {
     "title": "Performance",
     "permalink": "/guide/Performance"

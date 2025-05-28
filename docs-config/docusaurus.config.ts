@@ -156,17 +156,22 @@ export default async function createConfig(options: any = {}) {
 
           {
             to: "/lib",
-            label: "GRAB-API Spec",
+            label: "📚 API Spec",
             position: "left",
           },
           {
             to: "/guide/Examples",
-            label: "Examples",
+            label: "📝 Examples",
             position: "left",
           },
           {
-            to: "/guide/Performance",
-            label: "Performance",
+            to: "/guide/Performance", 
+            label: "⚡ Performance",
+            position: "left",
+          },
+          {
+            to: "/guide/Comparisons",
+            label: "⚖️ Comparisons",
             position: "left",
           },
         ],

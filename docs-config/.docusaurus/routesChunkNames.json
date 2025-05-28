@@ -1,16 +1,20 @@
 {
-  "/-532": {
+  "/-e42": {
     "__comp": "5e95c892",
     "__context": {
       "plugin": "aba21aa0"
     }
   },
-  "/-55c": {
+  "/-246": {
     "__comp": "a7bd4aaa",
     "__props": "22dd74f7"
   },
-  "/-149": {
+  "/-7fd": {
     "__comp": "a94703ab"
+  },
+  "/guide/Comparisons-4c4": {
+    "__comp": "4c5e977b",
+    "content": "8ff040d2"
   },
   "/guide/Examples-8d3": {
     "__comp": "4c5e977b",
@@ -19,6 +23,10 @@
   "/guide/Performance-426": {
     "__comp": "4c5e977b",
     "content": "6cebdc36"
+  },
+  "/guide/Testing-228": {
+    "__comp": "4c5e977b",
+    "content": "bd7a5126"
   },
   "/lib/-d92": {
     "__comp": "4c5e977b",

@@ -106,17 +106,22 @@ export default {
       "items": [
         {
           "to": "/lib",
-          "label": "GRAB-API Spec",
+          "label": "📚 API Spec",
           "position": "left"
         },
         {
           "to": "/guide/Examples",
-          "label": "Examples",
+          "label": "📝 Examples",
           "position": "left"
         },
         {
           "to": "/guide/Performance",
-          "label": "Performance",
+          "label": "⚡ Performance",
+          "position": "left"
+        },
+        {
+          "to": "/guide/Comparisons",
+          "label": "⚖️ Comparisons",
           "position": "left"
         }
       ],

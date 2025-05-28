@@ -62,58 +62,6 @@ await grab('save-data', {
 });
 ```
 
-## Migration Guide
-
-### From Axios
-
-```javascript
-// Axios
-const response = await axios.get('/users', { params: { page: 1 } });
-const users = response.data;
-
-// GRAB
-const users = await grab('users', { page: 1 });
-```
-
-### From Fetch
-
-```javascript
-// Fetch
-const response = await fetch('/api/users', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ name: 'John' })
-});
-const user = await response.json();
-
-// GRAB
-const user = await grab('users', {
-  method: 'POST',
-  name: 'John'
-});
-```
-
-### From TanStack Query
-
-```javascript
-// TanStack Query
-const { data, isLoading, error } = useQuery({
-  queryKey: ['users'],
-  queryFn: () => fetch('/api/users').then(res => res.json())
-});
-
-// GRAB
-const [users, setUsers] = useState({ data: null, isLoading: false, error: null });
-useEffect(() => {
-  grab('users', { response: users });
-  setUsers({...users});
-}, []);
-```
-
-
-
-## Environment Configuration
-
 ### Development vs Production
 
 ```javascript
@@ -144,3 +92,4 @@ grab('', {
 4. **Mocks not working**: Ensure the mock path exactly matches the request path.
 
 5. **TypeScript errors**: Add proper type definitions or use `any` for rapid prototyping.
+

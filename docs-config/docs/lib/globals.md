@@ -4,7 +4,7 @@
 function grab(path: string, options?: object): Promise<any>;
 ```
 
-Defined in: [grab-api.js:90](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L90)
+Defined in: [grab-api.js:50](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L50)
 
 ### GRAB: Generate Request to API from Browser
 ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
@@ -323,55 +323,19 @@ The response object with resulting data or .error if error.
 
 [vtempest (2025)](https://github.com/vtempest/grab-api)
 
+### See
+
+[Examples](https://grab.js.org/guide/Examples) [Docs](https://grab.js.org/lib)
+
 ### Example
 
 ```ts
 import { grab } from "grab-api.js";
- let res = $state({}) as {
-     results: Array<{title:string}>,
-     isLoading: boolean,
-     error: string,
- };
-  
+ let res = $state({}) 
  await grab('search', {
    response: res,
-   query: "search words",
-   method: 'POST'
+   query: "search words"
  })
- 
- let user = await grab('user').then(log)
-
- //in svelte component
- {#if res.results}
-     {res.results}
- {:else if res.isLoading}
-     ...
- {:else if res.error}
-     {res.error}
- {/if}
-
- //Setup Mock testing server, response is object or function
- grab.mock.search = {
-   response: (params) => {
-     return { results: [{title:`Result about ${params.query}`}] };
-   },
-   method: "POST"
-   delay : 1,
- };
-
- //set defaults for all requests
- grab("", { 
-   setDefaults: true,
-   baseURL: "http://localhost:8080",
-   timeout: 30,
-   debug: true,
-   rateLimit: 1,
-   cache: true,
-   cancelOngoingIfNew: true,
-   cancelNewIfOngoing: false
- });
-
- grab.default.baseURL = "http://localhost:8080/api/";
 ```
 
 ***
@@ -385,7 +349,7 @@ function log(
    style?: string): void;
 ```
 
-Defined in: [grab-api.js:354](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L354)
+Defined in: [grab-api.js:314](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L314)
 
 Logs messages to the console with custom styling,
 showing debug output in development and standard logs in production.
@@ -485,7 +449,7 @@ default='color: blue; font-size: 15px' - CSS style string for the console output
 function printStructureJSON(obj: any): string;
 ```
 
-Defined in: [grab-api.js:376](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L376)
+Defined in: [grab-api.js:336](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L336)
 
 Generates TypeDoc-like string of layout of nested JSON object.
 
