@@ -13,6 +13,10 @@
   "version": "current",
   "frontMatter": {},
   "sidebar": "default",
+  "previous": {
+    "title": "Performance",
+    "permalink": "/guide/Performance"
+  },
   "next": {
     "title": "globals",
     "permalink": "/lib/globals"

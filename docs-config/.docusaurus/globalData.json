@@ -11,6 +11,16 @@
           "mainDocId": "README",
           "docs": [
             {
+              "id": "guide/Examples",
+              "path": "/guide/Examples",
+              "sidebar": "default"
+            },
+            {
+              "id": "guide/Performance",
+              "path": "/guide/Performance",
+              "sidebar": "default"
+            },
+            {
               "id": "lib/globals",
               "path": "/lib/globals",
               "sidebar": "default"
@@ -29,14 +39,14 @@
           "sidebars": {
             "lib": {
               "link": {
-                "path": "/lib/",
-                "label": "lib/README"
+                "path": "/guide/Examples",
+                "label": "guide/Examples"
               }
             },
             "default": {
               "link": {
-                "path": "/lib/",
-                "label": "lib/README"
+                "path": "/guide/Examples",
+                "label": "guide/Examples"
               }
             }
           }
@@ -57,8 +67,8 @@
   "docusaurus-lunr-search": {
     "default": {
       "fileNames": {
-        "searchDoc": "search-doc-1748443997505.json",
-        "lunrIndex": "lunr-index-1748443997505.json"
+        "searchDoc": "search-doc-1748461785951.json",
+        "lunrIndex": "lunr-index-1748461785951.json"
       }
     }
   }

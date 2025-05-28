@@ -1,0 +1,20 @@
+{
+  "id": "guide/Examples",
+  "title": "Examples",
+  "description": "Installation",
+  "source": "@site/docs/guide/Examples.md",
+  "sourceDirName": "guide",
+  "slug": "/guide/Examples",
+  "permalink": "/guide/Examples",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/vtempest/grab-api.js/blob/main/docs/guide/Examples.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "default",
+  "next": {
+    "title": "Performance",
+    "permalink": "/guide/Performance"
+  }
+}

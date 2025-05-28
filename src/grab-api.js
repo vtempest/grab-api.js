@@ -17,6 +17,7 @@
  * 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
  * 14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
  * 15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.default`
+ * 16. **TypeScript Tooltips**: Developers can hover over option names and autocomplete TypeScript. Add to top of file: `import 'grab-api.js/globals'`
  * 
  * @param {string} path The path in the API after base url
  * @param {object} [options={}] Request params for GET or body for POST and utility options
@@ -348,7 +349,7 @@ export async function grab(path, options = {}) {
  * @param {string|object} message - The message to log. If an object is provided, it will be stringified.
  * @param {boolean} [hideInProduction] -  default = auto-detects based on hostname.
  *  If true, uses `console.debug` (hidden in production). If false, uses `console.log`.
- * @param {string} [style] default="color: blue; font-size: 15px;"] - CSS style string for the console output.
+ * @param {string} [style] default='color: blue; font-size: 15px' - CSS style string for the console output.
  */
 export function log(
   message,
@@ -421,3 +422,16 @@ if (typeof window !== "undefined") {
 }
 
 export default grab;
+
+/**
+ * Todo:
+ *  - pagination working
+ *  - progress
+ *  - create new Grab()
+ *  - grab error popup and dev tool
+ *  - comaprison table 
+ *  - docs
+ *  - tests
+ *  - examples
+ *  - loading icons
+ */

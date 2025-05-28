@@ -34,6 +34,19 @@ npm i grab-api.js
 ### GRAB: Generate Request to API from Browser
 ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
 
+
+- 🚀 2KB minified size
+- 📦 Zero dependencies  
+- 🔄 Reactive state management
+- 🧪 Built-in mocking
+- ⚡ Request deduplication
+- 🎯 Rate limiting
+- 🔄 Auto-retry
+- 📊 Request history
+- 🎨 Framework agnostic
+
+## Features
+
 1. **One Function**: 2Kb min.js less boilerplate complexity than axios, SuperAgent, Tanstack, Alova, SWR, TanStack, apisauce
 2. **Auto-JSON Convert**: Pass parameters and get response or error in JSON, handling other data types as is.
 3. **Reactive isLoading State**: Sets `.isLoading=true` on the pre-initialized response object so you can show a "Loading..." in any component framework.

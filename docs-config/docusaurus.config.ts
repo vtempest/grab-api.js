@@ -70,6 +70,9 @@ export default async function createConfig(options: any = {}) {
   // sanitizeComments helps avoid errors in markdown like <> {} etc
   return {
     future: {
+      v4: {
+        removeLegacyPostBuildHeadAttribute: true, // REQUIRED for ssgWorkerThreads
+      },
       experimental_faster: true,
     },
     title: name + " API Routes Docs",
@@ -154,6 +157,16 @@ export default async function createConfig(options: any = {}) {
           {
             to: "/lib",
             label: "GRAB-API Spec",
+            position: "left",
+          },
+          {
+            to: "/guide/Examples",
+            label: "Examples",
+            position: "left",
+          },
+          {
+            to: "/guide/Performance",
+            label: "Performance",
             position: "left",
           },
         ],

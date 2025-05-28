@@ -7,10 +7,10 @@
     "docs:build": "DOCS_PATH=../docs; rm -rf $DOCS_PATH; mkdir $DOCS_PATH; DOCUSAURUS_IGNORE_SSG_WARNINGS=true npx docusaurus build --out-dir $DOCS_PATH;"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.7.0",
-    "@docusaurus/faster": "^3.7.0",
-    "@docusaurus/plugin-google-gtag": "^3.7.0",
-    "@docusaurus/preset-classic": "^3.7.0",
+    "@docusaurus/core": "^3.8.0",
+    "@docusaurus/faster": "^3.8.0",
+    "@docusaurus/plugin-google-gtag": "^3.8.0",
+    "@docusaurus/preset-classic": "^3.8.0",
     "ajv": "^8.17.1",
     "clsx": "^2.1.1",
     "docusaurus": "^1.14.7",

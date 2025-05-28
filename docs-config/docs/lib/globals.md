@@ -4,7 +4,7 @@
 function grab(path: string, options?: object): Promise<any>;
 ```
 
-Defined in: [grab-api.js:89](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L89)
+Defined in: [grab-api.js:90](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L90)
 
 ### GRAB: Generate Request to API from Browser
 ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
@@ -24,6 +24,7 @@ Defined in: [grab-api.js:89](https://github.com/vtempest/grab-api/tree/master/sr
 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
 14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
 15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.default`
+16. **TypeScript Tooltips**: Developers can hover over option names and autocomplete TypeScript. Add to top of file: `import 'grab-api.js/globals'`
 
 ### Parameters
 
@@ -61,7 +62,7 @@ The path in the API after base url
 </td>
 <td>
 
-\{ `method`: `string`; `response`: `any`; `cancelOngoingIfNew`: `boolean`; `cancelNewIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; `retryAttempts`: `number`; `onBeforeRequest`: `Function`; \}
+\{ `method?`: `string`; `response?`: `any`; `cancelOngoingIfNew?`: `boolean`; `cancelNewIfOngoing?`: `boolean`; `cache?`: `boolean`; `debug?`: `boolean`; `timeout?`: `number`; `rateLimit?`: `number`; `paginateResult?`: `string`; `paginateKey?`: `string`; `baseURL?`: `string`; `setDefaults?`: `boolean`; `retryAttempts?`: `number`; `onBeforeRequest?`: `Function`; \}
 
 </td>
 <td>
@@ -384,7 +385,7 @@ function log(
    style?: string): void;
 ```
 
-Defined in: [grab-api.js:353](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L353)
+Defined in: [grab-api.js:354](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L354)
 
 Logs messages to the console with custom styling,
 showing debug output in development and standard logs in production.
@@ -465,7 +466,7 @@ default = auto-detects based on hostname.
 </td>
 <td>
 
-default="color: blue; font-size: 15px;"] - CSS style string for the console output.
+default='color: blue; font-size: 15px' - CSS style string for the console output.
 
 </td>
 </tr>
@@ -484,7 +485,7 @@ default="color: blue; font-size: 15px;"] - CSS style string for the console outp
 function printStructureJSON(obj: any): string;
 ```
 
-Defined in: [grab-api.js:375](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L375)
+Defined in: [grab-api.js:376](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L376)
 
 Generates TypeDoc-like string of layout of nested JSON object.
 

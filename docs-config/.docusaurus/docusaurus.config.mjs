@@ -5,13 +5,19 @@
  */
 export default {
   "future": {
+    "v4": {
+      "removeLegacyPostBuildHeadAttribute": true,
+      "useCssCascadeLayers": false
+    },
     "experimental_faster": {
       "swcJsLoader": true,
       "swcJsMinimizer": true,
       "swcHtmlMinimizer": true,
       "lightningCssMinimizer": true,
       "mdxCrossCompilerCache": true,
-      "rspackBundler": true
+      "rspackBundler": true,
+      "rspackPersistentCache": true,
+      "ssgWorkerThreads": true
     },
     "experimental_storage": {
       "type": "localStorage",
@@ -48,7 +54,7 @@ export default {
     ]
   ],
   "plugins": [
-    "/home/deck/Projects/grab-api.js/docs-config/node_modules/docusaurus-lunr-search/src/index.js",
+    "/home/deck/Projects/grab-api.js/docs-config/node_modules/.pnpm/docusaurus-lunr-search@3.6.0_@docusaurus+core@3.8.0_@docusaurus+faster@3.8.0_@docusauru_cef1772e4516f2ce51e2acb374ad55e7/node_modules/docusaurus-lunr-search/src/index.js",
     [
       "docusaurus-plugin-typedoc",
       {
@@ -101,6 +107,16 @@ export default {
         {
           "to": "/lib",
           "label": "GRAB-API Spec",
+          "position": "left"
+        },
+        {
+          "to": "/guide/Examples",
+          "label": "Examples",
+          "position": "left"
+        },
+        {
+          "to": "/guide/Performance",
+          "label": "Performance",
           "position": "left"
         }
       ],

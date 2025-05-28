@@ -26,6 +26,7 @@
 </p>
 <h3 align="center">
   <a href="https://grab.js.org"> 📑 Docs (grab.js.org)</a>
+  <a href="https://grab.js.org/guide/Examples"> 🎯 Examples </a>
 </h3>
 
 ```
