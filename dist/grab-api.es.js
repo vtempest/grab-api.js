@@ -39,7 +39,7 @@ async function grab(path, response = {}, options = {}) {
     }
     if (!response) response = {};
     let paramsAsText = JSON.stringify({ ...params, paginateKey: void 0 });
-    let priorRequest = grabLog == null ? void 0 : grabLog.find(
+    let priorRequest = grab.log == null ? void 0 : grab.log.find(
       (e) => e.request == paramsAsText && e.path == path
     );
     const isRepeatRequest = (priorRequest == null ? void 0 : priorRequest.request) == paramsAsText;
@@ -67,7 +67,7 @@ async function grab(path, response = {}, options = {}) {
       if (cancelOngoingIfNew) priorRequest.controller.abort();
       else if (cancelNewIfOngoing) return { isLoading: true };
     }
-    grabLog.unshift({
+    grab.log.unshift({
       path,
       request: paramsAsText,
       lastFetchTime: Date.now(),
@@ -83,7 +83,7 @@ async function grab(path, response = {}, options = {}) {
       body: null,
       redirect: "follow",
       cache: cache ? "force-cache" : "no-store",
-      signal: cancelOngoingIfNew ? (_g = (_f = grabLog[0]) == null ? void 0 : _f.controller) == null ? void 0 : _g.signal : AbortSignal.timeout(timeout * 1e3)
+      signal: cancelOngoingIfNew ? (_g = (_f = grab.log[0]) == null ? void 0 : _f.controller) == null ? void 0 : _g.signal : AbortSignal.timeout(timeout * 1e3)
     };
     let paramsGETRequest = "";
     if (["POST", "PUT", "PATCH"].includes(method))
@@ -119,7 +119,7 @@ async function grab(path, response = {}, options = {}) {
     if (typeof res === "undefined") return;
     for (let key of Object.keys(res))
       response[key] = paginateResult == key && ((_i = response[key]) == null ? void 0 : _i.length) ? [...response[key], ...res[key]] : res[key];
-    grabLog.unshift({
+    grab.log.unshift({
       path,
       request: JSON.stringify({ ...params, paginateKey: void 0 }),
       response,
@@ -137,7 +137,7 @@ async function grab(path, response = {}, options = {}) {
     if (!error.message.includes("signal"))
       response.error = error.message;
     delete response.isLoading;
-    grabLog == null ? void 0 : grabLog.unshift({
+    grab.log == null ? void 0 : grab.log.unshift({
       path,
       request: JSON.stringify(params),
       error: error.message
@@ -183,17 +183,17 @@ function printStructureJSON(obj) {
   result += "}";
   return result;
 }
-const grabLog = [];
+const grab.log = [];
 const grabServer = {};
 const grabDefaults = {};
 if (typeof window !== "undefined") {
   window.grab = grab;
   window.log = log;
-  window.grabLog = grabLog;
+  window.grab.log = grab.log;
   window.grab.server = grabServer;
   window.grab.defaults = grabDefaults;
 } else if (typeof global !== "undefined") {
-  global.grabLog = grabLog;
+  global.grab.log = grab.log;
   global.grab.server = grab.server;
   global.grab.defaults = grab.defaults;
   global.grab = grab;

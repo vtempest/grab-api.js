@@ -2,26 +2,26 @@
  * ### GRAB: Generate Request to API from Browser
  * ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
  * 
- * 1. **Data Retrieval**: Fetches data from server APIs using JSON parameters and returns JSON responses or error objects
- * 2. **Minimalist One Function**: 2Kb min.js less boilerplate complexity than axios, SuperAgent, Tanstack, Alova, SWR, TanStack, apisauce
- * 3. **Automatic Loading States**: Sets `isLoading` to `true` during data fetching operations and `false` upon completion
+ * 1. **One Function**: 2Kb min.js less boilerplate complexity than axios, SuperAgent, Tanstack, Alova, SWR, TanStack, apisauce
+ * 2. **Auto-JSON Convert**: Pass parameters and get response or error in JSON, handling other data types as is.
+ * 3. **Reactive isLoading State**: Sets `.isLoading=true` on the pre-initialized response object so you can show a "Loading..." in any component framework.
  * 4. **Mock Server Support**: Configure `window.grab.server` for development and testing environments
- * 5. **Concurrency Handling**: Cancel ongoing or new request automatically
- * 7. **Rate Limiting**: Built-in rate limiting to prevent multi-click cascading responses
- * 6. **Timeout & Retry**: Customizable request timeout and retry on error
- * 8. **Debug Logging**: Detailed colored log of JSON structure, response, request, timing
- * 9. **Request History**: Stores all request and response data in global `grabLog` object
- * 10. **Pagination Infinite Scroll**: Built-in pagination for infinite auto-load on scroll
- * 11. **Environment Configuration**: Configurable base URLs for development and production environments
- * 12. **Frontend Cache**: Set cache headers and retrieve data from frontend memory for repeat requests
+ * 5. **Concurrency Handling**: Prevent this request if one is ongoing to same path & params, or cancel the ongoing request.
+ * 6. **Rate Limiting**: Built-in rate limiting to prevent multi-click cascading responses, require to wait seconds between requests.
+ * 7. **Timeout & Retry**: Customizable request timeout, default 20s, and auto-retry on error
+ * 8. **Debug Logging**: Adds global `log()` and prints colored JSON structure, response, timing for requests in test.
+ * 9. **Request History**: Stores all request and response data in global `grab.log` object
+ * 10. **Pagination Infinite Scroll**: Built-in pagination for infinite scroll to auto-load and merge next result page.
+ * 11. **Base URL Based on Environment**: Configure `grab.defaults.baseURL` once at the top, overide with `SERVER_API_URL` in `.env`.
+ * 12. **Frontend Cache**: Set cache headers and retrieve from frontend memory for repeat requests to static data.
  * 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
- * 14. **Framework Agnostic**: No dependency on React hooks or component lifecycle - works with any JavaScript framework
- * 15. **Universal Usage**:  More flexible than TanStack Query - works outside component initialization, 
+ * 14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
+ * 15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.server`, `grab.defaults`
  * 
  * @param {string} path The path in the API after base url
- * @param {object} response Pre-initialized object to store the response in,
- *  isLoading and error are also set on this object.
- * @param {object} [options={}] Request params for GET or POST and more options
+ * @param {object} response Pre-initialized object to set the ,
+ * response in. isLoading and error are also set on this object.
+ * @param {object} [options={}] Request params for GET or body for POST and utility options
  * @param {string} [options.method] default="GET" The HTTP method to use
  * @param {boolean} [options.cancelOngoingIfNew]  default=true Cancel previous requests to same path
  * @param {boolean} [options.cancelNewIfOngoing] default=false Cancel if a request to path is in progress
@@ -29,13 +29,14 @@
  * @param {boolean} [options.debug] default=false Whether to log the request and response
  * @param {number} [options.timeout] default=20 The timeout for the request in seconds
  * @param {number} [options.rateLimit] default=0 If set, how many seconds to wait between requests
- * @param {string} [options.paginateResult] default=null The key to paginate result data by
+ * @param {string} [options.paginateResult]  The key to paginate result data by
  * @param {string} [options.paginateKey] default="" The key to paginate the request by
  * @param {string} [options.baseURL] default='/api/' base url prefix, override with SERVER_API_URL env
  * @param {boolean} [options.setDefaults] default=false Pass this with options to set
  *  those options as defaults for all requests.
- * @param {any} *
- * @returns {Promise<Object>} The response from the server API
+ * @param {function} [options.onBeforeRequest] Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams
+ * @param {any} [...params] All other params become GET params, POST body, and other methods.
+ * @returns {Promise<Object>} The response object with resulting data or .error if error.
  * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
  * @example 
   import { grab } from "grab-api.js";
@@ -97,6 +98,7 @@ export async function grab(path, response = {}, options = {}) {
     paginateKey = null, // Request param for pagination
     setDefaults = false, // Set these options as defaults for future requests
     retryOnError = false, // Retry failed requests once
+    onBeforeRequest = null, // Hook to modify request data before request is made 
     ...params // All other params become request params/query
   } = {
     // Destructure options with defaults, merging with any globally set defaults
@@ -115,10 +117,10 @@ export async function grab(path, response = {}, options = {}) {
     // Initialize response object if not provided
     if (!response) response = {};
 
-    let paramsAsText = JSON.stringify({ ...params, [paginateKey]: undefined });
+    let paramsAsText = JSON.stringify(paginateKey ? { ...params, [paginateKey]: undefined } : params);
 
     // Find prior request in log same path and params
-    let priorRequest = grabLog?.find(
+    let priorRequest = grab.log?.find(
       e => e.request == paramsAsText && e.path == path
     );
 
@@ -161,7 +163,7 @@ export async function grab(path, response = {}, options = {}) {
       priorRequest?.lastFetchTime &&
       priorRequest.lastFetchTime > Date.now() - 1000 * rateLimit
     )
-      throw new Error("Fetch rate limit exceeded");
+      throw new Error("Fetch rate limit exceeded for " + path + ". Wait " + rateLimit + "s between requests.");
 
     // Handle request cancellation logic
     if (priorRequest?.controller && isRepeatRequest)
@@ -169,7 +171,7 @@ export async function grab(path, response = {}, options = {}) {
       else if (cancelNewIfOngoing) return { isLoading: true };
 
     // Setup new request tracking
-    grabLog.unshift({
+    grab.log.unshift({
       path,
       request: paramsAsText,
       lastFetchTime: Date.now(),
@@ -187,7 +189,7 @@ export async function grab(path, response = {}, options = {}) {
       redirect: "follow",
       cache: cache ? "force-cache" : "no-store",
       signal: cancelOngoingIfNew
-        ? grabLog[0]?.controller?.signal
+        ? grab.log[0]?.controller?.signal
         : AbortSignal.timeout(timeout * 1000),
     };
 
@@ -196,6 +198,10 @@ export async function grab(path, response = {}, options = {}) {
     if (["POST", "PUT", "PATCH"].includes(method))
       fetchParams.body = JSON.stringify(params);
     else paramsGETRequest = "?" + new URLSearchParams(params).toString();
+
+    //hook all requests before request intercept to modify data
+    if (typeof beforeRequest === "function")
+      [path, response, params, fetchParams] = onBeforeRequest(path, response, params, fetchParams);
 
     // Handle mock server responses if configured
     let res = null,
@@ -275,7 +281,7 @@ export async function grab(path, response = {}, options = {}) {
           : res[key];
 
     // Store request/response data for future reference
-    grabLog.unshift({
+    grab.log.unshift({
       path,
       request: JSON.stringify({ ...params, paginateKey: undefined }),
       response,
@@ -298,7 +304,7 @@ export async function grab(path, response = {}, options = {}) {
       response.error = error.message;
     delete response.isLoading;
     // update error in log
-    grabLog?.unshift({
+    grab.log?.unshift({
       path,
       request: JSON.stringify(params),
       error: error.message,
@@ -371,7 +377,7 @@ export function printStructureJSON(obj) {
   return result;
 }
 
-const grabLog = [];
+const grab.log = [];
 const grabServer = {};
 const grabDefaults = {};
 
@@ -379,11 +385,11 @@ const grabDefaults = {};
 if (typeof window !== "undefined") {
   window.grab = grab;
   window.log = log;
-  window.grabLog = grabLog;
+  window.grab.log = grab.log;
   window.grab.server = grabServer;
   window.grab.defaults = grabDefaults;
 } else if (typeof global !== "undefined") {
-  global.grabLog = grabLog;
+  global.grab.log = grab.log;
   global.grab.server = grab.server;
   global.grab.defaults = grab.defaults;
   global.grab = grab;

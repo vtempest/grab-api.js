@@ -4,7 +4,7 @@ import { grab, log, printStructureJSON } from '../grab-api.js';
 // Mock globals that would normally be available in browser
 global.window = {
   location: { hostname: 'localhost' },
-  grabLog: {},
+  grab.log: {},
   grabMockServer: {},
   grabDefaults: {}
 };
@@ -15,7 +15,7 @@ global.fetch = vi.fn();
 describe('GRAB API Library - Core Functions', () => {
   beforeEach(() => {
     // Reset globals before each test
-    window.grabLog = {};
+    window.grab.log = {};
     window.grabMockServer = {};
     window.grabDefaults = {};
     vi.clearAllMocks();
@@ -298,7 +298,7 @@ describe('Utility Functions', () => {
 });
 
 describe('Global State Management', () => {
-  it('should maintain grabLog for debugging', async () => {
+  it('should maintain grab.log for debugging', async () => {
     const mockResponse = { data: 'logged' };
     global.fetch.mockResolvedValue({
       text: () => Promise.resolve(JSON.stringify(mockResponse))
@@ -307,6 +307,6 @@ describe('Global State Management', () => {
     await grab('logged-endpoint', {});
 
     // Should log the request for debugging
-    expect(window.grabLog['logged-endpoint']).toBeDefined();
+    expect(window.grab.log['logged-endpoint']).toBeDefined();
   });
 });

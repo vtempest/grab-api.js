@@ -7,26 +7,26 @@ function grab(
    options?: object): Promise<any>;
 ```
 
-Defined in: [grab-api.js:85](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L85)
+Defined in: [grab-api.js:86](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L86)
 
 ### GRAB: Generate Request to API from Browser
 ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
 
-1. **Data Retrieval**: Fetches data from server APIs using JSON parameters and returns JSON responses or error objects
-2. **Minimalist One Function**: 2Kb min.js less boilerplate complexity than axios, SuperAgent, Tanstack, Alova, SWR, TanStack, apisauce
-3. **Automatic Loading States**: Sets `isLoading` to `true` during data fetching operations and `false` upon completion
+1. **One Function**: 2Kb min.js less boilerplate complexity than axios, SuperAgent, Tanstack, Alova, SWR, TanStack, apisauce
+2. **Auto-JSON Convert**: Pass parameters and get response or error in JSON, handling other data types as is.
+3. **Reactive isLoading State**: Sets `.isLoading=true` on the pre-initialized response object so you can show a "Loading..." in any component framework.
 4. **Mock Server Support**: Configure `window.grab.server` for development and testing environments
-5. **Concurrency Handling**: Cancel ongoing or new request automatically
-7. **Rate Limiting**: Built-in rate limiting to prevent API abuse
-6. **Timeout**: Customizable request timeout settings
-8. **Debug Logging**: Detailed colored log of JSON structure, response, request, timing
-9. **Request History**: Stores all request and response data in global `grabLog` object
-10. **Pagination Support**: Built-in pagination handling for large datasets
-11. **Environment Configuration**: Configurable base URLs for development and production environments
-12. **Frontend Caching**: Intelligent caching system that prevents redundant API calls for repeat requests
+5. **Concurrency Handling**: Prevent this request if one is ongoing to same path & params, or cancel the ongoing request.
+6. **Rate Limiting**: Built-in rate limiting to prevent multi-click cascading responses, require to wait seconds between requests.
+7. **Timeout & Retry**: Customizable request timeout, default 20s, and auto-retry on error
+8. **Debug Logging**: Adds global `log()` and prints colored JSON structure, response, timing for requests in test.
+9. **Request History**: Stores all request and response data in global `grab.log` object
+10. **Pagination Infinite Scroll**: Built-in pagination for infinite scroll to auto-load and merge next result page.
+11. **Base URL Based on Environment**: Configure `grab.defaults.baseURL` once at the top, overide with `SERVER_API_URL` in `.env`.
+12. **Frontend Cache**: Set cache headers and retrieve from frontend memory for repeat requests to static data.
 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
-14. **Framework Agnostic**: No dependency on React hooks or component lifecycle - works with any JavaScript framework
-15. **Universal Usage**:  More flexible than TanStack Query - works outside component initialization,
+14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
+15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.server`, `grab.defaults`
 
 ### Parameters
 
@@ -69,8 +69,8 @@ The path in the API after base url
 </td>
 <td>
 
-Pre-initialized object to store the response in,
- isLoading and error are also set on this object.
+Pre-initialized object to set the ,
+response in. isLoading and error are also set on this object.
 
 </td>
 </tr>
@@ -82,12 +82,12 @@ Pre-initialized object to store the response in,
 </td>
 <td>
 
-\{ `method`: `string`; `cancelOngoingIfNew`: `boolean`; `cancelNewIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; \}
+\{ `method`: `string`; `cancelOngoingIfNew`: `boolean`; `cancelNewIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; `onBeforeRequest`: `Function`; \}
 
 </td>
 <td>
 
-Request params for GET or POST and more options
+Request params for GET or body for POST and utility options
 
 </td>
 </tr>
@@ -223,7 +223,7 @@ default=0 If set, how many seconds to wait between requests
 </td>
 <td>
 
-default=null The key to paginate result data by
+The key to paginate result data by
 
 </td>
 </tr>
@@ -279,6 +279,23 @@ default=false Pass this with options to set
 
 </td>
 </tr>
+<tr>
+<td>
+
+`options.onBeforeRequest?`
+
+</td>
+<td>
+
+`Function`
+
+</td>
+<td>
+
+Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams
+
+</td>
+</tr>
 </tbody>
 </table>
 
@@ -286,7 +303,7 @@ default=false Pass this with options to set
 
 `Promise`&lt;`any`&gt;
 
-The response from the server API
+The response object with resulting data or .error if error.
 
 ### Author
 
@@ -336,7 +353,7 @@ import { grab } from "grab-api.js";
    rateLimit: 1,
    cache: true,
    cancelOngoingIfNew: true,
-   cancelNewIfOngoing: true,
+   cancelNewIfOngoing: false
  });
 ```
 
@@ -351,7 +368,7 @@ function log(
    style?: string): void;
 ```
 
-Defined in: [grab-api.js:322](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L322)
+Defined in: [grab-api.js:325](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L325)
 
 Logs messages to the console with custom styling,
 showing debug output in development and standard logs in production.
@@ -451,7 +468,7 @@ default="color: blue; font-size: 15px;"] - CSS style string for the console outp
 function printStructureJSON(obj: any): string;
 ```
 
-Defined in: [grab-api.js:344](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L344)
+Defined in: [grab-api.js:347](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L347)
 
 Generates TypeDoc-like string of layout of nested JSON object.
 

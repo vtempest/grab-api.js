@@ -41,7 +41,7 @@ npm i grab-api.js
 7. **Rate Limiting**: Built-in rate limiting to prevent API abuse
 6. **Timeout**: Customizable request timeout settings
 8. **Debug Logging**: Detailed colored log of JSON structure, response, request, timing
-9. **Request History**: Stores all request and response data in global `grabLog` object
+9. **Request History**: Stores all request and response data in global `grab.log` object
 10. **Pagination Support**: Built-in pagination handling for large datasets
 11. **Environment Configuration**: Configurable base URLs for development and production environments
 12. **Frontend Caching**: Intelligent caching system that prevents redundant API calls for repeat requests
