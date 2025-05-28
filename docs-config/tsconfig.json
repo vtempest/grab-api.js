@@ -15,10 +15,7 @@
     "allowSyntheticDefaultImports": true
   },
   "include": [
-    "../src",
-    "../src/**/*",
     "../src/grab-api.js",
-    "../index.ts"
    ],
   "exclude": [
     "../docs",

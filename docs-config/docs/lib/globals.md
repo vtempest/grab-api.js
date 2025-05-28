@@ -1,12 +1,10 @@
-[Documentation](modules.md) / grab-api
-
 ## grab()
 
 ```ts
 function grab(path: string, options?: object): Promise<any>;
 ```
 
-Defined in: [src/grab-api.js:89](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L89)
+Defined in: [grab-api.js:89](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L89)
 
 ### GRAB: Generate Request to API from Browser
 ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
@@ -386,7 +384,7 @@ function log(
    style?: string): void;
 ```
 
-Defined in: [src/grab-api.js:353](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L353)
+Defined in: [grab-api.js:353](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L353)
 
 Logs messages to the console with custom styling,
 showing debug output in development and standard logs in production.
@@ -486,7 +484,7 @@ default="color: blue; font-size: 15px;"] - CSS style string for the console outp
 function printStructureJSON(obj: any): string;
 ```
 
-Defined in: [src/grab-api.js:375](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L375)
+Defined in: [grab-api.js:375](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L375)
 
 Generates TypeDoc-like string of layout of nested JSON object.
 

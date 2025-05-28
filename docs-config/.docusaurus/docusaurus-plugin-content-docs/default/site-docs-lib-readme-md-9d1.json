@@ -14,7 +14,7 @@
   "frontMatter": {},
   "sidebar": "default",
   "next": {
-    "title": "README",
-    "permalink": "/lib/global/"
+    "title": "globals",
+    "permalink": "/lib/globals"
   }
 }
