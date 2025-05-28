@@ -48,18 +48,18 @@ Defined in: [grab-api.js:86](https://github.com/vtempest/grab-api/tree/master/sr
 1. **One Function**: 2Kb min.js less boilerplate complexity than axios, SuperAgent, Tanstack, Alova, SWR, TanStack, apisauce
 2. **Auto-JSON Convert**: Pass parameters and get response or error in JSON, handling other data types as is.
 3. **Reactive isLoading State**: Sets `.isLoading=true` on the pre-initialized response object so you can show a "Loading..." in any component framework.
-4. **Mock Server Support**: Configure `window.grab.server` for development and testing environments
+4. **Mock Server Support**: Configure `window.grab.mock` for development and testing environments
 5. **Concurrency Handling**: Prevent this request if one is ongoing to same path & params, or cancel the ongoing request.
 6. **Rate Limiting**: Built-in rate limiting to prevent multi-click cascading responses, require to wait seconds between requests.
 7. **Timeout & Retry**: Customizable request timeout, default 20s, and auto-retry on error
 8. **Debug Logging**: Adds global `log()` and prints colored JSON structure, response, timing for requests in test.
 9. **Request History**: Stores all request and response data in global `grab.log` object
 10. **Pagination Infinite Scroll**: Built-in pagination for infinite scroll to auto-load and merge next result page.
-11. **Base URL Based on Environment**: Configure `grab.defaults.baseURL` once at the top, overide with `SERVER_API_URL` in `.env`.
+11. **Base URL Based on Environment**: Configure `grab.default.baseURL` once at the top, overide with `SERVER_API_URL` in `.env`.
 12. **Frontend Cache**: Set cache headers and retrieve from frontend memory for repeat requests to static data.
 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
 14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
-15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.server`, `grab.defaults`
+15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.default`
 
 ### Example
 
@@ -85,7 +85,7 @@ import { grab } from "grab-api.js";
  {/if}
 
  //Setup Mock testing server, response is object or function
- window.grab.server["search"] = {
+ window.grab.mock["search"] = {
    response: (params) => {
      return { results: [{title:`Result about ${params.query}`}] };
    },

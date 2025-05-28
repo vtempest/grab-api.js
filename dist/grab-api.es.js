@@ -34,7 +34,7 @@ async function grab(path, response = {}, options = {}) {
   };
   try {
     if (options == null ? void 0 : options.setDefaults) {
-      window.grab.defaults = { ...options, setDefaults: void 0 };
+      window.grab.default = { ...options, setDefaults: void 0 };
       return {};
     }
     if (!response) response = {};
@@ -89,7 +89,7 @@ async function grab(path, response = {}, options = {}) {
     if (["POST", "PUT", "PATCH"].includes(method))
       fetchParams.body = JSON.stringify(params);
     else paramsGETRequest = "?" + new URLSearchParams(params).toString();
-    let res = null, startTime = /* @__PURE__ */ new Date(), mockHandler = (_h = grab.server) == null ? void 0 : _h[path];
+    let res = null, startTime = /* @__PURE__ */ new Date(), mockHandler = (_h = grab.mock) == null ? void 0 : _h[path];
     if (mockHandler && (!mockHandler.params || mockHandler.method == method) && (!mockHandler.params || paramsAsText == JSON.stringify(mockHandler.params))) {
       await new Promise(
         (resolve) => setTimeout(resolve, mockHandler.delay * 1e3 || 0)
@@ -190,12 +190,12 @@ if (typeof window !== "undefined") {
   window.grab = grab;
   window.log = log;
   window.grab.log = grab.log;
-  window.grab.server = grabServer;
-  window.grab.defaults = grabDefaults;
+  window.grab.mock = grabServer;
+  window.grab.default = grabDefaults;
 } else if (typeof global !== "undefined") {
   global.grab.log = grab.log;
-  global.grab.server = grab.server;
-  global.grab.defaults = grab.defaults;
+  global.grab.mock = grab.mock;
+  global.grab.default = grab.default;
   global.grab = grab;
   global.log = log;
 }

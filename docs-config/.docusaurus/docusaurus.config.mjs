@@ -48,7 +48,7 @@ export default {
     ]
   ],
   "plugins": [
-    "/home/deck/Projects/grab-api.js/docs/node_modules/docusaurus-lunr-search/src/index.js",
+    "/home/deck/Projects/grab-api.js/docs-config/node_modules/docusaurus-lunr-search/src/index.js",
     [
       "docusaurus-plugin-typedoc",
       {
