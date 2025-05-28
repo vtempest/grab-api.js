@@ -1,4 +1,3 @@
-
 <p align="center">
     <img width="400px" src="https://i.imgur.com/qrQWkeb.png" />
 </p>
@@ -61,7 +60,6 @@ Defined in: [grab-api.js:86](https://github.com/vtempest/grab-api/tree/master/sr
 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
 14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
 15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.server`, `grab.defaults`
-
 
 ### Example
 
