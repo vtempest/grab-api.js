@@ -1,15 +1,15 @@
 {
-  "/-8f4": {
+  "/-188": {
     "__comp": "5e95c892",
     "__context": {
       "plugin": "aba21aa0"
     }
   },
-  "/-fba": {
+  "/-025": {
     "__comp": "a7bd4aaa",
     "__props": "22dd74f7"
   },
-  "/-a22": {
+  "/-c35": {
     "__comp": "a94703ab"
   },
   "/lib/-d92": {
@@ -19,9 +19,5 @@
   "/lib/globals-aff": {
     "__comp": "4c5e977b",
     "content": "fe6bd25a"
-  },
-  "/-396": {
-    "__comp": "4c5e977b",
-    "content": "23374ca6"
   }
 }

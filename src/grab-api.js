@@ -19,10 +19,9 @@
  * 15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.default`
  * 
  * @param {string} path The path in the API after base url
- * @param {object} response Pre-initialized object to set the ,
- * response in. isLoading and error are also set on this object.
  * @param {object} [options={}] Request params for GET or body for POST and utility options
  * @param {string} [options.method] default="GET" The HTTP method to use
+ * @param {object} [options.response] Pre-initialized object to set the response in. isLoading and error are also set on this object.
  * @param {boolean} [options.cancelOngoingIfNew]  default=true Cancel previous requests to same path
  * @param {boolean} [options.cancelNewIfOngoing] default=false Cancel if a request to path is in progress
  * @param {boolean}[options.cache] default=false Whether to cache the request and from frontend cache
@@ -34,6 +33,7 @@
  * @param {string} [options.baseURL] default='/api/' base url prefix, override with SERVER_API_URL env
  * @param {boolean} [options.setDefaults] default=false Pass this with options to set
  *  those options as defaults for all requests.
+ * @param {number} [options.retryAttempts] default=0 Retry failed requests this many times
  * @param {function} [options.onBeforeRequest] Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams
  * @param {any} [...params] All other params become GET params, POST body, and other methods.
  * @returns {Promise<Object>} The response object with resulting data or .error if error.
@@ -46,12 +46,13 @@
       error: string,
   };
    
-  await grab('search', res, {
+  await grab('search', {
+    response: res,
     query: "search words",
     method: 'POST'
   })
   
-  grab('user').then(log)
+  let user = await grab('user').then(log)
 
   //in svelte component
   {#if res.results}
@@ -63,19 +64,16 @@
   {/if}
 
   //Setup Mock testing server, response is object or function
-  window.grab.mock["search"] = {
+  grab.mock.search = {
     response: (params) => {
       return { results: [{title:`Result about ${params.query}`}] };
     },
-    method: "POST",
-    params: {
-      query: "search words"
-    },
+    method: "POST"
     delay : 1,
   };
 
   //set defaults for all requests
-  grab("", {}, { 
+  grab("", { 
     setDefaults: true,
     baseURL: "http://localhost:8080",
     timeout: 30,
@@ -88,9 +86,10 @@
 
   grab.default.baseURL = "http://localhost:8080/api/";
  */
-export async function grab(path, response = {}, options = {}) {
+export async function grab(path, options = {}) {
   let {
     headers,
+    response = {}, // Pre-initialized object to set the response in. isLoading and error are also set on this object.
     method = "GET",
     cache = false, // Enable/disable frontend caching
     timeout = 20, // Request timeout in seconds
@@ -104,7 +103,7 @@ export async function grab(path, response = {}, options = {}) {
     paginateResult = null, // Key to paginate in response
     paginateKey = null, // Request param for pagination
     setDefaults = false, // Set these options as defaults for future requests
-    retryOnError = false, // Retry failed requests once
+    retryAttempts = 0, // Retry failed requests once
     onBeforeRequest = null, // Hook to modify request data before request is made
     ...params // All other params become request params/query
   } = {
@@ -116,7 +115,8 @@ export async function grab(path, response = {}, options = {}) {
   try {
     // Store options as defaults if setDefaults flag is true
     if (options?.setDefaults) {
-      window.grab.default = { ...options, setDefaults: undefined };
+      if (typeof window !== "undefined") window.grab.default = { ...options, setDefaults: undefined };
+      else global.grab.default = { ...options, setDefaults: undefined };
       return {};
     }
 
@@ -326,8 +326,8 @@ export async function grab(path, response = {}, options = {}) {
     );
 
     // Handle errors, with optional retry
-    if (options.retryOnError)
-      return await grab(path, response, { ...options, retryOnError: false });
+    if (options.retryAttempts > 0)
+      return await grab(path, response, { ...options, retryAttempts: --options.retryAttempts });
     // update error in response
     if (!error.message.includes("signal")) response.error = error.message;
     delete response.isLoading;

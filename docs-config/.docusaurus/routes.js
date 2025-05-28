@@ -4,15 +4,15 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 export default [
   {
     path: '/',
-    component: ComponentCreator('/', '8f4'),
+    component: ComponentCreator('/', '188'),
     routes: [
       {
         path: '/',
-        component: ComponentCreator('/', 'fba'),
+        component: ComponentCreator('/', '025'),
         routes: [
           {
             path: '/',
-            component: ComponentCreator('/', 'a22'),
+            component: ComponentCreator('/', 'c35'),
             routes: [
               {
                 path: '/lib/',
@@ -25,11 +25,6 @@ export default [
                 component: ComponentCreator('/lib/globals', 'aff'),
                 exact: true,
                 sidebar: "default"
-              },
-              {
-                path: '/',
-                component: ComponentCreator('/', '396'),
-                exact: true
               }
             ]
           }

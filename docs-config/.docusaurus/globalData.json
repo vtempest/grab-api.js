@@ -8,7 +8,7 @@
           "label": "Next",
           "isLast": true,
           "path": "/",
-          "mainDocId": "README",
+          "mainDocId": "lib/README",
           "docs": [
             {
               "id": "lib/globals",
@@ -19,10 +19,6 @@
               "id": "lib/README",
               "path": "/lib/",
               "sidebar": "default"
-            },
-            {
-              "id": "README",
-              "path": "/"
             }
           ],
           "draftIds": [],
@@ -57,8 +53,8 @@
   "docusaurus-lunr-search": {
     "default": {
       "fileNames": {
-        "searchDoc": "search-doc-1748432272126.json",
-        "lunrIndex": "lunr-index-1748432272126.json"
+        "searchDoc": "search-doc-1748432786854.json",
+        "lunrIndex": "lunr-index-1748432786854.json"
       }
     }
   }

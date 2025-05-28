@@ -32,17 +32,6 @@ npm i grab-api.js
 ```
 
 ### GRAB: Generate Request to API from Browser
-
-```ts
-function grab(
-   path: string, 
-   response: any, 
-   options?: object): Promise<any>;
-```
-
-Defined in: [grab-api.js:86](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L86)
-
-### GRAB: Generate Request to API from Browser
 ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
 
 1. **One Function**: 2Kb min.js less boilerplate complexity than axios, SuperAgent, Tanstack, Alova, SWR, TanStack, apisauce
@@ -75,6 +64,9 @@ import { grab } from "grab-api.js";
    query: "search words",
    method: 'POST'
  })
+ 
+ grab('user').then(log)
+
  //in svelte component
  {#if res.results}
      {res.results}
@@ -107,8 +99,9 @@ import { grab } from "grab-api.js";
    cancelOngoingIfNew: true,
    cancelNewIfOngoing: false
  });
-```
 
+ grab.default.baseURL = "http://localhost:8080/api/";
+```
 ### Parameters
 
 <table>
@@ -163,7 +156,7 @@ response in. isLoading and error are also set on this object.
 </td>
 <td>
 
-`object`; 
+ `method`: `string`; `cancelOngoingIfNew`: `boolean`; `cancelNewIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; `onBeforeRequest`: `Function`; 
 
 </td>
 <td>

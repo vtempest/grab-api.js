@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { grab, log, printStructureJSON } from '../grab-api.js';
 
+
 // Mock globals that would normally be available in browser
 global.window = {
   location: { hostname: 'localhost' },
@@ -57,7 +58,9 @@ describe('GRAB API Library - Core Functions', () => {
 
       const response = {};
       const requestData = { name: 'test', email: 'test@example.com' };
-      
+      await grab("fff", }
+        met
+      )
       await grab('users', response, {
         method: 'POST',
         ...requestData
