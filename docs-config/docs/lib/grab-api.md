@@ -361,13 +361,13 @@ The response object with resulting data or .error if error.
 
 ### See
 
-[Examples](https://grab.js.org/guide/Examples) [Docs](https://grab.js.org/lib)
+[🎯 Examples](https://grab.js.org/guide/Examples) [📑 Docs](https://grab.js.org/lib)
 
 ### Example
 
 ```ts
 import { grab } from "grab-api.js";
- let res = $state({}) 
+ let res = {};
  await grab('search', {
    response: res,
    query: "search words"

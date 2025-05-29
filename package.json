@@ -8,13 +8,13 @@
     "type": "git",
     "url": "https://github.com/vtempest/grab-api"
   },
-  "main": "./src/grab-api.js",
+  "main": "./src/index.js",
   "module": "./dist/grab-api.es.js",
   "exports": {
     ".": {
       "types": "./src/index.d.ts",
-      "import": "./src/grab-api.js",
-      "require": "./src/grab-api.js"
+      "import": "./src/index.js",
+      "require": "./src/index.js"
     },
     "./global": {
       "types": "./src/global.d.ts"
@@ -51,6 +51,7 @@
   },
   "keywords": [
     "api",
+    "axios",
     "request",
     "browser",
     "fetch",

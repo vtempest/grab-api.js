@@ -13,6 +13,7 @@
     "strict": false,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
+    "noEmit": true,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true         // Required for Vite
   },

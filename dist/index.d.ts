@@ -7,13 +7,18 @@ export default grab_2;
 export { grab_2 as grab }
 
 export declare interface GrabFunction {
-    /** 
-     * Make API request with just path 
+    /**
+     * Make API request with just path
      */
     <TResponse = any>(path: string): Promise<GrabResponse<TResponse>>;
 
-    /** 
-     * Make API request with path and options/parameters 
+    /**
+     * ### GRAB: Generate Request to API from Browser
+     * ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
+     * Make API request with path and options/parameters
+     * @returns {Promise<Object>} The response object with resulting data or .error if error.
+     * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
+     * @see  [🎯 Examples](https://grab.js.org/guide/Examples) [📑 Docs](https://grab.js.org/lib)
      */
     <TResponse = any, TParams = Record<string, any>>(
     path: string,
@@ -65,7 +70,7 @@ export declare interface GrabMockHandler<TParams = any, TResponse = any> {
 
 export declare interface GrabOptions<TResponse = any, TParams = Record<string, any>> {
     /** HTTP method to use */
-    method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS';
+    method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
 
     /** Pre-initialized response object that will be populated with results */
     response?: GrabResponse<TResponse>;
@@ -113,10 +118,24 @@ export declare interface GrabOptions<TResponse = any, TParams = Record<string, a
     params: TParams,
     fetchParams: RequestInit
     ) => [string, GrabResponse<TResponse>, TParams, RequestInit];
+
+    /** Custom Logger function to use for logging */
+    logger?: LogFunction;
+
+    /** Hook function called after each request to modify request data */
+    onAfterRequest?: (
+    path: string,
+    response: GrabResponse<TResponse>,
+    params: TParams,
+    fetchParams: RequestInit
+    ) => [string, GrabResponse<TResponse>, TParams, RequestInit];
 }
 
-export declare interface GrabRequestConfig<TResponse = any, TParams = Record<string, any>> 
-extends GrabOptions<TResponse, TParams>, TParams {}
+export declare interface GrabRequestConfig<
+TResponse = any,
+TParams = Record<string, any>
+> extends GrabOptions<TResponse, TParams>,
+TParams {}
 
 /**
  * TypeScript definitions for GRAB API
@@ -157,11 +176,7 @@ export declare interface LogFunction {
      * @param hideInProduction - Whether to hide in production (auto-detected if undefined)
      * @param style - CSS style string for console output
      */
-    (
-    message: string | object,
-    hideInProduction?: boolean,
-    style?: string
-    ): void;
+    (message: string | object, hideInProduction?: boolean, style?: string): void;
 }
 
 export declare interface PaginatedResponse<T> {
@@ -188,7 +203,10 @@ export declare interface SearchResult {
     url: string;
 }
 
-export declare type TypedGrabFunction = <TResponse = any, TParams = Record<string, any>>(
+export declare type TypedGrabFunction = <
+TResponse = any,
+TParams = Record<string, any>
+>(
 path: string,
 config?: GrabRequestConfig<TResponse, TParams>
 ) => Promise<GrabResponse<TResponse>>;

@@ -54,7 +54,8 @@ npm i grab-api.js
 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
 14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
 15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.default`
-16. **TypeScript Tooltips**: Developers can hover over option names and autocomplete TypeScript. Add to top of file: `import 'grab-api.js/globals'`
+16. **TypeScript Tooltips**: Developers can hover over option names for into and autocomplete TypeScript. Add to top of file: `import 'grab-api.js/globals'`
+
 
 ### Examples
 
@@ -108,6 +109,24 @@ import { grab } from "grab-api.js";
 
  grab.default.baseURL = "http://localhost:8080/api/";
 ```
+
+### Screenshots
+Debug Colorized log(JSON)
+![Debug log](https://i.imgur.com/rV5js60.png)
+Autocomplete option names
+![Autocomplete](https://i.imgur.com/XlxILJ0.png)
+Hover over options for info
+![Info Tooltip](https://i.imgur.com/vV5jbZo.png)
+
+### Screenshots
+
+![Debug log](https://i.imgur.com/rV5js60.png)
+Debug Colorized log(JSON)
+![Autocomplete](https://i.imgur.com/XlxILJ0.png)
+Autocomplete option names
+![Info Tooltip](https://i.imgur.com/vV5jbZo.png)
+Hover over options for info
+
 ### Parameters
 
 <table>

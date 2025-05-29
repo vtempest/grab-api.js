@@ -118,17 +118,3 @@ export function printStructureJSON(obj, indent = 0) {
   return result;
 }
 
-// Example usage:
-const test = {
-  name: "Alice",
-  age: 30,
-  active: () => true,
-  tags: ["user", 4, "admin"],
-  profile: {
-    email: "alice@example.com",
-    verified: false,
-    meta: { created: "2024-01-01", score: 99 }
-  }
-};
-
-printStructureJSON(test);

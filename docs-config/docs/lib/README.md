@@ -384,7 +384,7 @@ Set with defaults to modify each request data. Takes and returns in order: path,
 
 The response object with resulting data or .error if error.
 
-###  Comparison of HTTP Request Libraries
+### Comparison of HTTP Request Libraries
 
 | Feature | GRAB | Axios | TanStack Query | SWR | Alova | SuperAgent | Apisauce |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |

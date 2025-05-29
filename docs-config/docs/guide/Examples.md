@@ -222,34 +222,23 @@ let productList = {
 };
 
 // Load first page
-await grab('products', {
-  response: productList,
-  paginateResult: 'products', // Key to append results to
-  paginateKey: 'page',        // Parameter name for page number
-  limit: 20
-});
-
-// Load next page (automatically appends to products array)
-await grab('products', {
-  response: productList,
-  paginateResult: 'products',
-  paginateKey: 'page',
-  limit: 20
-  // Page number is automatically incremented
-});
+async function loadResults(){
+  await grab('products', {
+    response: productList,
+    paginateResult: 'products', // Key to append results to
+    paginateKey: 'page',        // Parameter name for page number
+    limit: 20
+  });
+}
 
 // Infinite scroll implementation
-function setupInfiniteScroll() {
-  window.addEventListener('scroll', async () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
-      if (!productList.isLoading && productList.hasMore) {
-        await grab('products', {
-          response: productList,
-          paginateResult: 'products',
-          paginateKey: 'page',
-          limit: 20
-        });
-      }
+function setupInfiniteScroll(element) {
+  loadResults()
+
+  element.addEventListener('scroll', async () => {
+    if (element.innerHeight + element.scrollY >= element.offsetHeight - 1000) {
+      if (!productList.isLoading) 
+          loadResults()
     }
   });
 }

@@ -43,9 +43,9 @@ import { printStructureJSON, log } from './log.js';
  * @param {any} [...params] All other params become GET params, POST body, and other methods.
  * @returns {Promise<Object>} The response object with resulting data or .error if error.
  * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
- * @see [Examples](https://grab.js.org/guide/Examples) [Docs](https://grab.js.org/lib)
+ * @see  [🎯 Examples](https://grab.js.org/guide/Examples) [📑 Docs](https://grab.js.org)
  * @example import { grab } from "grab-api.js";
-  let res = $state({}) 
+  let res = {};
   await grab('search', {
     response: res,
     query: "search words"
@@ -55,7 +55,7 @@ export async function grab(path, options = {}) {
   let {
     headers,
     response = {}, // Pre-initialized object to set the response in. isLoading and error are also set on this object.
-    method = "GET",
+    method = options.post ? "POST":"GET", // set post: true for POST, omit for GET
     cache = false, // Enable/disable frontend caching
     timeout = 20, // Request timeout in seconds
     baseURL = (typeof process !== "undefined" &&
@@ -172,7 +172,7 @@ export async function grab(path, options = {}) {
     // Format request params/query params based on method
     let paramsGETRequest = "";
     if (["POST", "PUT", "PATCH"].includes(method))
-      fetchParams.body = JSON.stringify(params);
+      fetchParams.body = params.body || JSON.stringify(params);
     else paramsGETRequest = "?" + new URLSearchParams(params).toString();
 
     //hook all requests before request intercept to modify data

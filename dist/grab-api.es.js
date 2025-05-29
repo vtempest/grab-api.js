@@ -108,7 +108,8 @@ async function grab(path, options = {}) {
     headers,
     response = {},
     // Pre-initialized object to set the response in. isLoading and error are also set on this object.
-    method = "GET",
+    method = options.post ? "POST" : "GET",
+    // set post: true for POST, omit for GET
     cache = false,
     // Enable/disable frontend caching
     timeout = 20,
@@ -199,7 +200,7 @@ async function grab(path, options = {}) {
     };
     let paramsGETRequest = "";
     if (["POST", "PUT", "PATCH"].includes(method))
-      fetchParams.body = JSON.stringify(params);
+      fetchParams.body = params.body || JSON.stringify(params);
     else paramsGETRequest = "?" + new URLSearchParams(params).toString();
     if (typeof beforeRequest === "function")
       [path, response, params, fetchParams] = onBeforeRequest(
