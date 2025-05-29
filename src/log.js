@@ -118,3 +118,27 @@ export function printStructureJSON(obj, indent = 0) {
   return result;
 }
 
+
+/**
+ * Shows message in a modal overlay with concatenation 
+ * of messages, scroll large messages, and easy dismissal.
+ * @param {string} msg - The message to display
+ */
+export function showAlert(msg) {
+  let o = document.getElementById('alert-overlay'), list;
+  if (!o) {
+    o = document.body.appendChild(document.createElement('div'));
+    o.id = 'alert-overlay';
+    o.style = "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center";
+    o.innerHTML = `<div id="alert-box" style="background:#fff;padding:1.5em 2em;border-radius:8px;box-shadow:0 2px 16px #0003;min-width:220px;max-width:90vw;max-height:80vh;position:relative;display:flex;flex-direction:column;">
+      <button id="close-alert" style="position:absolute;top:12px;right:20px;font-size:1.5em;background:none;border:none;cursor:pointer;color:black;">&times;</button>
+      <div id="alert-list" style="overflow:auto;flex:1;"></div>
+    </div>`;
+    o.addEventListener('click', e => { if (e.target === o) o.remove(); });
+    o.querySelector('#close-alert').onclick = () => o.remove();
+    list = o.querySelector('#alert-list');
+  } else {
+    list = o.querySelector('#alert-list');
+  }
+  list.innerHTML += `<div style="color:#c00;margin:0.5em 0;">${msg}</div>`;
+}

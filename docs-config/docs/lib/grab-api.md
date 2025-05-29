@@ -6,22 +6,22 @@
 function grab(path: string, options?: object): Promise<any>;
 ```
 
-Defined in: [grab-api.js:54](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L54)
+Defined in: [grab-api.js:56](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L56)
 
 ### GRAB: Generate Request to API from Browser
 ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
 
-1. **One Function**: 2Kb min.js less boilerplate complexity than axios, SuperAgent, Tanstack, Alova, SWR, TanStack, apisauce
+1. **One Function**: 2Kb min, 0 dependencies, minimal boilerplate syntax - [better than top alternatives](https://grab.js.org/guide/Comparisons) 
 2. **Auto-JSON Convert**: Pass parameters and get response or error in JSON, handling other data types as is.
-3. **Reactive isLoading State**: Sets `.isLoading=true` on the pre-initialized response object so you can show a "Loading..." in any component framework.
-4. **Mock Server Support**: Configure `window.grab.mock` for development and testing environments
-5. **Concurrency Handling**: Prevent this request if one is ongoing to same path & params, or cancel the ongoing request.
-6. **Rate Limiting**: Built-in rate limiting to prevent multi-click cascading responses, require to wait seconds between requests.
+3. **isLoading Status**: Sets `.isLoading=true` on the pre-initialized response object so you can show a "Loading..." in any framework
+4. **Debug Logging**: Adds global `log()` and prints colored JSON structure, response, timing for requests in test.
+5. **Mock Server Support**: Configure `window.grab.mock` for development and testing environments
+6. **Concurrency Handling**: Prevent this request if one is ongoing to same path & params, or cancel the ongoing request.
 7. **Timeout & Retry**: Customizable request timeout, default 20s, and auto-retry on error
-8. **Debug Logging**: Adds global `log()` and prints colored JSON structure, response, timing for requests in test.
+8. **Rate Limiting**: Built-in rate limiting to prevent multi-click cascading responses, require to wait seconds between requests.
 9. **Request History**: Stores all request and response data in global `grab.log` object
 10. **Pagination Infinite Scroll**: Built-in pagination for infinite scroll to auto-load and merge next result page.
-11. **Base URL Based on Environment**: Configure `grab.default.baseURL` once at the top, overide with `SERVER_API_URL` in `.env`.
+11. **Base URL Based on Environment**: Configure `grab.default.baseURL` once at the top, overide with `SERVER_API_URL` in `.env` or `process.env.SERVER_API_URL` in Node.js.
 12. **Frontend Cache**: Set cache headers and retrieve from frontend memory for repeat requests to static data.
 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
 14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
@@ -52,7 +52,7 @@ Defined in: [grab-api.js:54](https://github.com/vtempest/grab-api/tree/master/sr
 </td>
 <td>
 
-The path in the API after base url
+The full URL path OR relative path on this server after `grab.default.baseURL`
 
 </td>
 </tr>
@@ -64,12 +64,12 @@ The path in the API after base url
 </td>
 <td>
 
-\{ `method?`: `string`; `response?`: `any`; `cancelOngoingIfNew?`: `boolean`; `cancelNewIfOngoing?`: `boolean`; `cache?`: `boolean`; `debug?`: `boolean`; `timeout?`: `number`; `rateLimit?`: `number`; `paginateResult?`: `string`; `paginateKey?`: `string`; `baseURL?`: `string`; `setDefaults?`: `boolean`; `retryAttempts?`: `number`; `logger?`: `Function`; `onBeforeRequest?`: `Function`; `onAfterRequest?`: `Function`; \}
+\{ `method?`: `string`; `response?`: `any`; `cancelOngoingIfNew?`: `boolean`; `cancelNewIfOngoing?`: `boolean`; `cache?`: `boolean`; `debug?`: `boolean`; `timeout?`: `number`; `rateLimit?`: `number`; `paginateResult?`: `string`; `paginateKey?`: `string`; `baseURL?`: `string`; `setDefaults?`: `boolean`; `retryAttempts?`: `number`; `repeat?`: `number`; `repeatEvery?`: `number`; `logger?`: `Function`; `onBeforeRequest?`: `Function`; `onAfterRequest?`: `Function`; \}
 
 </td>
 <td>
 
-Request params for GET or body for POST and utility options
+Request params for GET or body for POST/PUT/PATCH and utility options
 
 </td>
 </tr>
@@ -298,6 +298,40 @@ default=0 Retry failed requests this many times
 <tr>
 <td>
 
+`options.repeat?`
+
+</td>
+<td>
+
+`number`
+
+</td>
+<td>
+
+default=0 Repeat request this many times
+
+</td>
+</tr>
+<tr>
+<td>
+
+`options.repeatEvery?`
+
+</td>
+<td>
+
+`number`
+
+</td>
+<td>
+
+default=null Repeat request every seconds
+
+</td>
+</tr>
+<tr>
+<td>
+
 `options.logger?`
 
 </td>
@@ -361,7 +395,7 @@ The response object with resulting data or .error if error.
 
 ### See
 
-[🎯 Examples](https://grab.js.org/guide/Examples) [📑 Docs](https://grab.js.org/lib)
+[🎯 Examples](https://grab.js.org/guide/Examples) [📑 Docs](https://grab.js.org)
 
 ### Example
 
@@ -373,9 +407,3 @@ import { grab } from "grab-api.js";
    query: "search words"
  })
 ```
-
-***
-
-## default
-
-Renames and re-exports [grab](#grab)

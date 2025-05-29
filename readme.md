@@ -111,14 +111,6 @@ import { grab } from "grab-api.js";
 ```
 
 ### Screenshots
-Debug Colorized log(JSON)
-![Debug log](https://i.imgur.com/rV5js60.png)
-Autocomplete option names
-![Autocomplete](https://i.imgur.com/XlxILJ0.png)
-Hover over options for info
-![Info Tooltip](https://i.imgur.com/vV5jbZo.png)
-
-### Screenshots
 
 ![Debug log](https://i.imgur.com/rV5js60.png)
 Debug Colorized log(JSON)
@@ -420,9 +412,8 @@ The response object with resulting data or .error if error.
 | Mock Testing | ✅ Easy setup | ❌ Needs MSW/etc | ❌ Needs MSW/etc | ❌ Needs MSW/etc | ⚠️ Basic | ❌ Needs separate lib | ❌ Needs separate lib |
 | Rate Limiting | ✅ Built-in | ❌ Manual | ❌ Manual | ❌ Manual | ⚠️ Basic | ❌ Manual | ❌ Manual |
 | Automatic Retry | ✅ Configurable | ⚠️ Via interceptors | ✅ Built-in | ✅ Built-in | ✅ Built-in | ✅ Built-in | ❌ Manual |
-| Request Cancellation | ✅ Auto + manual | ✅ Manual | ✅ Automatic | ✅ Automatic | ✅ Manual | ✅ Manual | ✅ Manual |
+| Request Cancellation | ✅ Auto + manual | ✅ Manual | ✅ Automatic | ✅ Automatic | ❌ Manual | ❌ Manual | ❌ Manual |
 | Pagination Support | ✅ Infinite scroll | ❌ Manual | ✅ Advanced | ⚠️ Basic | ✅ Built-in | ❌ Manual | ❌ Manual |
-| TypeScript Support |  ✅ Excellent  | ✅ Excellent | ✅ Excellent | ✅ Excellent | ✅ Good | ✅ Good | ✅ Good |
 | Interceptors | ✅ Advanced | ✅ Advanced | ⚠️ Limited | ⚠️ Limited | ✅ Advanced | ✅ Plugins | ✅ Transforms |
 | Debug Logging | ✅ Colored output | ⚠️ Basic | ✅ DevTools | ✅ DevTools | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic |
 | Request History | ✅ Built-in | ❌ Manual | ✅ DevTools | ✅ DevTools | ❌ Manual | ❌ Manual | ❌ Manual |

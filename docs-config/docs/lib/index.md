@@ -12,6 +12,12 @@ Re-exports [printStructureJSON](log.md#printstructurejson)
 
 ***
 
+## showAlert
+
+Re-exports [showAlert](log.md#showalert)
+
+***
+
 ## getLoadingIcon
 
 Re-exports [getLoadingIcon](icons.md#getloadingicon)

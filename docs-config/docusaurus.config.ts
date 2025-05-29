@@ -56,7 +56,7 @@ export default async function createConfig(options: any = {}) {
     showEditsOnGitHub = true,
     GOOGLE_ANALYTICS_ID = "/////G-E5TZ32BZD",
     gitRepo = "https://github.com/vtempest/grab-api.js/blob/main/",
-    compileForSubdomain = !!process.env.DOCS_ON_SUBDOMAIN,
+    compileForSubdomain = 1, //!!process.env.DOCS_ON_SUBDOMAIN,
     tsconfig = "./tsconfig.json",
     readme = "../readme.md",
     sanitizeComments = false,
@@ -106,7 +106,7 @@ export default async function createConfig(options: any = {}) {
 
     plugins: [
 
-      require.resolve("docusaurus-lunr-search"),
+      "docusaurus-lunr-search",
 
       ...(typedocFolders.map(({ id, entryPoints }) => [
         "docusaurus-plugin-typedoc",

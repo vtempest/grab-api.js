@@ -109,7 +109,7 @@ function UserProfile() {
 
 <TabItem value="svelte" label="Svelte">
 
-```svelte
+```javascript 
 <script>
   import { grab } from 'grab-api.js';
   
@@ -218,7 +218,6 @@ const searchUsers = async () => {
 let productList = {
   products: [],
   isLoading: false,
-  hasMore: true
 };
 
 // Load first page
@@ -232,16 +231,13 @@ async function loadResults(){
 }
 
 // Infinite scroll implementation
-function setupInfiniteScroll(element) {
-  loadResults()
+const setupInfiniteScroll = (e) =>
+  e.addEventListener('scroll', () => 
+    e.innerHeight + e.scrollY >= e.offsetHeight - 1000 && loadResults() );
 
-  element.addEventListener('scroll', async () => {
-    if (element.innerHeight + element.scrollY >= element.offsetHeight - 1000) {
-      if (!productList.isLoading) 
-          loadResults()
-    }
-  });
-}
+setupInfiniteScroll(document.getElementById("results"))
+
+
 ```
 
 
@@ -307,10 +303,22 @@ async function searchWithRateLimit(query) {
 }
 
 // Multiple rapid calls will be rate limited
-searchWithRateLimit('javascript'); // Executes immediately
 searchWithRateLimit('python');     // Executes immediately  
-searchWithRateLimit('golang');     // Waits 2 seconds
+searchWithRateLimit('golang');   // fails, needs to wait
 ```
+
+### Instance with Separate Defaults 
+
+```javascript
+// separate defaults, headers, and interceptors for a third-party API
+const grabGoogleAPI = grab.instance({
+    headers: {'Authorization': 'Bearer token'},
+    baseURL: 'https://api.google.com/v1/',
+    debug: true
+});
+const data = await grabGoogleAPI('/api/endpoint');
+```
+
 
 ### Request Cancellation
 
@@ -489,6 +497,15 @@ function fileToBase64(file) {
     reader.onerror = error => reject(error);
   });
 }
+```
+
+### Proxy Agent
+
+```javascript
+import { HttpsProxyAgent } from 'https-proxy-agent';
+
+const agent = new HttpsProxyAgent('http://username:password@proxyhost:port');
+let res = await grab("/path", { agent })
 ```
 
 ### Real-time Data Updates

@@ -162,3 +162,51 @@ Defined in: [log.js:71](https://github.com/vtempest/grab-api/tree/master/src/log
 ### Returns
 
 `string`
+
+***
+
+## showAlert()
+
+```ts
+function showAlert(msg: string): void;
+```
+
+Defined in: [log.js:127](https://github.com/vtempest/grab-api/tree/master/src/log.js#L127)
+
+Shows message in a modal overlay with concatenation 
+of messages, scroll large messages, and easy dismissal.
+
+### Parameters
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+
+`msg`
+
+</td>
+<td>
+
+`string`
+
+</td>
+<td>
+
+The message to display
+
+</td>
+</tr>
+</tbody>
+</table>
+
+### Returns
+
+`void`
