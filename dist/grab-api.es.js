@@ -176,8 +176,8 @@ async function grab(path, options = {}) {
     }
     if (options == null ? void 0 : options.setDefaults) {
       if (typeof window !== "undefined")
-        window.grab.default = { ...options, setDefaults: void 0 };
-      else global.grab.default = { ...options, setDefaults: void 0 };
+        window.grab.defaults = { ...options, setDefaults: void 0 };
+      else global.grab.defaults = { ...options, setDefaults: void 0 };
       return {};
     }
     let resFunction2 = typeof response === "function" ? response : null;
@@ -315,13 +315,13 @@ if (typeof window !== "undefined") {
   window.log = log;
   window.grab.log = [];
   window.grab.mock = {};
-  window.grab.default = {};
+  window.grab.defaults = {};
 } else if (typeof global !== "undefined") {
   global.grab = grab;
   global.log = log;
   global.grab.log = [];
   global.grab.mock = {};
-  global.grab.default = {};
+  global.grab.defaults = {};
 }
 export {
   grab as default,

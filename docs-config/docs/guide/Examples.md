@@ -210,6 +210,45 @@ const searchUsers = async () => {
 </TabItem>
 </Tabs>
 
+
+### Global Defaults Configuration
+
+```javascript
+// Set defaults for all requests
+grab('', {
+  setDefaults: true,
+  baseURL: 'https://api.myapp.com/v1',
+  timeout: 30, // 30 seconds
+  debug: true,
+  rateLimit: 1, // 1 second between requests
+  cache: false,
+  cancelOngoingIfNew: true,
+  headers: {
+    'Authorization': 'Bearer your-token-here',
+    'X-API-Key': 'your-api-key'
+  }
+});
+
+// Or set directly
+grab.defaults.baseURL = 'https://api.myapp.com/v1';
+grab.defaults.headers = {
+  'Authorization': 'Bearer your-token-here'
+};
+```
+
+### Instance with Separate Defaults 
+
+```javascript
+// separate defaults, headers, and interceptors for a third-party API
+const grabGoogleAPI = grab.instance({
+    headers: {'Authorization': 'Bearer token'},
+    baseURL: 'https://api.google.com/v1/',
+    debug: true
+});
+const data = await grabGoogleAPI('/api/endpoint');
+```
+
+
 ## Advanced Features
 
 ### Pagination with Infinite Scroll
@@ -307,18 +346,6 @@ searchWithRateLimit('python');     // Executes immediately
 searchWithRateLimit('golang');   // fails, needs to wait
 ```
 
-### Instance with Separate Defaults 
-
-```javascript
-// separate defaults, headers, and interceptors for a third-party API
-const grabGoogleAPI = grab.instance({
-    headers: {'Authorization': 'Bearer token'},
-    baseURL: 'https://api.google.com/v1/',
-    debug: true
-});
-const data = await grabGoogleAPI('/api/endpoint');
-```
-
 
 ### Request Cancellation
 
@@ -342,30 +369,6 @@ async function preventDuplicateRequests(userId) {
 }
 ```
 
-### Global Configuration
-
-```javascript
-// Set defaults for all requests
-grab('', {
-  setDefaults: true,
-  baseURL: 'https://api.myapp.com/v1',
-  timeout: 30, // 30 seconds
-  debug: true,
-  rateLimit: 1, // 1 second between requests
-  cache: false,
-  cancelOngoingIfNew: true,
-  headers: {
-    'Authorization': 'Bearer your-token-here',
-    'X-API-Key': 'your-api-key'
-  }
-});
-
-// Or set directly
-grab.default.baseURL = 'https://api.myapp.com/v1';
-grab.default.headers = {
-  'Authorization': 'Bearer your-token-here'
-};
-```
 
 ### Error Handling and Retry
 
@@ -398,7 +401,7 @@ try {
 
 ```javascript
 // Global request interceptor
-grab.default.onBeforeRequest = (path, response, params, fetchParams) => {
+grab.defaults.onBeforeRequest = (path, response, params, fetchParams) => {
   // Add authentication header
   fetchParams.headers.Authorization = `Bearer ${getAuthToken()}`;
   
@@ -419,45 +422,13 @@ function getAuthToken() {
 }
 ```
 
-## Real-World Examples
-
-### Authentication Flow
+### Proxy Agent
 
 ```javascript
-// Login component
-class AuthService {
-  constructor() {
-    this.user = { isLoading: false, data: null, error: null };
-  }
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
-  async login(email, password) {
-    const result = await grab('auth/login', {
-      method: 'POST',
-      response: this.user,
-      email,
-      password
-    });
-
-    if (result.token) {
-      localStorage.setItem('authToken', result.token);
-      grab.default.headers = {
-        ...grab.default.headers,
-        'Authorization': `Bearer ${result.token}`
-      };
-    }
-
-    return result;
-  }
-
-  async logout() {
-    await grab('auth/logout', { method: 'POST' });
-    localStorage.removeItem('authToken');
-    delete grab.default.headers.Authorization;
-    this.user.data = null;
-  }
-}
-
-const auth = new AuthService();
+const agent = new HttpsProxyAgent('http://username:password@proxyhost:port');
+let res = await grab("/path", { agent })
 ```
 
 ### File Upload
@@ -499,150 +470,129 @@ function fileToBase64(file) {
 }
 ```
 
-### Proxy Agent
+
+### Mock Server for Testing
+
 
 ```javascript
-import { HttpsProxyAgent } from 'https-proxy-agent';
+// Setup mock responses for testing
+grab.mock.users = {
+  response: [
+    { id: 1, name: 'John Doe', email: 'john@example.com' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
+  ],
+  delay: 1 // 1 second delay to simulate network
+};
 
-const agent = new HttpsProxyAgent('http://username:password@proxyhost:port');
-let res = await grab("/path", { agent })
-```
+grab.mock['products/search'] = {
+  response: (params) => ({
+    results: [
+      { id: 1, name: `Product matching "${params.query}"`, price: 29.99 },
+      { id: 2, name: `Another product for "${params.query}"`, price: 19.99 }
+    ],
+    total: 2
+  }),
+  method: 'POST',
+  delay: 0.5
+};
 
-### Real-time Data Updates
+// Now your API calls will use mock data
+const users = await grab('users'); // Returns mock user data
 
-```javascript
-// Polling for real-time updates
-class LiveDataService {
-  constructor() {
-    this.data = { items: [], isLoading: false };
-    this.pollInterval = null;
-  }
 
-  startPolling(intervalMs = 5000) {
-    this.pollInterval = setInterval(async () => {
-              await grab('live-data', {
-        response: this.data,
-        cache: false,
-        timestamp: Date.now() // Prevent caching
-      });
-    }, intervalMs);
-  }
 
-  stopPolling() {
-    if (this.pollInterval) {
-      clearInterval(this.pollInterval);
-      this.pollInterval = null;
+// Mock with conditional responses
+grab.mock['auth/login'] = {
+  response: (params) => {
+    if (params.email === 'admin@example.com' && params.password === 'admin123') {
+      return {
+        success: true,
+        token: 'mock-jwt-token-12345',
+        user: { id: 1, name: 'Admin User', role: 'admin' }
+      };
+    } else {
+      return {
+        success: false,
+        error: 'Invalid credentials'
+      };
     }
-  }
-}
+  },
+  method: 'POST',
+  delay: 1
+};
 
-const liveData = new LiveDataService();
-liveData.startPolling(3000); // Poll every 3 seconds
+// Error simulation
+grab.mock['users/create'] = {
+  response: (params) => {
+    if (!params.email) {
+      throw new Error('Email is required');
+    }
+    return { id: Date.now(), ...params, created: true };
+  },
+  method: 'POST'
+};
 ```
 
-### E-commerce Cart Example
+
+### Unit Tests with Jest
 
 ```javascript
-class ShoppingCart {
-  constructor() {
-    this.cart = {
-      items: [],
-      total: 0,
-      isLoading: false,
-      error: null
+// setup-tests.js
+import { grab } from 'grab-api.js';
+
+// Setup global mocks for testing
+beforeEach(() => {
+  // Clear previous mocks
+  grab.mock = {};
+  grab.log = [];
+});
+
+// user.test.js
+import { grab } from 'grab-api.js';
+
+describe('User API', () => {
+  test('should fetch user data', async () => {
+    // Setup mock
+    grab.mock.users = {
+      response: { id: 1, name: 'Test User', email: 'test@example.com' }
     };
-    this.loadCart();
-  }
 
-  async loadCart() {
-    await grab('cart', {
-      response: this.cart,
-      cache: true
-    });
-  }
+    const result = await grab('users');
+    
+    expect(result.id).toBe(1);
+    expect(result.name).toBe('Test User');
+  });
 
-  async addItem(productId, quantity = 1) {
-    await grab('cart/add', {
+  test('should handle user creation', async () => {
+    grab.mock.users = {
+      response: (params) => ({
+        id: 123,
+        ...params,
+        created: true
+      }),
+      method: 'POST'
+    };
+
+    const newUser = await grab('users', {
       method: 'POST',
-      response: this.cart,
-      productId,
-      quantity
+      name: 'John Doe',
+      email: 'john@example.com'
     });
-  }
 
-  async removeItem(itemId) {
-    await grab(`cart/remove/${itemId}`, {
-      method: 'DELETE',
-      response: this.cart
-    });
-  }
+    expect(newUser.name).toBe('John Doe');
+    expect(newUser.created).toBe(true);
+  });
 
-  async updateQuantity(itemId, quantity) {
-    await grab(`cart/update/${itemId}`, {
-      method: 'PATCH',
-      response: this.cart,
-      quantity
-    });
-  }
+  test('should handle errors', async () => {
+    grab.mock.users = {
+      response: () => {
+        throw new Error('User not found');
+      }
+    };
 
-  async checkout(paymentData) {
-    const result = await grab('cart/checkout', {
-      method: 'POST',
-      ...paymentData,
-      rateLimit: 5 // Prevent double-clicking checkout
-    });
-    
-    if (result.success) {
-      this.cart.items = [];
-      this.cart.total = 0;
-    }
-    
-    return result;
-  }
-}
-
-// Usage in React component
-function CartComponent() {
-  const [cart] = useState(new ShoppingCart());
-  const [cartState, setCartState] = useState(cart.cart);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCartState({...cart.cart}); // Update UI when cart changes
-    }, 100);
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div>
-      {cartState.isLoading ? (
-        <div>Loading cart...</div>
-      ) : (
-        <div>
-          <h2>Shopping Cart ({cartState.items.length} items)</h2>
-          {cartState.items.map(item => (
-            <div key={item.id} className="cart-item">
-              <span>{item.name}</span>
-              <span>${item.price}</span>
-              <button onClick={() => cart.removeItem(item.id)}>
-                Remove
-              </button>
-            </div>
-          ))}
-          <div className="cart-total">
-            Total: ${cartState.total}
-          </div>
-          <button 
-            onClick={() => cart.checkout({ method: 'credit_card' })}
-            disabled={cartState.items.length === 0}
-          >
-            Checkout
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+    const result = await grab('users');
+    expect(result.error).toBe('User not found');
+  });
+});
 ```
 

@@ -26,11 +26,6 @@
               "sidebar": "default"
             },
             {
-              "id": "guide/Testing",
-              "path": "/guide/Testing",
-              "sidebar": "default"
-            },
-            {
               "id": "lib/grab-api",
               "path": "/lib/grab-api",
               "sidebar": "default"
@@ -102,8 +97,8 @@
   "docusaurus-lunr-search": {
     "default": {
       "fileNames": {
-        "searchDoc": "search-doc-1748520822862.json",
-        "lunrIndex": "lunr-index-1748520822862.json"
+        "searchDoc": "search-doc-1748525737308.json",
+        "lunrIndex": "lunr-index-1748525737308.json"
       }
     }
   }

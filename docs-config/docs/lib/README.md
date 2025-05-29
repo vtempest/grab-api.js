@@ -48,53 +48,50 @@ npm i grab-api.js
 8. **Debug Logging**: Adds global `log()` and prints colored JSON structure, response, timing for requests in test.
 9. **Request History**: Stores all request and response data in global `grab.log` object
 10. **Pagination Infinite Scroll**: Built-in pagination for infinite scroll to auto-load and merge next result page.
-11. **Base URL Based on Environment**: Configure `grab.default.baseURL` once at the top, overide with `SERVER_API_URL` in `.env`.
+11. **Base URL Based on Environment**: Configure `grab.defaults.baseURL` once at the top, overide with `SERVER_API_URL` in `.env`.
 12. **Frontend Cache**: Set cache headers and retrieve from frontend memory for repeat requests to static data.
 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
 14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
-15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.default`
+15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.defaults`
 16. **TypeScript Tooltips**: Developers can hover over option names for into and autocomplete TypeScript. Add to top of file: `import 'grab-api.js/globals'`
 
 ### Examples
 
 ```ts
 import { grab } from "grab-api.js";
- let res = $state({}) as {
-     results: Array<{title:string}>,
-     isLoading: boolean,
-     error: string,
- };
-  
- await grab('search', res, {
-   query: "search words",
-   method: 'POST'
- })
- 
- grab('user').then(log)
+let res = $state({}) as {
+  results: Array<{title:string}>,
+  isLoading: boolean,
+  error: string,
+};
 
- //in svelte component
- {#if res.results}
-     {res.results}
- {:else if res.isLoading}
-     ...
- {:else if res.error}
-     {res.error}
- {/if}
+await grab('search', {
+  response: res,
+  query: "search words",
+  method: 'POST'
+})
+ 
+grab('user').then(log)
+
+//in svelte component
+{#if res.results}
+    {res.results}
+{:else if res.isLoading}
+    ...
+{:else if res.error}
+    {res.error}
+{/if}
 
  //Setup Mock testing server, response is object or function
  window.grab.mock["search"] = {
    response: (params) => {
      return { results: [{title:`Result about ${params.query}`}] };
    },
-   method: "POST",
-   params: {
-     query: "search words"
-   },
-   delay : 1,
+   method: "POST"
  };
 
  //set defaults for all requests
- grab("", {}, { 
+ grab("", { 
    setDefaults: true,
    baseURL: "http://localhost:8080",
    timeout: 30,
@@ -102,10 +99,9 @@ import { grab } from "grab-api.js";
    rateLimit: 1,
    cache: true,
    cancelOngoingIfNew: true,
-   cancelNewIfOngoing: false
  });
 
- grab.default.baseURL = "http://localhost:8080/api/";
+ grab.defaults.baseURL = "http://localhost:8080/api/";
 ```
 
 ### Screenshots
@@ -396,25 +392,22 @@ The response object with resulting data or .error if error.
 
 ### Comparison of HTTP Request Libraries
 
-| Feature | GRAB | Axios | TanStack Query | SWR | Alova | SuperAgent | Apisauce |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Size | ✅ 2KB | ❌ 13KB | ❌ 39KB | ❌ 4.2KB | ⚠️ 4KB | ❌ 19KB | ❌ 15KB (with axios) |
-| Zero Dependencies | ✅ Yes | ❌ No | ❌ No | ❌ No | ✅ Yes | ❌ No | ❌ Needs Axios |
-| Framework Support | ✅ All frameworks | ✅ All frameworks | ⚠️ React-focused | ⚠️ React-focused | ✅ All frameworks | ✅ All frameworks | ✅ All frameworks |
-| isLoading State Handling | ✅ Auto-managed | ❌ Manual | ✅ Yes | ✅ Yes | ✅ Yes | ❌ Manual | ❌ Manual |
-| Auto JSON Handling | ✅ Automatic | ✅ Configurable | ❌ Manual | ❌ Manual | ✅ Automatic | ✅ Automatic | ✅ Automatic |
-| Request Deduplication | ✅ Built-in | ❌ No | ✅ Yes | ✅ Yes | ✅ Yes | ❌ No | ❌ No |
-| Caching | ✅ Memory cache | ❌ No | ✅ Advanced | ✅ Advanced | ✅ Multi-level | ❌ No | ❌ No |
-| Mock Testing | ✅ Easy setup | ❌ Needs MSW/etc | ❌ Needs MSW/etc | ❌ Needs MSW/etc | ⚠️ Basic | ❌ Needs separate lib | ❌ Needs separate lib |
-| Rate Limiting | ✅ Built-in | ❌ Manual | ❌ Manual | ❌ Manual | ⚠️ Basic | ❌ Manual | ❌ Manual |
-| Automatic Retry | ✅ Configurable | ⚠️ Via interceptors | ✅ Built-in | ✅ Built-in | ✅ Built-in | ✅ Built-in | ❌ Manual |
-| Request Cancellation | ✅ Auto + manual | ✅ Manual | ✅ Automatic | ✅ Automatic | ❌ Manual | ❌ Manual | ❌ Manual |
-| Pagination Support | ✅ Infinite scroll | ❌ Manual | ✅ Advanced | ⚠️ Basic | ✅ Built-in | ❌ Manual | ❌ Manual |
-| Interceptors | ✅ Advanced | ✅ Advanced | ⚠️ Limited | ⚠️ Limited | ✅ Advanced | ✅ Plugins | ✅ Transforms |
-| Debug Logging | ✅ Colored output | ⚠️ Basic | ✅ DevTools | ✅ DevTools | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic |
-| Request History | ✅ Built-in | ❌ Manual | ✅ DevTools | ✅ DevTools | ❌ Manual | ❌ Manual | ❌ Manual |
-| Easy Syntax | ✅ Minimal | ⚠️ Medium | ❌ High | ❌ High | ⚠️ Medium | ⚠️ Medium | ✅ Low |
-
-### Author
-
-[vtempest (2025)](https://github.com/vtempest/grab-api)
+| Feature | [GRAB](https://github.com/vtempest/grab-api) | [Axios](https://github.com/axios/axios) | [TanStack Query](https://github.com/TanStack/query) | [SWR](https://github.com/vercel/swr) | [Alova](https://github.com/alovajs/alova) | [SuperAgent](https://github.com/ladjs/superagent) | [Apisauce](https://github.com/infinitered/apisauce) | [Ky](https://github.com/sindresorhus/ky) |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | 
+| Size | ✅ 2KB | ❌ 13KB | ❌ 39KB | ❌ 4.2KB | ⚠️ 4KB | ❌ 19KB | ❌ 15KB (with axios) | ⚠️ 4KB |
+| Zero Dependencies | ✅ Yes | ❌ No | ❌ No | ❌ No | ✅ Yes | ❌ No | ❌ Needs Axios | ✅ Yes |
+| Framework Support | ✅ All frameworks | ✅ All frameworks | ⚠️ React-focused | ⚠️ React-focused | ✅ All frameworks | ✅ All frameworks | ✅ All frameworks | ✅ All frameworks |
+| isLoading State Handling | ✅ Auto-managed | ❌ Manual | ✅ Yes | ✅ Yes | ✅ Yes | ❌ Manual | ❌ Manual | ❌ Manual |
+| Auto JSON Handling | ✅ Automatic | ✅ Configurable | ❌ Manual | ❌ Manual | ✅ Automatic | ✅ Automatic | ✅ Automatic | ✅ Automatic |
+| Request Deduplication | ✅ Built-in | ❌ No | ✅ Yes | ✅ Yes | ✅ Yes | ❌ No | ❌ No | ❌ No |
+| Caching | ✅ Memory cache | ❌ No | ✅ Advanced | ✅ Advanced | ✅ Multi-level | ❌ No | ❌ No | ❌ No |
+| Mock Testing | ✅ Easy setup | ❌ Needs MSW/etc | ❌ Needs MSW/etc | ❌ Needs MSW/etc | ⚠️ Basic | ❌ Needs separate lib | ❌ Needs separate lib | ❌ Needs MSW/etc |
+| Rate Limiting | ✅ Built-in | ❌ Manual | ❌ Manual | ❌ Manual | ⚠️ Basic | ❌ Manual | ❌ Manual | ❌ Manual |
+| Automatic Retry | ✅ Configurable | ⚠️ Via interceptors | ✅ Built-in | ✅ Built-in | ✅ Built-in | ✅ Built-in | ❌ Manual | ✅ Built-in |
+| Request Cancellation | ✅ Auto + manual | ✅ Manual | ✅ Automatic | ✅ Automatic | ✅ Manual | ✅ Manual | ✅ Manual | ✅ Manual |
+| Pagination Support | ✅ Infinite scroll | ❌ Manual | ✅ Advanced | ⚠️ Basic | ✅ Built-in | ❌ Manual | ❌ Manual | ❌ Manual |
+| TypeScript Support |  ✅ Excellent  | ✅ Excellent | ✅ Excellent | ✅ Excellent | ✅ Good | ✅ Good | ✅ Good | ✅ Excellent |
+| Interceptors | ✅ Advanced | ✅ Advanced | ⚠️ Limited | ⚠️ Limited | ✅ Advanced | ✅ Plugins | ✅ Transforms | ✅ Hooks system |
+| Debug Logging | ✅ Colored output | ⚠️ Basic | ✅ DevTools | ✅ DevTools | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic |
+| Request History | ✅ Built-in | ❌ Manual | ✅ DevTools | ✅ DevTools | ❌ Manual | ❌ Manual | ❌ Manual | ❌ Manual |
+| Easy Syntax | ✅ Minimal | ⚠️ Medium | ❌ High | ❌ High | ⚠️ Medium | ⚠️ Medium | ✅ Low | ✅ Minimal |

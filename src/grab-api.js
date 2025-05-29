@@ -2,7 +2,7 @@ import { printStructureJSON, log, showAlert } from "./log.js";
 
 /**
  * ### GRAB: Generate Request to API from Browser
- * ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
+ * ![GrabAPILogo](https://i.imgur.com/qrQWkeb.png)
  * 
  * 1. **One Function**: 2Kb min, 0 dependencies, minimal boilerplate syntax - [better than top alternatives](https://grab.js.org/guide/Comparisons) 
  * 2. **Auto-JSON Convert**: Pass parameters and get response or error in JSON, handling other data types as is.
@@ -14,14 +14,14 @@ import { printStructureJSON, log, showAlert } from "./log.js";
  * 8. **Rate Limiting**: Built-in rate limiting to prevent multi-click cascading responses, require to wait seconds between requests.
  * 9. **Request History**: Stores all request and response data in global `grab.log` object
  * 10. **Pagination Infinite Scroll**: Built-in pagination for infinite scroll to auto-load and merge next result page.
- * 11. **Base URL Based on Environment**: Configure `grab.default.baseURL` once at the top, overide with `SERVER_API_URL` in `.env` or `process.env.SERVER_API_URL` in Node.js.
+ * 11. **Base URL Based on Environment**: Configure `grab.defaults.baseURL` once at the top, overide with `SERVER_API_URL` in `.env` or `process.env.SERVER_API_URL` in Node.js.
  * 12. **Frontend Cache**: Set cache headers and retrieve from frontend memory for repeat requests to static data.
- * 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
+ * 13. **Modular Design**: Can be used in any frontend framework, Node.js 18+, Bun, Deno, Cloudflare Workers, etc.
  * 14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
- * 15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.default`
+ * 15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.defaults`
  * 16. **TypeScript Tooltips**: Developers can hover over option names and autocomplete TypeScript. Add to top of file: `import 'grab-api.js/globals'`
  * 
- * @param {string} path The full URL path OR relative path on this server after `grab.default.baseURL`
+ * @param {string} path The full URL path OR relative path on this server after `grab.defaults.baseURL`
  * @param {object} [options={}] Request params for GET or body for POST/PUT/PATCH and utility options
  * @param {string} [options.method] default="GET" The HTTP method to use
  * @param {object} [options.response] Pre-initialized object to set the response in. isLoading and error are also set on this object.
@@ -110,8 +110,8 @@ export async function grab(path, options = {}) {
     // Store options as defaults if setDefaults flag is true
     if (options?.setDefaults) {
       if (typeof window !== "undefined")
-        window.grab.default = { ...options, setDefaults: undefined };
-      else global.grab.default = { ...options, setDefaults: undefined };
+        window.grab.defaults = { ...options, setDefaults: undefined };
+      else global.grab.defaults = { ...options, setDefaults: undefined };
       return {};
     }
 
@@ -374,13 +374,13 @@ if (typeof window !== "undefined") {
   window.log = log;
   window.grab.log = [];
   window.grab.mock = {};
-  window.grab.default = {};
+  window.grab.defaults = {};
 } else if (typeof global !== "undefined") {
   global.grab = grab;
   global.log = log;
   global.grab.log = [];
   global.grab.mock = {};
-  global.grab.default = {};
+  global.grab.defaults = {};
 }
 
 /**

@@ -49,11 +49,11 @@ npm i grab-api.js
 8. **Debug Logging**: Adds global `log()` and prints colored JSON structure, response, timing for requests in test.
 9. **Request History**: Stores all request and response data in global `grab.log` object
 10. **Pagination Infinite Scroll**: Built-in pagination for infinite scroll to auto-load and merge next result page.
-11. **Base URL Based on Environment**: Configure `grab.default.baseURL` once at the top, overide with `SERVER_API_URL` in `.env`.
+11. **Base URL Based on Environment**: Configure `grab.defaults.baseURL` once at the top, overide with `SERVER_API_URL` in `.env`.
 12. **Frontend Cache**: Set cache headers and retrieve from frontend memory for repeat requests to static data.
 13. **Modular Design**: Single, flexible function that can be called from any part of your application.
 14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
-15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.default`
+15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.defaults`
 16. **TypeScript Tooltips**: Developers can hover over option names and autocomplete TypeScript. Add to top of file: `import 'grab-api.js/globals'`
 
 ### Examples
@@ -106,7 +106,7 @@ import { grab } from "grab-api.js";
    cancelNewIfOngoing: false
  });
 
- grab.default.baseURL = "http://localhost:8080/api/";
+ grab.defaults.baseURL = "http://localhost:8080/api/";
 ```
 ### Parameters
 

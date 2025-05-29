@@ -15,7 +15,6 @@
 | Automatic Retry | ✅ Configurable | ⚠️ Via interceptors | ✅ Built-in | ✅ Built-in | ✅ Built-in | ✅ Built-in | ❌ Manual | ✅ Built-in |
 | Request Cancellation | ✅ Auto + manual | ✅ Manual | ✅ Automatic | ✅ Automatic | ✅ Manual | ✅ Manual | ✅ Manual | ✅ Manual |
 | Pagination Support | ✅ Infinite scroll | ❌ Manual | ✅ Advanced | ⚠️ Basic | ✅ Built-in | ❌ Manual | ❌ Manual | ❌ Manual |
-| TypeScript Support |  ✅ Excellent  | ✅ Excellent | ✅ Excellent | ✅ Excellent | ✅ Good | ✅ Good | ✅ Good | ✅ Excellent |
 | Interceptors | ✅ Advanced | ✅ Advanced | ⚠️ Limited | ⚠️ Limited | ✅ Advanced | ✅ Plugins | ✅ Transforms | ✅ Hooks system |
 | Debug Logging | ✅ Colored output | ⚠️ Basic | ✅ DevTools | ✅ DevTools | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic |
 | Request History | ✅ Built-in | ❌ Manual | ✅ DevTools | ✅ DevTools | ❌ Manual | ❌ Manual | ❌ Manual | ❌ Manual |
@@ -30,18 +29,10 @@
 - **Smart Defaults**: Automatically detects localhost for debugging and handles JSON out of the box.
 - **Performance**: Features like deduplication, caching, and rate limiting are built in to reduce redundant requests.
 
+
 ## Migration Guide
 
-### From Axios
-
-```javascript
-// Axios
-const response = await axios.get('/users', { params: { page: 1 } });
-const users = response.data;
-
-// GRAB
-const users = await grab('users', { page: 1 });
-```
+**Why fetch things when you can just GRAB? Make the switch!**
 
 ### From Fetch
 
@@ -61,6 +52,16 @@ const user = await grab('users', {
 });
 ```
 
+### From Axios
+
+```javascript
+// Axios
+const response = await axios.get('/users', { params: { page: 1 } });
+const users = response.data;
+
+// GRAB
+const users = await grab('users', { page: 1 });
+```
 ### From TanStack Query
 
 ```javascript
@@ -103,7 +104,7 @@ useEffect(() => {
 
 
 ## Top 20 JavaScript Request Libraries
-1. [GRAB](https://github.com/vtempest/grab-api) - Elegantly simple syntax, all features like deduping, mock, cache, defaults.
+1. [vtempest/GRAB-API](https://github.com/vtempest/grab-api) - Elegantly simple syntax, deduping, mock, cache, defaults.
 2. [axios/axios](https://github.com/axios/axios) - Promise based HTTP client for the browser and Node.js
 3. [TanStack/query](https://github.com/TanStack/query) - Powerful data synchronization for web applications
 4. [vercel/swr](https://github.com/vercel/swr) - Data fetching library with caching, revalidation, and more
@@ -112,7 +113,7 @@ useEffect(() => {
 7. [ladjs/superagent](https://github.com/ladjs/superagent) - Ajax for Node.js and browsers (feature-rich)
 8. [skellock/apisauce](https://github.com/skellock/apisauce) - Axios + standardized errors + request/response transforms
 9. [elbywan/wretch](https://github.com/elbywan/wretch) - A tiny wrapper built around fetch with an intuitive syntax
-10. [lukeed/phin](https://github.com/lukeed/phin) - Ultra-lightweight Node.js HTTP client
+10. [lukeed/httpie](https://github.com/lukeed/httpie) - Ultra-lightweight Node.js HTTP client
 11. [tomas/needle](https://github.com/tomas/needle) - Nimble, streamable HTTP client for Node.js
 12. [nodejs/undici](https://github.com/nodejs/undici) - An HTTP/1.1 client, written from scratch for Node.js
 13. [alovajs/alova](https://github.com/alovajs/alova) - Request strategy library for MVVM libraries
@@ -122,4 +123,15 @@ useEffect(() => {
 17. [mikeal/bent](https://github.com/mikeal/bent) - Functional HTTP client for Node.js w/ async/await
 18. [bitinn/node-fetch](https://github.com/bitinn/node-fetch) - A light-weight module that brings window.fetch to Node.js
 19. [developit/redaxios](https://github.com/developit/redaxios) - The Axios API, as an 800 byte fetch wrapper
-20. [bekacru/better-fetch](https://github.com/bekacru/better-fetch) - Advanced fetch wrapper for typescript with standard schema validations, pre-defined routes, callbacks, plugins and more.
+20. [bekacru/better-fetch](https://github.com/bekacru/better-fetch) - fetch with standard schema validations, pre-defined routes, callbacks, plugins
+
+
+### Meme Reference
+
+> Gretchen: "That is so fetch!"
+>
+> Regina: "Gretchen, stop trying to make fetch happen! It's not going to happen!"
+> _Mean Girls_ (2004)
+ 
+
+[Meme Reference Explanation](https://knowyourmeme.com/memes/stop-trying-to-make-fetch-happen)

@@ -1,15 +1,15 @@
 {
-  "/-2d7": {
+  "/-fee": {
     "__comp": "5e95c892",
     "__context": {
       "plugin": "aba21aa0"
     }
   },
-  "/-9c8": {
+  "/-eac": {
     "__comp": "a7bd4aaa",
     "__props": "22dd74f7"
   },
-  "/-94c": {
+  "/-861": {
     "__comp": "a94703ab"
   },
   "/guide/Comparisons-4c4": {
@@ -23,10 +23,6 @@
   "/guide/Performance-426": {
     "__comp": "4c5e977b",
     "content": "6cebdc36"
-  },
-  "/guide/Testing-228": {
-    "__comp": "4c5e977b",
-    "content": "bd7a5126"
   },
   "/lib/-e95": {
     "__comp": "4c5e977b",
