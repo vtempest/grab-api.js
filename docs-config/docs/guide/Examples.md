@@ -2,9 +2,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
 
-## Basic Examples
-
-### Basic Import
+## Import 
 
 ```bash npm2yarn
 npm install grab-api.js
@@ -15,73 +13,61 @@ bun i grab-api.js
 ```
 
 ```javascript
-import grab from 'grab-api.js';
+import grab from "grab-api.js";
 ```
 
-
-### Import with TypeScript Types
-
-This supports tooltips and autocomplete by adding types globally.
+### Import with TypeScript Type Tooltips
 
 ```javascript
-import 'grab-api.js/global'
-import grab from 'grab-api.js';
+import "grab-api.js/global"; //supports tooltips and autocomplete
+import grab from "grab-api.js";
 ```
 
-
-
-## Basic Examples
-
-### Simple GET Request
+### Basic Request
 
 ```javascript
 // Basic GET request
-const user = await grab('user/123');
-console.log(user); // { id: 123, name: "John Doe", ... }
+grab("user").then(log); // { id: 123, name: "John Doe", ... }
 
-// With query parameters
-const searchResults = await grab('search', {
-  query: 'javascript',
+// GET with query parameters
+const searchResults = await grab("search", {
+  query: "javascript",
   page: 1,
-  limit: 10
+  limit: 10,
+});
+
+// POST with body
+await grab("users", {
+  post: true, //shorthand for method: "POST"
+  email: "jane@example.com",
+  age: 25,
 });
 ```
 
-### POST Request with Body
-
-```javascript
-// Create a new user
-const newUser = await grab('users', {
-  method: 'POST',
-  name: 'Jane Doe',
-  email: 'jane@example.com',
-  age: 25
-});
-```
+## Request Stategies
 
 ### Reactive Loading Status
-
 
 <Tabs>
 <TabItem value="react" label="React">
 
 ```jsx
-import React, { useState } from 'react';
-import { grab } from 'grab-api.js';
+import React, { useState } from "react";
+import grab from "grab-api.js";
 
 function UserProfile() {
   const [userState, setUserState] = useState({
     data: null,
     isLoading: false,
-    error: null
+    error: null,
   });
 
   const loadUser = async (userId) => {
     await grab(`users/${userId}`, {
       response: userState,
-      method: 'GET'
+      method: "GET",
     });
-    setUserState({...userState}); // Trigger re-render
+    setUserState({ ...userState }); // Trigger re-render
   };
 
   return (
@@ -94,25 +80,21 @@ function UserProfile() {
           <p>{userState.data.email}</p>
         </div>
       )}
-      <button onClick={() => loadUser(123)}>
-        Load User
-      </button>
+      <button onClick={() => loadUser(123)}>Load User</button>
     </div>
   );
 }
 ```
 
----
-
-
 </TabItem>
 
 <TabItem value="svelte" label="Svelte">
 
-```javascript 
+```javascript
 <script>
-  import { grab } from 'grab-api.js';
-  
+  import grab from 'grab-api.js';
+
+
   let searchResults = $state({
     results: [],
     isLoading: false,
@@ -122,17 +104,17 @@ function UserProfile() {
   async function searchProducts(query) {
     await grab('products/search', {
       response: searchResults,
-      method: 'POST',
+      post: true,
       query: query,
       category: 'electronics'
     });
   }
 </script>
 
-<input 
-  type="text" 
+<input
+  type="text"
   on:input={(e) => searchProducts(e.target.value)}
-  placeholder="Search products..." 
+  placeholder="Search products..."
 />
 
 {#if searchResults.isLoading}
@@ -152,10 +134,8 @@ function UserProfile() {
 ```
 
 </TabItem>
-
 <TabItem value="vue3" label="Vue 3">
-
-```vue
+```javascript
 <template>
   <div>
     <input 
@@ -163,15 +143,12 @@ function UserProfile() {
       @input="searchUsers"
       placeholder="Search users..."
     />
-    
     <div v-if="userResults.isLoading" class="loading">
       Loading users...
     </div>
-    
     <div v-else-if="userResults.error" class="error">
       {{ userResults.error }}
     </div>
-    
     <div v-else class="user-list">
       <div 
         v-for="user in userResults.users" 
@@ -183,18 +160,15 @@ function UserProfile() {
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, reactive } from 'vue';
-import { grab } from 'grab-api.js';
-
+import grab from 'grab-api.js';
 const searchTerm = ref('');
 const userResults = reactive({
   users: [],
   isLoading: false,
   error: null
 });
-
 const searchUsers = async () => {
   if (searchTerm.value.length < 2) return;
   
@@ -210,46 +184,43 @@ const searchUsers = async () => {
 </TabItem>
 </Tabs>
 
-
 ### Global Defaults Configuration
 
 ```javascript
-// Set defaults for all requests
-grab('', {
+// set directly
+grab.defaults.baseURL = "https://api.myapp.com/v1";
+grab.defaults.headers = {
+  Authorization: "Bearer your-token-here",
+};
+
+// method 2: Set defaults for all requests
+grab("", {
   setDefaults: true,
-  baseURL: 'https://api.myapp.com/v1',
+  baseURL: "https://api.myapp.com/v1",
   timeout: 30, // 30 seconds
   debug: true,
   rateLimit: 1, // 1 second between requests
   cache: false,
   cancelOngoingIfNew: true,
   headers: {
-    'Authorization': 'Bearer your-token-here',
-    'X-API-Key': 'your-api-key'
-  }
+    Authorization: "Bearer your-token-here",
+  },
 });
 
-// Or set directly
-grab.defaults.baseURL = 'https://api.myapp.com/v1';
-grab.defaults.headers = {
-  'Authorization': 'Bearer your-token-here'
-};
 ```
 
-### Instance with Separate Defaults 
+### Instance with Separate Defaults
 
 ```javascript
 // separate defaults, headers, and interceptors for a third-party API
 const grabGoogleAPI = grab.instance({
-    headers: {'Authorization': 'Bearer token'},
-    baseURL: 'https://api.google.com/v1/',
-    debug: true
+  headers: { Authorization: "Bearer 9e9wjeffkwf0sf" },
+  baseURL: "https://api.google.com/v1/",
+  debug: true,
 });
-const data = await grabGoogleAPI('/api/endpoint');
+const data = await grabGoogleAPI("/api/endpoint");
 ```
 
-
-## Advanced Features
 
 ### Pagination with Infinite Scroll
 
@@ -260,25 +231,24 @@ let productList = {
 };
 
 // Load first page
-async function loadResults(){
-  await grab('products', {
+async function loadResults() {
+  await grab("products", {
     response: productList,
-    paginateResult: 'products', // Key to append results to
-    paginateKey: 'page',        // Parameter name for page number
-    limit: 20
+    paginateResult: "products", // Key to append results to
+    paginateKey: "page", // Parameter name for page number
+    limit: 20,
   });
 }
 
 // Infinite scroll implementation
 const setupInfiniteScroll = (e) =>
-  e.addEventListener('scroll', () => 
-    e.innerHeight + e.scrollY >= e.offsetHeight - 1000 && loadResults() );
+  e.addEventListener(
+    "scroll",
+    () => e.innerHeight + e.scrollY >= e.offsetHeight - 1000 && loadResults()
+  );
 
-setupInfiniteScroll(document.getElementById("results"))
-
-
+setupInfiniteScroll(document.getElementById("results"));
 ```
-
 
 ### Debounced Search
 
@@ -299,11 +269,11 @@ function debounce(func, wait) {
 // Debounced search implementation
 const debouncedSearch = debounce(async (query) => {
   if (query.length < 2) return;
-  
-  await grab('search', {
+
+  await grab("search", {
     response: searchResults,
     query: query,
-    cancelOngoingIfNew: true // Cancel previous searches
+    cancelOngoingIfNew: true, // Cancel previous searches
   });
 }, 300); // Wait 300ms after user stops typing
 
@@ -313,62 +283,58 @@ function handleSearchInput(event) {
 }
 ```
 
-### Request Caching
+### Client Cache in User Memory
 
 ```javascript
 // Enable caching for static data
-const categories = await grab('categories', { 
-  cache: true 
+const categories = await grab("categories", {
+  cache: true,
 });
 
-// Subsequent calls return cached data
-const categoriesAgain = await grab('categories', { 
-  cache: true 
-}); // Instant response from cache
+const categoriesAgain = await grab("categories", {
+  cache: true,
+}); 
+// Instant response from frontend cache, no server call
 ```
 
 ### Rate Limiting
 
 ```javascript
-// Prevent spam requests
+// Prevent user's multi-click cascading requests
 let searchResults = {};
 
 async function searchWithRateLimit(query) {
-  await grab('search', {
+  await grab("search", {
     response: searchResults,
     query: query,
-    rateLimit: 2 // Wait 2 seconds between requests
+    rateLimit: 2, // Wait 2 seconds between requests
   });
 }
-
-// Multiple rapid calls will be rate limited
-searchWithRateLimit('python');     // Executes immediately  
-searchWithRateLimit('golang');   // fails, needs to wait
+searchWithRateLimit("python"); // Executes immediately
+searchWithRateLimit("golang"); // fails, needs to wait
 ```
 
-
-### Request Cancellation
+### Duplicate Cancellation
 
 ```javascript
 let currentSearch = {};
 
 async function searchProducts(query) {
   // Cancel previous search when new one starts
-  await grab('products/search', {
+  await grab("products/search", {
     response: currentSearch,
     query: query,
-    cancelOngoingIfNew: true // Default behavior
+    cancelOngoingIfNew: true, // Default behavior
   });
 }
 
 // Prevent new requests if one is ongoing
 async function preventDuplicateRequests(userId) {
   await grab(`users/${userId}`, {
-    cancelNewIfOngoing: true // Prevents duplicate requests
+    cancelNewIfOngoing: true, // Prevents duplicate requests
   });
 }
 ```
-
 
 ### Error Handling and Retry
 
@@ -376,23 +342,23 @@ async function preventDuplicateRequests(userId) {
 let apiData = {};
 
 // Automatic retry on failure
-await grab('unreliable-endpoint', {
+await grab("unreliable-endpoint", {
   response: apiData,
   retryAttempts: 3, // Retry 3 times on failure
-  timeout: 10       // 10 second timeout
+  timeout: 10, // 10 second timeout
 });
 
 // Manual error handling
 try {
-  const result = await grab('api/data');
-  console.log('Success:', result);
+  const result = await grab("api/data");
+  console.log("Success:", result);
 } catch (error) {
-  if (error.message.includes('timeout')) {
-    console.log('Request timed out');
-  } else if (error.message.includes('rate limit')) {
-    console.log('Too many requests');
+  if (error.message.includes("timeout")) {
+    console.log("Request timed out");
+  } else if (error.message.includes("rate limit")) {
+    console.log("Too many requests");
   } else {
-    console.log('Other error:', error.message);
+    console.log("Other error:", error.message);
   }
 }
 ```
@@ -403,60 +369,61 @@ try {
 // Global request interceptor
 grab.defaults.onBeforeRequest = (path, response, params, fetchParams) => {
   // Add authentication header
-  fetchParams.headers.Authorization = `Bearer ${getAuthToken()}`;
-  
-  // Log all requests
-  console.log(`Making request to: ${path}`, params);
-  
+  fetchParams.headers.Authorization = `Bearer ervv0sf9vs0v0sv`;
+
   // Modify request data
   if (params.userId) {
-    params.user_id = params.userId;
-    delete params.userId;
+    params.user_id = '2525';
   }
-  
+
   return [path, response, params, fetchParams];
 };
 
-function getAuthToken() {
-  return localStorage.getItem('authToken') || '';
-}
 ```
 
-### Proxy Agent
+### Proxy
 
 ```javascript
-import { HttpsProxyAgent } from 'https-proxy-agent';
+//polyfill fetch with node-fetch
+import fetch, { Headers, Request, Response } from 'node-fetch';
 
-const agent = new HttpsProxyAgent('http://username:password@proxyhost:port');
-let res = await grab("/path", { agent })
+if (!globalThis.fetch) {
+  globalThis.fetch = fetch;
+  globalThis.Headers = Headers;
+  globalThis.Request = Request;
+  globalThis.Response = Response;
+}
+
+//get proxy
+import { HttpsProxyAgent } from "https-proxy-agent";
+const agent = new HttpsProxyAgent("http://username:password@proxyhost:port");
+
+let res = await grab("/path", { agent });
 ```
 
 ### File Upload
 
 ```javascript
-async function uploadFile(file, onProgress) {
-  const formData = new FormData();
-  formData.append('file', file);
-  
-  const response = await grab('/api/upload', {
-    method: 'POST',
-    body: formData,
-    headers: {
-      'Authorization': `Bearer ${getAuthToken()}`
-    }
-  });
-  
-}
+const formData = new FormData();
+formData.append("file", file);
+
+const response = await grab("/api/upload", {
+  post: true,
+  body: formData,
+  headers: {
+    Authorization: `Bearer ${getAuthToken()}`,
+  },
+});
 
 // Alternative: Convert file to base64 for JSON API
 async function uploadFileAsJSON(file) {
   const base64 = await fileToBase64(file);
-  
-  return await grab('files/upload', {
-    method: 'POST',
+
+  return await grab("files/upload", {
+    post: true,
     filename: file.name,
     content: base64,
-    mimeType: file.type
+    mimeType: file.type,
   });
 }
 
@@ -464,81 +431,79 @@ function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = error => reject(error);
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = (error) => reject(error);
   });
 }
 ```
 
-
 ### Mock Server for Testing
-
 
 ```javascript
 // Setup mock responses for testing
 grab.mock.users = {
   response: [
-    { id: 1, name: 'John Doe', email: 'john@example.com' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
+    { id: 1, name: "John Doe", email: "john@example.com" },
+    { id: 2, name: "Jane Smith", email: "jane@example.com" },
   ],
-  delay: 1 // 1 second delay to simulate network
+  delay: 1, // 1 second delay to simulate network
 };
 
-grab.mock['products/search'] = {
+grab.mock["products/search"] = {
   response: (params) => ({
     results: [
       { id: 1, name: `Product matching "${params.query}"`, price: 29.99 },
-      { id: 2, name: `Another product for "${params.query}"`, price: 19.99 }
+      { id: 2, name: `Another product for "${params.query}"`, price: 19.99 },
     ],
-    total: 2
+    total: 2,
   }),
-  method: 'POST',
-  delay: 0.5
+  post: true,
+  delay: 0.5,
 };
 
 // Now your API calls will use mock data
-const users = await grab('users'); // Returns mock user data
-
-
+const users = await grab("users"); // Returns mock user data
 
 // Mock with conditional responses
-grab.mock['auth/login'] = {
+grab.mock["auth/login"] = {
   response: (params) => {
-    if (params.email === 'admin@example.com' && params.password === 'admin123') {
+    if (
+      params.email === "admin@example.com" &&
+      params.password === "admin123"
+    ) {
       return {
         success: true,
-        token: 'mock-jwt-token-12345',
-        user: { id: 1, name: 'Admin User', role: 'admin' }
+        token: "mock-jwt-token-12345",
+        user: { id: 1, name: "Admin User", role: "admin" },
       };
     } else {
       return {
         success: false,
-        error: 'Invalid credentials'
+        error: "Invalid credentials",
       };
     }
   },
-  method: 'POST',
-  delay: 1
+  post: true,
+  delay: 1,
 };
 
 // Error simulation
-grab.mock['users/create'] = {
+grab.mock["users/create"] = {
   response: (params) => {
     if (!params.email) {
-      throw new Error('Email is required');
+      throw new Error("Email is required");
     }
     return { id: Date.now(), ...params, created: true };
   },
-  method: 'POST'
+  post: true,
 };
 ```
-
 
 ### Unit Tests with Jest
 
 ```javascript
 // setup-tests.js
-import { grab } from 'grab-api.js';
+import grab from "grab-api.js";
 
 // Setup global mocks for testing
 beforeEach(() => {
@@ -548,51 +513,50 @@ beforeEach(() => {
 });
 
 // user.test.js
-import { grab } from 'grab-api.js';
+import grab from "grab-api.js";
 
-describe('User API', () => {
-  test('should fetch user data', async () => {
+describe("User API", () => {
+  test("should fetch user data", async () => {
     // Setup mock
     grab.mock.users = {
-      response: { id: 1, name: 'Test User', email: 'test@example.com' }
+      response: { id: 1, name: "Test User", email: "test@example.com" },
     };
 
-    const result = await grab('users');
-    
+    const result = await grab("users");
+
     expect(result.id).toBe(1);
-    expect(result.name).toBe('Test User');
+    expect(result.name).toBe("Test User");
   });
 
-  test('should handle user creation', async () => {
+  test("should handle user creation", async () => {
     grab.mock.users = {
       response: (params) => ({
         id: 123,
         ...params,
-        created: true
+        created: true,
       }),
-      method: 'POST'
+      post: true,
     };
 
-    const newUser = await grab('users', {
-      method: 'POST',
-      name: 'John Doe',
-      email: 'john@example.com'
+    const newUser = await grab("users", {
+      post: true,
+      name: "John Doe",
+      email: "john@example.com",
     });
 
-    expect(newUser.name).toBe('John Doe');
+    expect(newUser.name).toBe("John Doe");
     expect(newUser.created).toBe(true);
   });
 
-  test('should handle errors', async () => {
+  test("should handle errors", async () => {
     grab.mock.users = {
       response: () => {
-        throw new Error('User not found');
-      }
+        throw new Error("User not found");
+      },
     };
 
-    const result = await grab('users');
-    expect(result.error).toBe('User not found');
+    const result = await grab("users");
+    expect(result.error).toBe("User not found");
   });
 });
 ```
-

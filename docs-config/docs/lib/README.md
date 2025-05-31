@@ -58,7 +58,8 @@ npm i grab-api.js
 ### Examples
 
 ```ts
-import { grab } from "grab-api.js";
+import grab from 'grab-api.js';
+
 let res = $state({}) as {
   results: Array<{title:string}>,
   isLoading: boolean,
@@ -68,7 +69,7 @@ let res = $state({}) as {
 await grab('search', {
   response: res,
   query: "search words",
-  method: 'POST'
+  post: true
 })
  
 grab('user').then(log)
@@ -106,12 +107,12 @@ grab('user').then(log)
 
 ### Screenshots
 
-![Debug log](https://i.imgur.com/rV5js60.png)
-Debug Colorized log(JSON)
+**Debug Colorized log(JSON)**
+![Debug log](https://i.imgur.com/R8Qp6Vg.png)
+**Autocomplete option names**
 ![Autocomplete](https://i.imgur.com/XlxILJ0.png)
-Autocomplete option names
+**Hover over options for info**
 ![Info Tooltip](https://i.imgur.com/vV5jbZo.png)
-Hover over options for info
 
 ### Parameters
 

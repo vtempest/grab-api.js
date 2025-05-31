@@ -20,7 +20,10 @@ import { printStructureJSON, log, showAlert } from "./log.js";
  * 14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
  * 15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.defaults`
  * 16. **TypeScript Tooltips**: Developers can hover over option names and autocomplete TypeScript. Add to top of file: `import 'grab-api.js/globals'`
- * 
+ * 17. **Request Stategies**: [🎯 Examples](https://grab.js.org/guide/Examples) show common stategies like debounce, repeat, proxy, unit tests, interceptors, file upload, etc
+ * 18. **DevTools**: `Ctrl+I` overlays webpage with devtools showing all requests and responses, timing, and JSON structure.
+ * 19. **Repeat**: Repeat request this many times, or repeat every X seconds to poll for updates.
+ * 20. **Loading Icons**: Import from `grab-api.js/icons` to get enhanced animated loading icons.
  * @param {string} path The full URL path OR relative path on this server after `grab.defaults.baseURL`
  * @param {object} [options={}] Request params for GET or body for POST/PUT/PATCH and utility options
  * @param {string} [options.method] default="GET" The HTTP method to use
@@ -46,7 +49,8 @@ import { printStructureJSON, log, showAlert } from "./log.js";
  * @returns {Promise<Object>} The response object with resulting data or .error if error.
  * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
  * @see  [🎯 Examples](https://grab.js.org/guide/Examples) [📑 Docs](https://grab.js.org)
- * @example import { grab } from "grab-api.js";
+ * @example import grab from 'grab-api.js';
+
   let res = {};
   await grab('search', {
     response: res,
@@ -112,6 +116,9 @@ export async function grab(path, options = {}) {
       if (typeof window !== "undefined")
         window.grab.defaults = { ...options, setDefaults: undefined };
       else global.grab.defaults = { ...options, setDefaults: undefined };
+      
+  
+
       return {};
     }
 
@@ -351,7 +358,8 @@ export async function grab(path, options = {}) {
       request: JSON.stringify(params),
       error: error.message,
     });
-    if (resFunction) response = resFunction(response);
+    if (typeof options.response === "function") 
+      response = options.response(response);
     return response;
   }
 }
@@ -366,6 +374,24 @@ grab.instance =
   (defaultOptions = {}) =>
   (path, options = {}) =>
     grab(path, { ...defaultOptions, ...options });
+
+    //keyboard shortcut to toggle debug
+document.addEventListener("keydown", (e) => {
+  if (e.key === "i" && e.ctrlKey) {
+    //creeate html of the grab.log requests
+    let html = " ";
+    for (let request of grab.log) {
+      html += `<div style="margin-bottom:1em; border-bottom:1px solid #ccc; padding-bottom:1em;">
+        <b>Path:</b> ${request.path}<br>
+        <b>Request:</b> ${request.request}<br>
+        <b>Response:</b> ${JSON.stringify(request.response, null, 2)}<br>
+        <b>Time:</b> ${new Date(request.lastFetchTime).toLocaleString()}
+      </div>`;
+    }
+    showAlert(html);
+
+  }
+});
 
 
 // Add globals to window in browser, or global in Node.js
@@ -384,7 +410,7 @@ if (typeof window !== "undefined") {
 }
 
 /**
- * Todo:
+ * TODO
  *  - pagination working
  *  - react tests
  *  - progress
@@ -392,4 +418,5 @@ if (typeof window !== "undefined") {
  *  - tests in stackblitz
  *  - loading icons
  *  - repeat every
+ *  - show net log in alert
  */

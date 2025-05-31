@@ -400,7 +400,8 @@ The response object with resulting data or .error if error.
 ### Example
 
 ```ts
-import { grab } from "grab-api.js";
+import grab from 'grab-api.js';
+
  let res = {};
  await grab('search', {
    response: res,

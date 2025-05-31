@@ -1,17 +1,19 @@
 
 /**
+ * ### Colorized Log With JSON Structure
+ * ![Debug log](https://i.imgur.com/R8Qp6Vg.png)  
  * Logs messages to the console with custom styling,
- * showing debug output in development and standard logs in production.
- * Pretty print JSON with description of structure layout.
+ * prints JSON with description of structure layout, 
+ * and showing debug output in development only.
  * @param {string|object} message - The message to log. If an object is provided, it will be stringified.
  * @param {boolean} [hideInProduction] -  default = auto-detects based on hostname.
  *  If true, uses `console.debug` (hidden in production). If false, uses `console.log`.
- * @param {string} [style] default='color: blue; font-size: 15px' - CSS style string for the console output.
+ * @param {string} [style] default='color: blue; font-size: 15px' - CSS style string 
  */
 export function log(
   message,
   hideInProduction = undefined,
-  style = "color: blue; font-size: 14px;"
+  style = "color: blue; font-size: 13pt;"
 ) {
   if (typeof hideInProduction === "undefined")
     hideInProduction = window?.location.hostname.includes("localhost");
@@ -130,7 +132,7 @@ export function showAlert(msg) {
     o = document.body.appendChild(document.createElement('div'));
     o.id = 'alert-overlay';
     o.style = "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center";
-    o.innerHTML = `<div id="alert-box" style="background:#fff;padding:1.5em 2em;border-radius:8px;box-shadow:0 2px 16px #0003;min-width:220px;max-width:90vw;max-height:80vh;position:relative;display:flex;flex-direction:column;">
+    o.innerHTML = `<div id="alert-box" style="background:#fff;padding:1.5em 2em;border-radius:8px;box-shadow:0 2px 16px #0003;min-width:220px;max-height:80vh;position:relative;display:flex;flex-direction:column;">
       <button id="close-alert" style="position:absolute;top:12px;right:20px;font-size:1.5em;background:none;border:none;cursor:pointer;color:black;">&times;</button>
       <div id="alert-list" style="overflow:auto;flex:1;"></div>
     </div>`;
@@ -140,5 +142,5 @@ export function showAlert(msg) {
   } else {
     list = o.querySelector('#alert-list');
   }
-  list.innerHTML += `<div style="color:#c00;margin:0.5em 0;">${msg}</div>`;
+  list.innerHTML += `<div style="font-size:1.2em;margin:0.5em 0;">${msg}</div>`;
 }

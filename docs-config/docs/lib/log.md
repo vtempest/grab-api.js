@@ -9,11 +9,13 @@ function log(
    style?: string): void;
 ```
 
-Defined in: [log.js:11](https://github.com/vtempest/grab-api/tree/master/src/log.js#L11)
+Defined in: [log.js:13](https://github.com/vtempest/grab-api/tree/master/src/log.js#L13)
 
+### Colorized Log With JSON Structure
+![Debug log](https://i.imgur.com/R8Qp6Vg.png)  
 Logs messages to the console with custom styling,
-showing debug output in development and standard logs in production.
-Pretty print JSON with description of structure layout.
+prints JSON with description of structure layout, 
+and showing debug output in development only.
 
 ### Parameters
 
@@ -85,12 +87,12 @@ default = auto-detects based on hostname.
 </td>
 <td>
 
-`"color: blue; font-size: 14px;"`
+`"color: blue; font-size: 13pt;"`
 
 </td>
 <td>
 
-default='color: blue; font-size: 15px' - CSS style string for the console output.
+default='color: blue; font-size: 15px' - CSS style string
 
 </td>
 </tr>
@@ -109,7 +111,7 @@ default='color: blue; font-size: 15px' - CSS style string for the console output
 function printStructureJSON(obj: any, indent: number): string;
 ```
 
-Defined in: [log.js:71](https://github.com/vtempest/grab-api/tree/master/src/log.js#L71)
+Defined in: [log.js:73](https://github.com/vtempest/grab-api/tree/master/src/log.js#L73)
 
 ### Parameters
 
@@ -171,7 +173,7 @@ Defined in: [log.js:71](https://github.com/vtempest/grab-api/tree/master/src/log
 function showAlert(msg: string): void;
 ```
 
-Defined in: [log.js:127](https://github.com/vtempest/grab-api/tree/master/src/log.js#L127)
+Defined in: [log.js:129](https://github.com/vtempest/grab-api/tree/master/src/log.js#L129)
 
 Shows message in a modal overlay with concatenation 
 of messages, scroll large messages, and easy dismissal.

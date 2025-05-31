@@ -62,14 +62,14 @@ describe('GRAB API Library - Core Functions', () => {
         met
       )
       await grab('users', response, {
-        method: 'POST',
+        post: true,
         ...requestData
       });
 
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/users',
         expect.objectContaining({
-          method: 'POST',
+          post: true,
           body: JSON.stringify(requestData) // Should not contain page: 1
         })
       );
@@ -162,12 +162,12 @@ describe('GRAB API Library - Core Functions', () => {
         response: (params) => ({ 
           results: [`Result for ${params.query}`] 
         }),
-        method: 'POST'
+        post: true
       };
 
       const response = {};
       await grab('search', response, {
-        method: 'POST',
+        post: true,
         query: 'test search'
       });
 

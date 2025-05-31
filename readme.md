@@ -60,7 +60,8 @@ npm i grab-api.js
 ### Examples
 
 ```ts
-import { grab } from "grab-api.js";
+import grab from 'grab-api.js';
+
 let res = $state({}) as {
   results: Array<{title:string}>,
   isLoading: boolean,
@@ -70,7 +71,7 @@ let res = $state({}) as {
 await grab('search', {
   response: res,
   query: "search words",
-  method: 'POST'
+  post: true
 })
  
 grab('user').then(log)
@@ -108,293 +109,17 @@ grab('user').then(log)
 
 ### Screenshots
 
-![Debug log](https://i.imgur.com/rV5js60.png)
-Debug Colorized log(JSON)
+**Debug Colorized log(JSON)**
+![Debug log](https://i.imgur.com/R8Qp6Vg.png)
+
+**Autocomplete option names**
 ![Autocomplete](https://i.imgur.com/XlxILJ0.png)
-Autocomplete option names
+
+**Hover over options for info**
 ![Info Tooltip](https://i.imgur.com/vV5jbZo.png)
-Hover over options for info
-
-### Parameters
-
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`path`
-
-</td>
-<td>
-
-`string`
-
-</td>
-<td>
-
-The path in the API after base url
-
-</td>
-</tr>
-<tr>
-<td>
-
-`response`
-
-</td>
-<td>
-
-`any`
-
-</td>
-<td>
-
-Pre-initialized object to set the ,
-response in. isLoading and error are also set on this object.
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options?`
-
-</td>
-<td>
-
- `method`: `string`; `cancelOngoingIfNew`: `boolean`; `cancelNewIfOngoing`: `boolean`; `cache`: `boolean`; `debug`: `boolean`; `timeout`: `number`; `rateLimit`: `number`; `paginateResult`: `string`; `paginateKey`: `string`; `baseURL`: `string`; `setDefaults`: `boolean`; `onBeforeRequest`: `Function`; 
-
-</td>
-<td>
-
-Request params for GET or body for POST and utility options
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.method?`
-
-</td>
-<td>
-
-`string`
-
-</td>
-<td>
-
-default="GET" The HTTP method to use
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.cancelOngoingIfNew?`
-
-</td>
-<td>
-
-`boolean`
-
-</td>
-<td>
-
-default=true Cancel previous requests to same path
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.cancelNewIfOngoing?`
-
-</td>
-<td>
-
-`boolean`
-
-</td>
-<td>
-
-default=false Cancel if a request to path is in progress
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.cache?`
-
-</td>
-<td>
-
-`boolean`
-
-</td>
-<td>
-
-default=false Whether to cache the request and from frontend cache
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.debug?`
-
-</td>
-<td>
-
-`boolean`
-
-</td>
-<td>
-
-default=false Whether to log the request and response
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.timeout?`
-
-</td>
-<td>
-
-`number`
-
-</td>
-<td>
-
-default=20 The timeout for the request in seconds
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.rateLimit?`
-
-</td>
-<td>
-
-`number`
-
-</td>
-<td>
-
-default=0 If set, how many seconds to wait between requests
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.paginateResult?`
-
-</td>
-<td>
-
-`string`
-
-</td>
-<td>
-
-The key to paginate result data by
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.paginateKey?`
-
-</td>
-<td>
-
-`string`
-
-</td>
-<td>
-
-default="" The key to paginate the request by
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.baseURL?`
-
-</td>
-<td>
-
-`string`
-
-</td>
-<td>
-
-default='/api/' base url prefix, override with SERVER_API_URL env
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.setDefaults?`
-
-</td>
-<td>
-
-`boolean`
-
-</td>
-<td>
-
-default=false Pass this with options to set
- those options as defaults for all requests.
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.onBeforeRequest?`
-
-</td>
-<td>
-
-`Function`
-
-</td>
-<td>
-
-Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams
-
-</td>
-</tr>
-</tbody>
-</table>
-
-### Returns
-
-`Promise`&lt;`any`&gt;
-
-The response object with resulting data or .error if error.
 
 
 ### Comparison of HTTP Request Libraries
-
 
 | Feature | [GRAB](https://github.com/vtempest/grab-api) | [Axios](https://github.com/axios/axios) | [TanStack Query](https://github.com/TanStack/query) | [SWR](https://github.com/vercel/swr) | [Alova](https://github.com/alovajs/alova) | [SuperAgent](https://github.com/ladjs/superagent) | [Apisauce](https://github.com/infinitered/apisauce) | [Ky](https://github.com/sindresorhus/ky) |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | 

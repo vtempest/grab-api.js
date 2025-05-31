@@ -51,7 +51,7 @@ if (process.env.NODE_ENV === 'development') {
 
 ```javascript
 await grab('save-data', {
-  method: 'POST',
+  post: true,
   rateLimit: 2, // 2 seconds between saves
   data: formData
 });

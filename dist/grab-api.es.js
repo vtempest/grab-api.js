@@ -1,4 +1,4 @@
-function log(message, hideInProduction = void 0, style = "color: blue; font-size: 14px;") {
+function log(message, hideInProduction = void 0, style = "color: blue; font-size: 13pt;") {
   if (typeof hideInProduction === "undefined")
     hideInProduction = window == null ? void 0 : window.location.hostname.includes("localhost");
   if (typeof message === "object")
@@ -96,7 +96,7 @@ function showAlert(msg) {
     o = document.body.appendChild(document.createElement("div"));
     o.id = "alert-overlay";
     o.style = "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center";
-    o.innerHTML = `<div id="alert-box" style="background:#fff;padding:1.5em 2em;border-radius:8px;box-shadow:0 2px 16px #0003;min-width:220px;max-width:90vw;max-height:80vh;position:relative;display:flex;flex-direction:column;">
+    o.innerHTML = `<div id="alert-box" style="background:#fff;padding:1.5em 2em;border-radius:8px;box-shadow:0 2px 16px #0003;min-width:220px;max-height:80vh;position:relative;display:flex;flex-direction:column;">
       <button id="close-alert" style="position:absolute;top:12px;right:20px;font-size:1.5em;background:none;border:none;cursor:pointer;color:black;">&times;</button>
       <div id="alert-list" style="overflow:auto;flex:1;"></div>
     </div>`;
@@ -108,7 +108,7 @@ function showAlert(msg) {
   } else {
     list = o.querySelector("#alert-list");
   }
-  list.innerHTML += `<div style="color:#c00;margin:0.5em 0;">${msg}</div>`;
+  list.innerHTML += `<div style="font-size:1.2em;margin:0.5em 0;">${msg}</div>`;
 }
 async function grab(path, options = {}) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
@@ -152,8 +152,6 @@ async function grab(path, options = {}) {
     // Repeat request this many times
     debounce = null,
     // Debounce request this many milliseconds
-    errorAlert = true,
-    // Show error alert in browser
     ...params
     // All other params become request params/query
   } = {
@@ -180,8 +178,8 @@ async function grab(path, options = {}) {
       else global.grab.defaults = { ...options, setDefaults: void 0 };
       return {};
     }
-    let resFunction2 = typeof response === "function" ? response : null;
-    if (!response || resFunction2) response = {};
+    let resFunction = typeof response === "function" ? response : null;
+    if (!response || resFunction) response = {};
     let paramsAsText = JSON.stringify(
       paginateKey ? { ...params, [paginateKey]: void 0 } : params
     );
@@ -192,7 +190,7 @@ async function grab(path, options = {}) {
       if (cache && priorRequest) {
         for (let key of Object.keys(priorRequest.res))
           response[key] = priorRequest.res[key];
-        if (resFunction2) response = resFunction2(response);
+        if (resFunction) response = resFunction(response);
         return response;
       }
       for (let key of Object.keys(response)) response[key] = void 0;
@@ -206,7 +204,7 @@ async function grab(path, options = {}) {
       params[paginateKey] = pageNumber;
     }
     response.isLoading = true;
-    if (resFunction2) response = resFunction2(response);
+    if (resFunction) response = resFunction(response);
     if (rateLimit > 0 && (priorRequest == null ? void 0 : priorRequest.lastFetchTime) && priorRequest.lastFetchTime > Date.now() - 1e3 * rateLimit)
       throw new Error(
         "Fetch rate limit exceeded for " + path + ". Wait " + rateLimit + "s between requests."
@@ -287,11 +285,11 @@ async function grab(path, options = {}) {
       response,
       lastFetchTime: Date.now()
     });
-    if (resFunction2) response = resFunction2(response);
+    if (resFunction) response = resFunction(response);
     return response;
   } catch (error) {
     let errorMessage = "Error: " + error.message + "\nPath:" + baseURL + path + JSON.stringify(params);
-    showAlert(errorMessage);
+    if (debug) showAlert(errorMessage);
     log(errorMessage, true, "color: red;");
     if (options.retryAttempts > 0)
       return await grab(path, response, {
@@ -305,11 +303,26 @@ async function grab(path, options = {}) {
       request: JSON.stringify(params),
       error: error.message
     });
-    if (resFunction) response = resFunction(response);
+    if (typeof options.response === "function")
+      response = options.response(response);
     return response;
   }
 }
 grab.instance = (defaultOptions = {}) => (path, options = {}) => grab(path, { ...defaultOptions, ...options });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "i" && e.ctrlKey) {
+    let html = " ";
+    for (let request of grab.log) {
+      html += `<div style="margin-bottom:1em; border-bottom:1px solid #ccc; padding-bottom:1em;">
+        <b>Path:</b> ${request.path}<br>
+        <b>Request:</b> ${request.request}<br>
+        <b>Response:</b> ${JSON.stringify(request.response, null, 2)}<br>
+        <b>Time:</b> ${new Date(request.lastFetchTime).toLocaleString()}
+      </div>`;
+    }
+    showAlert(html);
+  }
+});
 if (typeof window !== "undefined") {
   window.grab = grab;
   window.log = log;
@@ -324,7 +337,6 @@ if (typeof window !== "undefined") {
   global.grab.defaults = {};
 }
 export {
-  grab as default,
   grab
 };
 //# sourceMappingURL=grab-api.es.js.map

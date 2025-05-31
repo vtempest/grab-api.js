@@ -32,14 +32,19 @@
 
 ## Migration Guide
 
-**Why fetch things when you can just GRAB? Make the switch!**
+**Stop trying to make fetch happen!** *
 
+**Why fetch things when you can just GRAB?**
+
+**Debugging requests is a bitch. Make the switch!**
+
+*[Meme Reference Explanation](https://knowyourmeme.com/memes/stop-trying-to-make-fetch-happen)
 ### From Fetch
 
 ```javascript
 // Fetch
 const response = await fetch('/api/users', {
-  method: 'POST',
+  post: true,
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ name: 'John' })
 });
@@ -47,7 +52,7 @@ const user = await response.json();
 
 // GRAB
 const user = await grab('users', {
-  method: 'POST',
+  post: true,
   name: 'John'
 });
 ```
@@ -56,35 +61,22 @@ const user = await grab('users', {
 
 ```javascript
 // Axios
+axios.defaults.baseURL = 'https://api.example.com';
 const response = await axios.get('/users', { params: { page: 1 } });
 const users = response.data;
 
 // GRAB
+grab.defaults.baseURL = 'https://api.example.com';
 const users = await grab('users', { page: 1 });
 ```
 ### From TanStack Query
 
 ```javascript
 // TanStack Query
-const { data: users, isLoading, error } = useQuery({
-  queryKey: ['users'],
-  queryFn: () => fetch('/api/users').then(res => res.json()),
-  staleTime: 5000,
-  cacheTime: 10 * 60 * 1000, // 10 minutes
-  retry: 3,
-  onSuccess: (data) => {
-    console.log('Users fetched:', data);
-  },
-  onError: (error) => {
-    console.error('Failed to fetch users:', error);
-  }
-});
-
-// With mutations
 const mutation = useMutation({
   mutationFn: (newUser) => {
     return fetch('/api/users', {
-      method: 'POST',
+      post: true,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newUser)
     }).then(res => res.json())
@@ -96,10 +88,10 @@ const mutation = useMutation({
 
 // GRAB
 const [users, setUsers] = useState({});
-useEffect(() => {
-  grab('users', { response: users });
-  setUsers({...users});
-}, []);
+grab('users', { 
+    response: users, 
+    newUser 
+});
 ```
 
 
@@ -125,13 +117,3 @@ useEffect(() => {
 19. [developit/redaxios](https://github.com/developit/redaxios) - The Axios API, as an 800 byte fetch wrapper
 20. [bekacru/better-fetch](https://github.com/bekacru/better-fetch) - fetch with standard schema validations, pre-defined routes, callbacks, plugins
 
-
-### Meme Reference
-
-> Gretchen: "That is so fetch!"
->
-> Regina: "Gretchen, stop trying to make fetch happen! It's not going to happen!"
-> _Mean Girls_ (2004)
- 
-
-[Meme Reference Explanation](https://knowyourmeme.com/memes/stop-trying-to-make-fetch-happen)
