@@ -113,11 +113,18 @@ grab('user').then(log)
 ![Debug log](https://i.imgur.com/R8Qp6Vg.png)
 
 **Autocomplete option names**
+
 ![Autocomplete](https://i.imgur.com/XlxILJ0.png)
 
 **Hover over options for info**
+
 ![Info Tooltip](https://i.imgur.com/vV5jbZo.png)
 
+
+**Animated SVG Loading Icons Custom Colors**
+
+![Icons](https://i.imgur.com/QHtjLtA.png)
+[Video](https://i.imgur.com/QHtjLtA.mp4)
 
 ### Comparison of HTTP Request Libraries
 

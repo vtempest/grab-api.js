@@ -219,6 +219,8 @@ const grabGoogleAPI = grab.instance({
   debug: true,
 });
 const data = await grabGoogleAPI("/api/endpoint");
+
+// Options Order of Precedence: Request Call > Instance > User Globals > Package Defaults
 ```
 
 

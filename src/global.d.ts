@@ -26,5 +26,4 @@ declare global {
   var log: LogFunction;
 }
 
-// This export is needed to make this a module
 export {};
