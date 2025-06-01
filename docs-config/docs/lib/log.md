@@ -111,7 +111,11 @@ default='color: blue; font-size: 15px' - CSS style string
 function printStructureJSON(obj: any, indent: number): string;
 ```
 
-Defined in: [log.js:73](https://github.com/vtempest/grab-api/tree/master/src/log.js#L73)
+Defined in: [log.js:87](https://github.com/vtempest/grab-api/tree/master/src/log.js#L87)
+
+Creates a colored visualization of a JSON object's structure
+Shows the shape and types of the data rather than actual values
+Recursively processes nested objects and arrays
 
 ### Parameters
 
@@ -173,10 +177,11 @@ Defined in: [log.js:73](https://github.com/vtempest/grab-api/tree/master/src/log
 function showAlert(msg: string): void;
 ```
 
-Defined in: [log.js:129](https://github.com/vtempest/grab-api/tree/master/src/log.js#L129)
+Defined in: [log.js:149](https://github.com/vtempest/grab-api/tree/master/src/log.js#L149)
 
-Shows message in a modal overlay with concatenation 
-of messages, scroll large messages, and easy dismissal.
+Shows message in a modal overlay with scrollable message stack
+and is easier to dismiss unlike alert() which blocks window.
+Creates a semi-transparent overlay with a white box containing the message.
 
 ### Parameters
 

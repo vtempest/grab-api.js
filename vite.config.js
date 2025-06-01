@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     dts({
       insertTypesEntry: true,
-      include: ['src/**/*.ts'],
+      include: ['src/**/*.ts' ],
       outDir: 'dist',
       rollupTypes: true,
     })
@@ -27,6 +27,6 @@ export default defineConfig({
     },
     minify: 'terser',
     sourcemap: true,
-    emptyOutDir: true
+    emptyOutDir: false
   }
 });

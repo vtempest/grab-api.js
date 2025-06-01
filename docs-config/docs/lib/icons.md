@@ -3,12 +3,20 @@
 ## getLoadingIcon()
 
 ```ts
-function getLoadingIcon(name: string): Promise<any>;
+function getLoadingIcon(name: string): Promise<Module>;
 ```
 
-Defined in: [icons/index.js:6](https://github.com/vtempest/grab-api/tree/master/src/icons/index.js#L6)
+Defined in: [icons/index.js:15](https://github.com/vtempest/grab-api/tree/master/src/icons/index.js#L15)
 
 Dynamically imports an SVG icon from the same folder by name.
+
+Available icons:
+loading-eclipse
+loading-ellipsis
+loading-floatingsearch
+loading-infinity
+loading-redblueball
+loading-ripple
 
 ### Parameters
 
@@ -34,7 +42,7 @@ Dynamically imports an SVG icon from the same folder by name.
 </td>
 <td>
 
-The SVG file name (without .svg extension)
+filename without .svg extension
 
 </td>
 </tr>
@@ -43,6 +51,6 @@ The SVG file name (without .svg extension)
 
 ### Returns
 
-`Promise`&lt;`any`&gt;
+`Promise`&lt;`Module`&gt;
 
 - The imported SVG module/component

@@ -6,27 +6,31 @@
 function grab(path: string, options?: object): Promise<any>;
 ```
 
-Defined in: [grab-api.js:56](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L56)
+Defined in: [grab-api.js:66](https://github.com/vtempest/grab-api/tree/master/src/grab-api.js#L66)
 
 ### GRAB: Generate Request to API from Browser
 ![GrabAPILogo](https://i.imgur.com/qrQWkeb.png)
-
-1. **One Function**: 2Kb min, 0 dependencies, minimal boilerplate syntax - [better than top alternatives](https://grab.js.org/guide/Comparisons) 
+1. **One Function**: 3Kb min, 0 dependencies, minimalist syntax, [more features than top alternatives](https://grab.js.org/guide/Comparisons)
 2. **Auto-JSON Convert**: Pass parameters and get response or error in JSON, handling other data types as is.
 3. **isLoading Status**: Sets `.isLoading=true` on the pre-initialized response object so you can show a "Loading..." in any framework
 4. **Debug Logging**: Adds global `log()` and prints colored JSON structure, response, timing for requests in test.
 5. **Mock Server Support**: Configure `window.grab.mock` for development and testing environments
 6. **Concurrency Handling**: Prevent this request if one is ongoing to same path & params, or cancel the ongoing request.
 7. **Timeout & Retry**: Customizable request timeout, default 20s, and auto-retry on error
-8. **Rate Limiting**: Built-in rate limiting to prevent multi-click cascading responses, require to wait seconds between requests.
+8. **DevTools**: `Ctrl+I` overlays webpage with devtools showing all requests and responses, timing, and JSON structure.
 9. **Request History**: Stores all request and response data in global `grab.log` object
 10. **Pagination Infinite Scroll**: Built-in pagination for infinite scroll to auto-load and merge next result page.
 11. **Base URL Based on Environment**: Configure `grab.defaults.baseURL` once at the top, overide with `SERVER_API_URL` in `.env` or `process.env.SERVER_API_URL` in Node.js.
 12. **Frontend Cache**: Set cache headers and retrieve from frontend memory for repeat requests to static data.
 13. **Modular Design**: Can be used in any frontend framework, Node.js 18+, Bun, Deno, Cloudflare Workers, etc.
-14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others. 
+14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others.
 15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.defaults`
 16. **TypeScript Tooltips**: Developers can hover over option names and autocomplete TypeScript. Add to top of file: `import 'grab-api.js/globals'`
+17. **Request Stategies**: [🎯 Examples](https://grab.js.org/guide/Examples) show common stategies like debounce, repeat, proxy, unit tests, interceptors, file upload, etc
+18. **Rate Limiting**: Built-in rate limiting to prevent multi-click cascading responses, require to wait seconds between requests.
+19. **Repeat**: Repeat request this many times, or repeat every X seconds to poll for updates.
+20. **Loading Icons**: Import from `grab-api.js/icons` to get enhanced animated loading icons.
+**GRAB is the FBEST Request Manager: Functionally Brilliant, Elegantly Simple Tool**
 
 ### Parameters
 
@@ -64,7 +68,7 @@ The full URL path OR relative path on this server after `grab.defaults.baseURL`
 </td>
 <td>
 
-\{ `method?`: `string`; `response?`: `any`; `cancelOngoingIfNew?`: `boolean`; `cancelNewIfOngoing?`: `boolean`; `cache?`: `boolean`; `debug?`: `boolean`; `timeout?`: `number`; `rateLimit?`: `number`; `paginateResult?`: `string`; `paginateKey?`: `string`; `baseURL?`: `string`; `setDefaults?`: `boolean`; `retryAttempts?`: `number`; `repeat?`: `number`; `repeatEvery?`: `number`; `logger?`: `Function`; `onBeforeRequest?`: `Function`; `onAfterRequest?`: `Function`; \}
+\{ `method?`: `string`; `response?`: `any`; `cancelOngoingIfNew?`: `boolean`; `cancelNewIfOngoing?`: `boolean`; `cache?`: `boolean`; `debug?`: `boolean`; `timeout?`: `number`; `rateLimit?`: `number`; `baseURL?`: `string`; `setDefaults?`: `boolean`; `retryAttempts?`: `number`; `infiniteScroll?`: `any`[]; `repeat?`: `number`; `repeatEvery?`: `number`; `logger?`: `Function`; `onBeforeRequest?`: `Function`; `onAfterRequest?`: `Function`; `debounce?`: `number`; `regrabOnStale?`: `boolean`; `regrabOnFocus?`: `boolean`; `regrabOnNetwork?`: `boolean`; \}
 
 </td>
 <td>
@@ -103,7 +107,8 @@ default="GET" The HTTP method to use
 </td>
 <td>
 
-Pre-initialized object to set the response in. isLoading and error are also set on this object.
+Pre-initialized object which becomes response JSON, no need for `.data`.
+ isLoading and error may also be set on this object. May omit and use return if load status is not needed.
 
 </td>
 </tr>
@@ -212,40 +217,6 @@ default=0 If set, how many seconds to wait between requests
 <tr>
 <td>
 
-`options.paginateResult?`
-
-</td>
-<td>
-
-`string`
-
-</td>
-<td>
-
-The key to paginate result data by
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options.paginateKey?`
-
-</td>
-<td>
-
-`string`
-
-</td>
-<td>
-
-default="" The key to paginate the request by
-
-</td>
-</tr>
-<tr>
-<td>
-
 `options.baseURL?`
 
 </td>
@@ -292,6 +263,23 @@ default=false Pass this with options to set
 <td>
 
 default=0 Retry failed requests this many times
+
+</td>
+</tr>
+<tr>
+<td>
+
+`options.infiniteScroll?`
+
+</td>
+<td>
+
+`any`[]
+
+</td>
+<td>
+
+default=null [page key, response field to concatenate, element with results]
 
 </td>
 </tr>
@@ -359,7 +347,8 @@ default=log Custom logger to override the built-in color JSON log()
 </td>
 <td>
 
-Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams
+Set with defaults to modify each request data.
+ Takes and returns in order: path, response, params, fetchParams
 
 </td>
 </tr>
@@ -376,7 +365,76 @@ Set with defaults to modify each request data. Takes and returns in order: path,
 </td>
 <td>
 
-Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams
+Set with defaults to modify each request data.
+ Takes and returns in order: path, response, params, fetchParams
+
+</td>
+</tr>
+<tr>
+<td>
+
+`options.debounce?`
+
+</td>
+<td>
+
+`number`
+
+</td>
+<td>
+
+default=0 Seconds to debounce request, wait to execute so that other requests may override
+
+</td>
+</tr>
+<tr>
+<td>
+
+`options.regrabOnStale?`
+
+</td>
+<td>
+
+`boolean`
+
+</td>
+<td>
+
+default=false Refetch when cache is past staleTime
+
+</td>
+</tr>
+<tr>
+<td>
+
+`options.regrabOnFocus?`
+
+</td>
+<td>
+
+`boolean`
+
+</td>
+<td>
+
+default=false Refetch on window refocus
+
+</td>
+</tr>
+<tr>
+<td>
+
+`options.regrabOnNetwork?`
+
+</td>
+<td>
+
+`boolean`
+
+</td>
+<td>
+
+default=false Refetch on network change
 
 </td>
 </tr>
@@ -401,10 +459,9 @@ The response object with resulting data or .error if error.
 
 ```ts
 import grab from 'grab-api.js';
-
- let res = {};
- await grab('search', {
-   response: res,
-   query: "search words"
- })
+let res = {};
+await grab('search', {
+  response: res,
+  query: "search words"
+})
 ```

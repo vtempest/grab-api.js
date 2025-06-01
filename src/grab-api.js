@@ -35,13 +35,13 @@ import { printStructureJSON, log, showAlert } from "./log.js";
  * @param {boolean} [options.cache] default=false Whether to cache the request and from frontend cache
  * @param {boolean} [options.debug] default=false Whether to log the request and response
  * @param {number} [options.timeout] default=20 The timeout for the request in seconds
+ * @param {number} [options.staleTime] default=60 Seconds to consider data stale and invalidate cache
  * @param {number} [options.rateLimit] default=0 If set, how many seconds to wait between requests
- * @param {string} [options.paginateResult]  The key to paginate result data by
- * @param {string} [options.paginateKey] default="" The key to paginate the request by
  * @param {string} [options.baseURL] default='/api/' base url prefix, override with SERVER_API_URL env
  * @param {boolean} [options.setDefaults] default=false Pass this with options to set
  *  those options as defaults for all requests.
  * @param {number} [options.retryAttempts] default=0 Retry failed requests this many times
+ * @param {array} [options.infiniteScroll] default=null [page key, response field to concatenate, element with results]
  * @param {number} [options.repeat] default=0 Repeat request this many times
  * @param {number} [options.repeatEvery] default=null Repeat request every seconds
  * @param {function} [options.logger] default=log Custom logger to override the built-in color JSON log()
@@ -49,6 +49,10 @@ import { printStructureJSON, log, showAlert } from "./log.js";
  *  Takes and returns in order: path, response, params, fetchParams
  * @param {function} [options.onAfterRequest] Set with defaults to modify each request data.
  *  Takes and returns in order: path, response, params, fetchParams
+ * @param {number} [options.debounce] default=0 Seconds to debounce request, wait to execute so that other requests may override
+ * @param {boolean} [options.regrabOnStale] default=false Refetch when cache is past staleTime
+ * @param {boolean} [options.regrabOnFocus] default=false Refetch on window refocus
+ * @param {boolean} [options.regrabOnNetwork] default=false Refetch on network change
  * @param {any} [...params] All other params become GET params, POST body, and other methods.
  * @returns {Promise<Object>} The response object with resulting data or .error if error.
  * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
@@ -91,7 +95,10 @@ export async function grab(path, options = {}) {
     onAfterRequest = null, // Hook to modify request data after request is made
     repeatEvery = null, // Repeat request every seconds
     repeat = 0, // Repeat request this many times
-    debounce = null, // Debounce request this many milliseconds
+    debounce = 0, // Seconds to debounce request, wait to execute so that other requests may override
+    regrabOnStale = false, // Refetch when cache is past staleTime
+    regrabOnFocus = false, // Refetch on window refocus
+    regrabOnNetwork = false, // Refetch on network change
     ...params // All other params become request params/query
   } = {
     // Destructure options with defaults, merging with any globally set defaults
@@ -100,6 +107,16 @@ export async function grab(path, options = {}) {
   };
   // Try-catch block wraps all request handling logic
   try {
+
+
+    //handle debounce
+    if (debounce > 0) {
+      return await debouncer(async () => {
+        await grab(path, { ...options, debounce: 0 });
+      }, debounce * 1000);
+    }
+
+
     // Handle repeat options:
     // - repeat: Makes the same request multiple times sequentially
     // - repeatEvery: Makes the request periodically on an interval
@@ -126,6 +143,29 @@ export async function grab(path, options = {}) {
       return {};
     }
 
+    // regrab on stale, on window refocus, on network
+    if (regrabOnStale)
+      setTimeout(async () => {
+        await grab(path, { ...options, cache: false });
+      }, 1000 * staleTime);
+
+    if (regrabOnFocus) {
+      window.addEventListener("focus", async () => {
+        await grab(path, { ...options, cache: false });
+      });
+      document.addEventListener("visibilitychange", async () => {
+        if (document.visibilityState === "visible") {
+          await grab(path, { ...options, cache: false });
+        }
+      });
+    }
+    if (regrabOnNetwork)
+      window.addEventListener("online", async () => {
+        if (document.visibilityState === "visible") {
+          await grab(path, { ...options, cache: false });
+        }
+      });
+
     // Handle response parameter which can be either an object to populate
     // or a function to call with results (e.g. React setState)
     let resFunction = typeof response === "function" ? response : null;
@@ -136,18 +176,31 @@ export async function grab(path, options = {}) {
     // Configure infinite scroll behavior if enabled
     // Attaches scroll listener to specified element that triggers next page load
     if (infiniteScroll?.length && typeof window == "undefined") {
-      if (typeof paginateElement === "string")
-        paginateElement = document.querySelector(paginateElement);
-      paginateElement.removeEventListener("scroll", window?.scrollListener);
-      window.scrollListener = paginateElement.addEventListener(
+      let paginateDOM =
+        typeof paginateElement === "string"
+          ? document.querySelector(paginateElement)
+          : paginateElement;
+
+      paginateDOM.removeEventListener("scroll", window?.scrollListener);
+
+      // Your modified scroll listener with position saving
+      window.scrollListener = paginateDOM.addEventListener(
         "scroll",
-        async ({ target: t }) =>
-          t.scrollHeight - t.scrollTop <= t.clientHeight + 200 &&
-          (await grab(path, {
-            ...options,
-            cache: false,
-            [paginateKey]: priorRequest?.currentPage + 1,
-          }))
+        async ({ target: t }) => {
+          // Save scroll position whenever user scrolls
+          localStorage.setItem(
+            "scroll",
+            JSON.stringify([t.scrollTop, t.scrollLeft, paginateElement])
+          );
+
+          if (t.scrollHeight - t.scrollTop <= t.clientHeight + 200) {
+            await grab(path, {
+              ...options,
+              cache: false,
+              [paginateKey]: priorRequest?.currentPage + 1,
+            });
+          }
+        }
       );
     }
 
@@ -400,13 +453,12 @@ export async function grab(path, options = {}) {
   }
 }
 
-
-const debounce = (func, wait) => {
+const debouncer = async (func, wait) => {
   let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
+  return async function executedFunction(...args) {
+    const later = async () => {
       clearTimeout(timeout);
-      func(...args);
+      await func(...args);
     };
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
@@ -420,6 +472,15 @@ if (typeof window !== "undefined") {
   window.grab.log = [];
   window.grab.mock = {};
   window.grab.defaults = {};
+
+  // Restore scroll position when page loads or component mounts
+  document.addEventListener("DOMContentLoaded", () => {
+    let [scrollTop, scrollLeft, paginateElement] =
+      JSON.parse(localStorage.getItem("scroll")) || [];
+    if (!scrollTop) return;
+    document.querySelector(paginateElement).scrollTop = scrollTop;
+    document.querySelector(paginateElement).scrollLeft = scrollLeft;
+  });
 } else if (typeof global !== "undefined") {
   global.grab = grab;
   global.log = log;
@@ -438,6 +499,6 @@ if (typeof window !== "undefined") {
  *  - loading icons
  *  - repeat every
  *  - show net log in alert
- *  - refetch on stale, on window refocus, on network 
+ *  - refetch on stale, on window refocus, on network
  *  - scroll position recovery
  */

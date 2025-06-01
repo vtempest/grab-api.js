@@ -99,17 +99,40 @@ export declare interface GrabOptions<TResponse = any, TParams = Record<string, a
     /** Enable debug logging */
     debug?: boolean;
 
-    /** Key in response object to paginate results by */
-    paginateResult?: string;
-
-    /** Request parameter key used for pagination */
-    paginateKey?: string;
+    /** Seconds to consider data stale and invalidate cache */
+    staleTime?: number;
 
     /** Set these options as defaults for all future requests */
     setDefaults?: boolean;
 
     /** Retry failed requests once */
     retryAttempts?: boolean;
+
+    /** Custom Logger function to use for logging */
+    logger?: LogFunction;
+
+    /** Seconds to debounce request, wait to execute so that other requests may override */
+    debounce?: number;
+
+    /** Refetch when cache is past staleTime */
+    regrabOnStale?: boolean;
+
+    /** Refetch on window refocus */
+    regrabOnFocus?: boolean;
+
+    /** Refetch on network change */
+    regrabOnNetwork?: boolean;
+
+    /** Repeat request this many times */
+    repeat?: number;
+
+    /** Repeat request every seconds */
+    repeatEvery?: number;
+
+    /** Infinite scroll request, [page key, response field to concatenate, element with results] */
+    infiniteScroll?: [string, string, string];
+
+
 
     /** Hook function called before each request to modify request data */
     onBeforeRequest?: (
@@ -118,9 +141,6 @@ export declare interface GrabOptions<TResponse = any, TParams = Record<string, a
     params: TParams,
     fetchParams: RequestInit
     ) => [string, GrabResponse<TResponse>, TParams, RequestInit];
-
-    /** Custom Logger function to use for logging */
-    logger?: LogFunction;
 
     /** Hook function called after each request to modify request data */
     onAfterRequest?: (
