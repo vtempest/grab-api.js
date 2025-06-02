@@ -1,7 +1,11 @@
 interface LoadingOptions {
+  /** Array of hex colors to replace existing colors, in order of appearance in SVG*/
   colors?: string[];
+  /** Width of the SVG */
   width?: number;
+  /** Height of the SVG */
   height?: number;
+  /** Size for both width and height (overrides width/height) */
   size?: number;
 }
   

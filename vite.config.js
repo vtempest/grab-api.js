@@ -8,18 +8,21 @@ export default defineConfig({
     svgr(),
     dts({
       insertTypesEntry: true,
-      include: ['src/**/*.ts' ],
+      include: [
+        'src/**/*.ts',
+        'src/icons/index.ts',
+        'src/icons/index.d.ts'
+      ],
       outDir: 'dist',
       rollupTypes: true,
     })
   ],
   build: {
     lib: {
-      entry: {
-        'grab-api': resolve(__dirname, 'src/grab-api.js'),
-        'icons': resolve(__dirname, 'src/icons/index.js')
-      },
-      
+        entry: {
+          'grab-api': resolve(__dirname, 'src/grab-api.ts'),
+          'icons': resolve(__dirname, 'src/icons/index.ts')
+        },
       formats: ['es', 'cjs'],
       fileName: (format, entryName) => `${entryName}.${format}.js`
     },
@@ -27,8 +30,7 @@ export default defineConfig({
       // Disable inlineDynamicImports for multiple formats
       output: {
         inlineDynamicImports: false
-      },
-      external: ['typescript']
+      }
     },
     minify: 'terser',
     sourcemap: true,

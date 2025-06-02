@@ -75,7 +75,7 @@ export function convertSVGFolderToExportIndex(inputFolder, indexPath) {
  * @param {string} svgString - The original SVG content
  * @returns {string} SVG string with applied customizations
  */
-function customSVG( options = {}, svgString) {
+function customSVG( options: LoadingOptions, svgString: string) {
     const { colors = [], width, height, size } = options;
 
     const widthMatch = svgString.match(/width="(d+)"/);
@@ -103,14 +103,25 @@ function customSVG( options = {}, svgString) {
 
     return svgString;
 }
+
+interface LoadingOptions {
+  colors?: string[];
+  width?: number;
+  height?: number;
+  size?: number;
+}
 `;
 
   fs.writeFileSync(indexPath, indexContent);
 
   let typesContent = `interface LoadingOptions {
+  /** Array of hex colors to replace existing colors, in order of appearance in SVG*/
   colors?: string[];
+  /** Width of the SVG */
   width?: number;
+  /** Height of the SVG */
   height?: number;
+  /** Size for both width and height (overrides width/height) */
   size?: number;
 }
   
@@ -154,7 +165,7 @@ export const ${functionName}: (options?: LoadingOptions) => string;`;
     }
   );
 
-  fs.writeFileSync(indexPath.replace(".js", ".d.ts"), typesContent + "\n}");
+  fs.writeFileSync(indexPath.replace(".ts", ".d.ts"), typesContent + "\n}");
 
   console.log(
     `✨ Converted ${svgFiles.length} SVG files to customizable JS export files`
@@ -186,7 +197,7 @@ const inputIndex = args.indexOf("-i");
 const outputIndex = args.indexOf("-o");
 
 const inputFolder = inputIndex >= 0 ? args[inputIndex + 1] : "./svg"; // Folder containing SVG files
-const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : "./index.js"; // Folder for generated JS files
+const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : "./index.ts"; // Folder for generated JS files
 
 // Run the converter
 convertSVGFolderToExportIndex(inputFolder, outputPath);

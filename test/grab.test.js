@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { grab, log, printStructureJSON } from '../';
+import { grab, log, printStructureJSON } from 'grab-api.js';
 
 
 // Mock fetch globally
@@ -26,7 +26,9 @@ describe('GRAB API Library - Core Functions', () => {
       });
 
       const response = {};
-      const result = await grab('test-path', response);
+      const result = await grab('test-path', {
+        response
+      });
 
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/test-path?',
@@ -50,9 +52,7 @@ describe('GRAB API Library - Core Functions', () => {
 
       const response = {};
       const requestData = { name: 'test', email: 'test@example.com' };
-      await grab("fff", }
-        met
-      )
+     
       await grab('users', response, {
         post: true,
         ...requestData

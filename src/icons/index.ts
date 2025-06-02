@@ -1,5 +1,4 @@
 // Do a Barrel Roll index of SVG icons as JS exports, enabling tree shaking to only the icons you import.
-
 export const loadingBouncyBall = (options = {}) => customSVG(options, 
 `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" width="200" height="200" style="shape-rendering: auto; display: block; "><g><circle fill="#e15b64" r="13" cy="23" cx="50"><animate values="23;77;23" keyTimes="0;0.5;1" keySplines="0.45 0 0.9 0.55;0 0.45 0.55 0.9" calcMode="spline" repeatCount="indefinite" dur="1s" attributeName="cy"></animate></circle><g></g></g></svg>`);
 
@@ -61,7 +60,7 @@ export const loadingSquareBlocks = (options = {}) => customSVG(options,
  * @param {string} svgString - The original SVG content
  * @returns {string} SVG string with applied customizations
  */
-function customSVG( options = {}, svgString) {
+function customSVG( options: LoadingOptions, svgString: string) {
     const { colors = [], width, height, size } = options;
 
     const widthMatch = svgString.match(/width="(d+)"/);
@@ -88,4 +87,11 @@ function customSVG( options = {}, svgString) {
     }
 
     return svgString;
+}
+
+interface LoadingOptions {
+  colors?: string[];
+  width?: number;
+  height?: number;
+  size?: number;
 }

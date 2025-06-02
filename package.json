@@ -2,7 +2,7 @@
   "name": "grab-api.js",
   "description": "Generate Request to API from Browser",
   "type": "module",
-  "version": "0.9.98",
+  "version": "0.9.102",
   "author": "vtempest",
   "license": "MIT",
   "repository": {
@@ -10,15 +10,15 @@
     "url": "https://github.com/vtempest/grab-api"
   },
   "main": "./src/index.js",
-  "module": "./src/grab-api.js",
+  "module": "./src/grab-api.ts",
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
-      "import": "./src/index.js",
-      "require": "./src/index.js"
+      "types": "./dist/grab-api.d.ts",
+      "import": "./dist/grab-api.es.js",
+      "require": "./dist/grab-api.cjs.js"
     },
     "./icons": {
-      "types": "./dist/icons.d.ts",
+      "types": "./src/icons/index.d.ts",
       "import": "./dist/icons.es.js",
       "require": "./dist/icons.cjs.js"
     },
@@ -44,11 +44,13 @@
   "scripts": {
     "build": " npm run icons; vite build;",
     "check": "vitest --ui",
-    "icons": "node src/icons/convert-svg-to-export.js -i ./src/icons -o ./src/icons/index.js"
+    "icons": "node src/icons/convert-svg-to-export.js -i ./src/icons -o ./src/icons/index.ts"
   },
   "devDependencies": {
     "@vitest/ui": "^3.1.4",
+    "jsdoc": "^4.0.4",
     "terser": "^5.40.0",
+    "tsd-jsdoc": "^2.5.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "vite-plugin-dts": "^4.5.4",

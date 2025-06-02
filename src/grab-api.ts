@@ -1,6 +1,20 @@
 import { printStructureJSON, log, showAlert, setupDevTools } from "./log.js";
 
 /**
+ * TODO
+ *  - pagination working
+ *  - react tests
+ *  - progress
+ *  - grab error popup and dev tool
+ *  - tests in stackblitz
+ *  - loading icons
+ *  - repeat every
+ *  - show net log in alert
+ *  - refetch on stale, on window refocus, on network
+ *  - scroll position recovery
+ */
+
+/**
  * ### GRAB: Generate Request to API from Browser
  * ![GrabAPILogo](https://i.imgur.com/qrQWkeb.png)
  * **GRAB is the FBEST Request Manager: Functionally Brilliant, Elegantly Simple Tool**
@@ -64,29 +78,32 @@ import { printStructureJSON, log, showAlert, setupDevTools } from "./log.js";
  *   query: "search words"
  * })
  */
-export async function grab(path, options = {}) {
+export async function grab(path: string, options: GrabOptions) {
   let {
     headers,
     response = {}, // Pre-initialized object to set the response in. isLoading and error are also set on this object.
     method = options.post // set post: true for POST, omit for GET
       ? "POST"
       : options.put
-      ? "PUT"
-      : options.patch
-      ? "PATCH"
-      : options.delete
-      ? "DELETE"
-      : "GET",
-    cache = false, // Enable/disable frontend caching
+        ? "PUT"
+        : options.patch
+          ? "PATCH"
+          : "GET",
+    /* Enable/disable frontend caching */
+    cache = false,
+    post = false,
+    put = false,
+    patch = false,
+    body = null,
     staleTime = 60, // Seconds to consider data stale and invalidate cache
     timeout = 20, // Request timeout in seconds
     baseURL = (typeof process !== "undefined" && process.env.SERVER_API_URL) ||
-      "/api/", // Use env var or default to /api/
+    "/api/", // Use env var or default to /api/
     cancelOngoingIfNew = true, // Cancel previous request for same path
     cancelNewIfOngoing = false, // Don't make new request if one is ongoing
     rateLimit = 0, // Minimum seconds between requests
     debug = typeof window !== "undefined" &&
-      window?.location?.hostname?.includes("localhost"), // Auto-enable debug on localhost
+    window?.location?.hostname?.includes("localhost"), // Auto-enable debug on localhost
     infiniteScroll = null, // page key, response field to concatenate, element with results
     setDefaults = false, // Set these options as defaults for future requests
     retryAttempts = 0, // Retry failed requests once
@@ -107,7 +124,6 @@ export async function grab(path, options = {}) {
   };
   try {
 
-    
     //handle debounce
     if (debounce > 0) {
       return await debouncer(async () => {
@@ -180,13 +196,15 @@ export async function grab(path, options = {}) {
           : paginateElement;
 
       if (paginateDOM)
-        paginateDOM.removeEventListener("scroll", window?.scrollListener);
+        paginateDOM.removeEventListener("scroll", (window ?? globalThis)?.scrollListener);
 
       // Your modified scroll listener with position saving
-      window.scrollListener = paginateDOM.addEventListener(
+      (window ?? globalThis).scrollListener = paginateDOM.addEventListener(
         "scroll",
-        async ({ target: t }) => {
+        async ({ target }: { target: EventTarget }) => {
           // Save scroll position whenever user scrolls
+          const t = target as HTMLElement;
+
           localStorage.setItem(
             "scroll",
             JSON.stringify([t.scrollTop, t.scrollLeft, paginateElement])
@@ -261,10 +279,10 @@ export async function grab(path, options = {}) {
     )
       throw new Error(
         "Fetch rate limit exceeded for " +
-          path +
-          ". Wait " +
-          rateLimit +
-          "s between requests."
+        path +
+        ". Wait " +
+        rateLimit +
+        "s between requests."
       );
 
     // Handle request cancellation based on configuration:
@@ -291,12 +309,13 @@ export async function grab(path, options = {}) {
         Accept: "application/json",
         ...headers,
       },
-      redirect: "follow",
-      cache: cache ? "force-cache" : "no-store",
+      body: params.body,
+      redirect: "follow" as RequestRedirect,
+      cache: cache ? "force-cache" : "no-store" as RequestCache,
       signal: cancelOngoingIfNew
         ? grab.log[0]?.controller?.signal
         : AbortSignal.timeout(timeout * 1000),
-    };
+    } as RequestInit;
 
     // Format request parameters based on HTTP method
     // POST/PUT/PATCH send data in request body
@@ -308,7 +327,7 @@ export async function grab(path, options = {}) {
 
     // Execute pre-request hook if configured
     // Allows modifying request data before sending
-    if (typeof beforeRequest === "function")
+    if (typeof onBeforeRequest === "function")
       [path, response, params, fetchParams] = onBeforeRequest(
         path,
         response,
@@ -325,7 +344,7 @@ export async function grab(path, options = {}) {
     // Otherwise make actual API request
     let res = null,
       startTime = new Date(),
-      mockHandler = grab.mock?.[path];
+      mockHandler = grab.mock?.[path] as GrabMockHandler;
 
     let wait = (s) => new Promise((res) => setTimeout(res, s * 1000 || 0));
 
@@ -355,8 +374,8 @@ export async function grab(path, options = {}) {
           ? res && res.json()
           : type.includes("application/pdf") ||
             type.includes("application/octet-stream")
-          ? res.blob()
-          : res.text()
+            ? res.blob()
+            : res.text()
         : res.json()
       ).catch((e) => {
         throw new Error("Error parsing response: " + e);
@@ -365,7 +384,7 @@ export async function grab(path, options = {}) {
 
     // Execute post-request hook if configured
     // Allows modifying response data before processing
-    if (typeof afterRequest === "function")
+    if (typeof onAfterRequest === "function")
       [path, response, params, fetchParams] = onAfterRequest(
         path,
         response,
@@ -389,15 +408,15 @@ export async function grab(path, options = {}) {
     if (debug) {
       log(
         "Path:" +
-          baseURL +
-          path +
-          paramsGETRequest +
-          "\n" +
-          JSON.stringify(options, null, 2) +
-          "\nTime: " +
-          elapsedTime +
-          "s\nResponse: " +
-          printStructureJSON(res)
+        baseURL +
+        path +
+        paramsGETRequest +
+        "\n" +
+        JSON.stringify(options, null, 2) +
+        "\nTime: " +
+        elapsedTime +
+        "s\nResponse: " +
+        printStructureJSON(res)
       );
       console.log(res);
     }
@@ -433,7 +452,7 @@ export async function grab(path, options = {}) {
 
     // Retry request if retries are configured and attempts remain
     if (options.retryAttempts > 0)
-      return await grab(path, response, {
+      return await grab(path, {
         ...options,
         retryAttempts: --options.retryAttempts,
       });
@@ -471,8 +490,8 @@ export async function grab(path, options = {}) {
  */
 grab.instance =
   (defaultOptions = {}) =>
-  (path, options = {}) =>
-    grab(path, { ...defaultOptions, ...options });
+    (path, options = {}) =>
+      grab(path, { ...defaultOptions, ...options });
 
 
 const debouncer = async (func, wait) => {
@@ -489,7 +508,6 @@ const debouncer = async (func, wait) => {
 
 // Add globals to window in browser, or global in Node.js
 if (typeof window !== "undefined") {
-  window.grab = grab;
   window.log = log;
   window.grab.log = [];
   window.grab.mock = {};
@@ -507,23 +525,220 @@ if (typeof window !== "undefined") {
     document.querySelector(paginateElement).scrollLeft = scrollLeft;
   });
 } else if (typeof global !== "undefined") {
-  global.grab = grab;
+  grab.log = [];
+  grab.mock = {};
+  grab.defaults = {};
   global.log = log;
-  global.grab.log = [];
-  global.grab.mock = {};
-  global.grab.defaults = {};
 }
 
-/**
- * TODO
- *  - pagination working
- *  - react tests
- *  - progress
- *  - grab error popup and dev tool
- *  - tests in stackblitz
- *  - loading icons
- *  - repeat every
- *  - show net log in alert
- *  - refetch on stale, on window refocus, on network
- *  - scroll position recovery
+// Core response object that gets populated with API response data
+export interface GrabResponse<T = any> {
+  /** Indicates if request is currently in progress */
+  isLoading?: boolean;
+  /** Error message if request failed */
+  error?: string;
+  /** The actual response data - type depends on API endpoint */
+  [key: string]: T | boolean | string | undefined;
+}
+
+
+export interface GrabOptions<TResponse = any, TParams = Record<string, any>> {
+  /** include headers and authorization in the request */
+  headers?: Record<string, string>;
+  /** Pre-initialized object which becomes response JSON, no need for .data */
+  response?: Record<string, any>;
+  /** default="GET" The HTTP method to use */
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  /** default=false Whether to cache the request and from frontend cache */
+  cache?: boolean;
+  /** default=60 Seconds to consider data stale and invalidate cache */
+  staleTime?: number;
+  /** default=20 The timeout for the request in seconds */
+  timeout?: number;
+  /** default='/api/' base url prefix, override with SERVER_API_URL env */
+  baseURL?: string;
+  /** default=true Cancel previous requests to same path */
+  cancelOngoingIfNew?: boolean;
+  /** default=false Cancel if a request to path is in progress */
+  cancelNewIfOngoing?: boolean;
+  /** default=0 If set, how many seconds to wait between requests */
+  rateLimit?: number;
+  /** default=false Whether to log the request and response */
+  debug?: boolean;
+  /** default=null [page key, response field to concatenate, element with results] */
+  infiniteScroll?: [string, string, string];
+  /** default=false Pass this with options to set those options as defaults for all requests */
+  setDefaults?: boolean;
+  /** default=0 Retry failed requests this many times */
+  retryAttempts?: number;
+  /** default=log Custom logger to override the built-in color JSON log() */
+  logger?: (...args: any[]) => void;
+  /** Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams */
+  onBeforeRequest?: (...args: any[]) => any;
+  /** Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams */
+  onAfterRequest?: (...args: any[]) => any;
+  /** default=0 Repeat request this many times */
+  repeat?: number;
+  /** default=null Repeat request every seconds */
+  repeatEvery?: number;
+  /** default=0 Seconds to debounce request, wait to execute so that other requests may override */
+  debounce?: number;
+  /** default=false Refetch when cache is past staleTime */
+  regrabOnStale?: boolean;
+  /** default=false Refetch on window refocus */
+  regrabOnFocus?: boolean;
+  /** default=false Refetch on network change */
+  regrabOnNetwork?: boolean;
+  /** All other params become GET params, POST body, and other methods */
+  post?: boolean;
+  put?: boolean;
+  patch?: boolean;
+  body?: any;
+  [key: string]: any;
+}
+
+
+// Combined options and parameters interface
+export interface GrabRequestConfig<
+  TResponse = any,
+  TParams = Record<string, any>
+> extends GrabOptions<TResponse, TParams> { }
+
+// Mock server configuration for testing
+export interface GrabMockHandler<TParams = any, TResponse = any> {
+  /** Mock response data or function that returns response */
+  response: TResponse | ((params: TParams) => TResponse);
+  /** HTTP method this mock should respond to */
+  method?: string;
+  /** Request parameters this mock should match */
+  params?: TParams;
+  /** Delay in seconds before returning mock response */
+  delay?: number;
+}
+
+// Request log entry for debugging and history
+export interface GrabLogEntry {
+  /** API path that was requested */
+  path: string;
+  /** Stringified request parameters */
+  request: string;
+  /** Response data (only present for successful requests) */
+  response?: any;
+  /** Error message (only present for failed requests) */
+  error?: string;
+  /** Timestamp when request was made */
+  lastFetchTime: number;
+  /** Abort controller for request cancellation */
+  controller?: AbortController;
+  /** Current page number for paginated requests */
+  currentPage?: number;
+}
+
+// Global grab configuration and state
+export interface GrabGlobal {
+  /** Default options applied to all requests */
+  defaults?: Partial<GrabOptions>;
+  /** Request history and debugging info */
+  log?: GrabLogEntry[];
+  /** Mock server handlers for testing */
+  mock?: Record<string, GrabMockHandler>;
+  /** Create a separate instance of grab with separate default options */
+  instance?: (defaultOptions?: Partial<GrabOptions>) => GrabFunction;
+}
+
+// Main grab function signature with overloads for different use cases
+export interface GrabFunction {
+  /**
+ * ### GRAB: Generate Request to API from Browser
+ * ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
+ * Make API request with path 
+ * @returns {Promise<Object>} The response object with resulting data or .error if error.
+ * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
+ * @see  [🎯 Examples](https://grab.js.org/guide/Examples) [📑 Docs](https://grab.js.org/lib)
  */
+  <TResponse = any>(path: string): Promise<GrabResponse<TResponse>>;
+
+  /**
+   * ### GRAB: Generate Request to API from Browser
+   * ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
+   * Make API request with path and options/parameters
+   * @returns {Promise<Object>} The response object with resulting data or .error if error.
+   * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
+   * @see  [🎯 Examples](https://grab.js.org/guide/Examples) [📑 Docs](https://grab.js.org/lib)
+   */
+  <TResponse = any, TParams = Record<string, any>>(
+    path: string,
+    config: GrabRequestConfig<TResponse, TParams>
+  ): Promise<GrabResponse<TResponse>>;
+
+  /** Default options applied to all requests */
+  defaults?: Partial<GrabOptions>;
+
+  /** Request history and debugging info for all requests */
+  log?: GrabLogEntry[];
+
+  /** Mock server handlers for testing */
+  mock?: Record<string, GrabMockHandler>;
+
+  /** Create a separate instance of grab with separate default options */
+  instance?: (defaultOptions?: Partial<GrabOptions>) => GrabFunction;
+}
+
+// Log function for debugging
+export interface LogFunction {
+  /**
+   * Log messages with custom styling
+   * @param message - Message to log (string or object)
+   * @param hideInProduction - Whether to hide in production (auto-detected if undefined)
+   * @param style - CSS style string for console output
+   */
+  (message: string | object, hideInProduction?: boolean, style?: string): void;
+}
+
+// Utility function to describe JSON structure
+export interface PrintStructureJSONFunction {
+  /**
+   * Generate TypeDoc-like description of JSON object structure
+   * @param obj - The JSON object to describe
+   * @returns String representation of object structure
+   */
+  (obj: any): string;
+}
+
+
+// Type helpers for common use cases
+export type GrabResponseWithData<T> = GrabResponse<T> & {
+  data?: T;
+};
+
+
+// Helper type for creating typed API clients
+export type TypedGrabFunction = <
+  TResponse = any,
+  TParams = Record<string, any>
+>(
+  path: string,
+  config?: GrabRequestConfig<TResponse, TParams>
+) => Promise<GrabResponse<TResponse>>;
+
+
+
+declare global {
+  // Browser globals
+  interface Window {
+    grab: GrabFunction;
+    log: LogFunction;
+  }
+
+  // Node.js globals
+  namespace NodeJS {
+    interface Global {
+      grab: GrabFunction;
+      log: LogFunction;
+    }
+  }
+
+  // Global variables available after script inclusion
+  var log: LogFunction;
+  var grab: GrabFunction;
+}

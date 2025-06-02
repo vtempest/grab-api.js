@@ -4,11 +4,12 @@
     "module": "ESNext",
     "moduleResolution": "bundler",  // Recommended for Vite/ESM
     "resolveJsonModule": true,
-    "allowJs": true,                // Allow JS files
+    "allowJs": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
     "checkJs": false,               // Disable JS type checking
-    "declaration": true,            // Required for .d.ts generation
+    "noImplicitAny": false,
     "declarationDir": "./dist",     // Output dir for .d.ts files
-    "emitDeclarationOnly": false,   // Allow JS emission if needed
     "outDir": "./dist",             // Output directory
     "strict": false,
     "skipLibCheck": true,

@@ -122,15 +122,19 @@ function setupDevTools() {
     }
   });
 }
-async function grab$1(path, options = {}) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+async function grab$1(path, options) {
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
   let {
     headers,
     response = {},
     // Pre-initialized object to set the response in. isLoading and error are also set on this object.
-    method = options.post ? "POST" : options.put ? "PUT" : options.patch ? "PATCH" : options.delete ? "DELETE" : "GET",
+    method = options.post ? "POST" : options.put ? "PUT" : options.patch ? "PATCH" : "GET",
+    /* Enable/disable frontend caching */
     cache = false,
-    // Enable/disable frontend caching
+    post = false,
+    put = false,
+    patch = false,
+    body = null,
     staleTime = 60,
     // Seconds to consider data stale and invalidate cache
     timeout = 20,
@@ -226,10 +230,11 @@ async function grab$1(path, options = {}) {
     if ((infiniteScroll == null ? void 0 : infiniteScroll.length) && typeof window == "undefined") {
       let paginateDOM = typeof paginateElement === "string" ? document.querySelector(paginateElement) : paginateElement;
       if (paginateDOM)
-        paginateDOM.removeEventListener("scroll", window == null ? void 0 : window.scrollListener);
-      window.scrollListener = paginateDOM.addEventListener(
+        paginateDOM.removeEventListener("scroll", (_e = window ?? globalThis) == null ? void 0 : _e.scrollListener);
+      (window ?? globalThis).scrollListener = paginateDOM.addEventListener(
         "scroll",
-        async ({ target: t }) => {
+        async ({ target }) => {
+          const t = target;
           localStorage.setItem(
             "scroll",
             JSON.stringify([t.scrollTop, t.scrollLeft, paginateElement])
@@ -247,7 +252,7 @@ async function grab$1(path, options = {}) {
     let paramsAsText = JSON.stringify(
       paginateKey ? { ...params, [paginateKey]: void 0 } : params
     );
-    let priorRequest = (_e = grab$1.log) == null ? void 0 : _e.find(
+    let priorRequest = (_f = grab$1.log) == null ? void 0 : _f.find(
       (e) => e.request == paramsAsText && e.path == path
     );
     if (!paginateKey) {
@@ -292,15 +297,16 @@ async function grab$1(path, options = {}) {
         Accept: "application/json",
         ...headers
       },
+      body: params.body,
       redirect: "follow",
       cache: cache ? "force-cache" : "no-store",
-      signal: cancelOngoingIfNew ? (_g = (_f = grab$1.log[0]) == null ? void 0 : _f.controller) == null ? void 0 : _g.signal : AbortSignal.timeout(timeout * 1e3)
+      signal: cancelOngoingIfNew ? (_h = (_g = grab$1.log[0]) == null ? void 0 : _g.controller) == null ? void 0 : _h.signal : AbortSignal.timeout(timeout * 1e3)
     };
     let paramsGETRequest = "";
     if (["POST", "PUT", "PATCH"].includes(method))
       fetchParams.body = params.body || JSON.stringify(params);
     else paramsGETRequest = "?" + new URLSearchParams(params).toString();
-    if (typeof beforeRequest === "function")
+    if (typeof onBeforeRequest === "function")
       [path, response, params, fetchParams] = onBeforeRequest(
         path,
         response,
@@ -309,7 +315,7 @@ async function grab$1(path, options = {}) {
       );
     if (!path.startsWith("/") && !baseURL.endsWith("/")) path = "/" + path;
     if (path.startsWith("http:") || path.startsWith("https:")) baseURL = "";
-    let res = null, startTime = /* @__PURE__ */ new Date(), mockHandler = (_h = grab$1.mock) == null ? void 0 : _h[path];
+    let res = null, startTime = /* @__PURE__ */ new Date(), mockHandler = (_i = grab$1.mock) == null ? void 0 : _i[path];
     let wait = (s) => new Promise((res2) => setTimeout(res2, s * 1e3 || 0));
     if (mockHandler && (!mockHandler.params || mockHandler.method == method) && (!mockHandler.params || paramsAsText == JSON.stringify(mockHandler.params))) {
       await wait(mockHandler.delay);
@@ -325,7 +331,7 @@ async function grab$1(path, options = {}) {
         throw new Error("Error parsing response: " + e);
       });
     }
-    if (typeof afterRequest === "function")
+    if (typeof onAfterRequest === "function")
       [path, response, params, fetchParams] = onAfterRequest(
         path,
         response,
@@ -346,7 +352,7 @@ async function grab$1(path, options = {}) {
     if (typeof res === "undefined") return;
     if (typeof res === "object")
       for (let key of Object.keys(res))
-        response[key] = paginateResult == key && ((_i = response[key]) == null ? void 0 : _i.length) ? [...response[key], ...res[key]] : res[key];
+        response[key] = paginateResult == key && ((_j = response[key]) == null ? void 0 : _j.length) ? [...response[key], ...res[key]] : res[key];
     else response.data = res;
     grab$1.log.unshift({
       path,
@@ -360,7 +366,7 @@ async function grab$1(path, options = {}) {
     let errorMessage = "Error: " + error.message + "\nPath:" + baseURL + path + "\n";
     JSON.stringify(params);
     if (options.retryAttempts > 0)
-      return await grab$1(path, response, {
+      return await grab$1(path, {
         ...options,
         retryAttempts: --options.retryAttempts
       });
@@ -372,7 +378,7 @@ async function grab$1(path, options = {}) {
     if (typeof response === "function")
       response = response({ isLoading: void 0, error: error.message });
     else response == null ? true : delete response.isLoading;
-    (_j = grab$1.log) == null ? void 0 : _j.unshift({
+    (_k = grab$1.log) == null ? void 0 : _k.unshift({
       path,
       request: JSON.stringify(params),
       error: error.message
@@ -395,7 +401,6 @@ const debouncer = async (func, wait) => {
   };
 };
 if (typeof window !== "undefined") {
-  window.grab = grab$1;
   window.log = log;
   window.grab.log = [];
   window.grab.mock = {};
@@ -408,11 +413,10 @@ if (typeof window !== "undefined") {
     document.querySelector(paginateElement).scrollLeft = scrollLeft;
   });
 } else if (typeof global !== "undefined") {
-  global.grab = grab$1;
+  grab$1.log = [];
+  grab$1.mock = {};
+  grab$1.defaults = {};
   global.log = log;
-  global.grab.log = [];
-  global.grab.mock = {};
-  global.grab.defaults = {};
 }
 export {
   grab$1 as grab
