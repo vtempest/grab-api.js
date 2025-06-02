@@ -15,70 +15,68 @@ export interface GrabResponse<T = any> {
 
 // Options for configuring grab requests
 export interface GrabOptions<TResponse = any, TParams = Record<string, any>> {
-  /** HTTP method to use */
+  /** HTTP method to use for the request. Defaults to "GET" if not specified */
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
 
-  /** Pre-initialized response object that will be populated with results */
+  /** Pre-initialized object which becomes response JSON, no need for .data. isLoading and error may also be set on this object. May omit and use return if load status is not needed */
   response?: GrabResponse<TResponse>;
 
-  /** Additional HTTP headers */
+  /** Additional HTTP headers to include with the request */
   headers?: Record<string, string>;
 
-  /** Cancel previous requests to same path when making new request */
+  /** Cancel previous requests to same path when making new request. Defaults to true */
   cancelOngoingIfNew?: boolean;
 
-  /** Cancel new request if one to same path is already in progress */
+  /** Cancel new request if one to same path is already in progress. Defaults to false */
   cancelNewIfOngoing?: boolean;
 
-  /** Enable frontend caching for repeat requests */
+  /** Whether to cache the request and retrieve from frontend cache. Defaults to false */
   cache?: boolean;
 
-  /** Request timeout in seconds */
+  /** The timeout for the request in seconds. Defaults to 20 */
   timeout?: number;
 
-  /** Base URL prefix for API requests */
+  /** Base url prefix for API requests, override with SERVER_API_URL env. Defaults to '/api/' */
   baseURL?: string;
 
-  /** Minimum seconds to wait between requests to same endpoint */
+  /** If set, how many seconds to wait between requests to prevent multi-click cascading responses. Defaults to 0 */
   rateLimit?: number;
 
-  /** Enable debug logging */
+  /** Whether to log the request and response. Auto-enabled on localhost. Defaults to false */
   debug?: boolean;
 
-  /** Seconds to consider data stale and invalidate cache */
+  /** Seconds to consider data stale and invalidate cache. Defaults to 60 */
   staleTime?: number;
 
-  /** Set these options as defaults for all future requests */
+  /** Pass this with options to set those options as defaults for all requests. Defaults to false */
   setDefaults?: boolean;
 
-  /** Retry failed requests once */
+  /** Retry failed requests this many times. Defaults to 0 */
   retryAttempts?: boolean;
 
-  /** Custom Logger function to use for logging */
+  /** Custom logger to override the built-in color JSON log() */
   logger?: LogFunction;
 
-  /** Seconds to debounce request, wait to execute so that other requests may override */
+  /** Seconds to debounce request, wait to execute so that other requests may override. Defaults to 0 */
   debounce?: number;
 
-  /** Refetch when cache is past staleTime */
+  /** Refetch when cache is past staleTime. Defaults to false */
   regrabOnStale?: boolean;
 
-  /** Refetch on window refocus */
+  /** Refetch on window refocus. Defaults to false */
   regrabOnFocus?: boolean;
 
-  /** Refetch on network change */
+  /** Refetch on network change. Defaults to false */
   regrabOnNetwork?: boolean;
 
-  /** Repeat request this many times */
+  /** Repeat request this many times sequentially. Defaults to 0 */
   repeat?: number;
 
-  /** Repeat request every seconds */
+  /** Repeat request every X seconds to poll for updates. Defaults to null */
   repeatEvery?: number;
 
-  /** Infinite scroll request, [page key, response field to concatenate, element with results] */
+  /** Built-in pagination for infinite scroll to auto-load and merge next result page. Array containing [page key, response field to concatenate, element with results]. Defaults to null */
   infiniteScroll?: [string, string, string];
-
-
 
   /** Hook function called before each request to modify request data */
   onBeforeRequest?: (
@@ -95,6 +93,24 @@ export interface GrabOptions<TResponse = any, TParams = Record<string, any>> {
     params: TParams,
     fetchParams: RequestInit
   ) => [string, GrabResponse<TResponse>, TParams, RequestInit];
+
+  /** shortcut for method="POST" */
+  post?: boolean;
+
+  /** shortcut for method="PUT" */
+  put?: boolean;
+
+  /** shortcut for method="PATCH" */
+  patch?: boolean;
+
+  /** shortcut for method="DELETE" */
+  delete?: boolean;
+  
+  /** include headers and authorization in the request */
+  headers?: object;
+
+  /** Allow any additional options as GET params or POST/PUT/PATCH body */
+  [key: string]: any;
 }
 
 // Combined options and parameters interface
@@ -137,17 +153,24 @@ export interface GrabLogEntry {
 // Global grab configuration and state
 export interface GrabGlobal {
   /** Default options applied to all requests */
-  default: Partial<GrabOptions>;
+  defaults: Partial<GrabOptions>;
   /** Request history and debugging info */
   log: GrabLogEntry[];
   /** Mock server handlers for testing */
   mock: Record<string, GrabMockHandler>;
+  /** Create a separate instance of grab with separate default options */
+  instance: (defaultOptions?: Partial<GrabOptions>) => GrabFunction;
 }
 
 // Main grab function signature with overloads for different use cases
 export interface GrabFunction {
-  /**
-   * Make API request with just path
+    /**
+   * ### GRAB: Generate Request to API from Browser
+   * ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
+   * Make API request with path 
+   * @returns {Promise<Object>} The response object with resulting data or .error if error.
+   * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
+   * @see  [🎯 Examples](https://grab.js.org/guide/Examples) [📑 Docs](https://grab.js.org/lib)
    */
   <TResponse = any>(path: string): Promise<GrabResponse<TResponse>>;
 
@@ -164,10 +187,17 @@ export interface GrabFunction {
     config: GrabRequestConfig<TResponse, TParams>
   ): Promise<GrabResponse<TResponse>>;
 
-  /** Global configuration and state */
-  default: Partial<GrabOptions>;
+  /** Default options applied to all requests */
+  defaults: Partial<GrabOptions>;
+
+  /** Request history and debugging info for all requests */
   log: GrabLogEntry[];
+
+  /** Mock server handlers for testing */
   mock: Record<string, GrabMockHandler>;
+
+  /** Create a separate instance of grab with separate default options */
+  instance: (defaultOptions?: Partial<GrabOptions>) => GrabFunction;
 }
 
 // Log function for debugging
@@ -212,40 +242,6 @@ export type GrabResponseWithData<T> = GrabResponse<T> & {
   data?: T;
 };
 
-export type GrabResponseWithResults<T> = GrabResponse<T> & {
-  results?: T[];
-};
-
-export type GrabResponseWithPagination<T> = GrabResponseWithResults<T> & {
-  page?: number;
-  totalPages?: number;
-  hasMore?: boolean;
-};
-
-// Utility types for type-safe API calls
-export type ApiEndpoint<TResponse, TParams = {}> = (
-  params?: TParams & Partial<GrabOptions<TResponse, TParams>>
-) => Promise<GrabResponse<TResponse>>;
-
-// Example usage types for common patterns
-export interface UserData {
-  id: number;
-  name: string;
-  email: string;
-}
-
-export interface SearchResult {
-  title: string;
-  description: string;
-  url: string;
-}
-
-export interface PaginatedResponse<T> {
-  results: T[];
-  page: number;
-  totalPages: number;
-  hasMore: boolean;
-}
 
 // Helper type for creating typed API clients
 export type TypedGrabFunction = <
@@ -255,5 +251,28 @@ export type TypedGrabFunction = <
   path: string,
   config?: GrabRequestConfig<TResponse, TParams>
 ) => Promise<GrabResponse<TResponse>>;
+
+
+
+
+declare global {
+  // Browser globals
+  interface Window {
+    grab: GrabFunction;
+    log: LogFunction;
+  }
+  
+  // Node.js globals
+  namespace NodeJS {
+    interface Global {
+      grab: GrabFunction;
+      log: LogFunction;
+    }
+  }
+  
+  // Global variables available after script inclusion
+  var grab: GrabFunction;
+  var log: LogFunction;
+}
 
 export default grab;

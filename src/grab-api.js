@@ -1,29 +1,29 @@
-import { printStructureJSON, log, showAlert } from "./log.js";
+import { printStructureJSON, log, showAlert, setupDevTools } from "./log.js";
 
 /**
  * ### GRAB: Generate Request to API from Browser
  * ![GrabAPILogo](https://i.imgur.com/qrQWkeb.png)
+ * **GRAB is the FBEST Request Manager: Functionally Brilliant, Elegantly Simple Tool**
  * 1. **One Function**: 3Kb min, 0 dependencies, minimalist syntax, [more features than top alternatives](https://grab.js.org/guide/Comparisons)
  * 2. **Auto-JSON Convert**: Pass parameters and get response or error in JSON, handling other data types as is.
  * 3. **isLoading Status**: Sets `.isLoading=true` on the pre-initialized response object so you can show a "Loading..." in any framework
  * 4. **Debug Logging**: Adds global `log()` and prints colored JSON structure, response, timing for requests in test.
  * 5. **Mock Server Support**: Configure `window.grab.mock` for development and testing environments
- * 6. **Concurrency Handling**: Prevent this request if one is ongoing to same path & params, or cancel the ongoing request.
+ * 6. **Cancel Duplicates**: Prevent this request if one is ongoing to same path & params, or cancel the ongoing request.
  * 7. **Timeout & Retry**: Customizable request timeout, default 20s, and auto-retry on error
  * 8. **DevTools**: `Ctrl+I` overlays webpage with devtools showing all requests and responses, timing, and JSON structure.
  * 9. **Request History**: Stores all request and response data in global `grab.log` object
- * 10. **Pagination Infinite Scroll**: Built-in pagination for infinite scroll to auto-load and merge next result page.
- * 11. **Base URL Based on Environment**: Configure `grab.defaults.baseURL` once at the top, overide with `SERVER_API_URL` in `.env` or `process.env.SERVER_API_URL` in Node.js.
+ * 10. **Pagination Infinite Scroll**: Built-in pagination for infinite scroll to auto-load and merge next result page, with scroll position recovery.
+ * 11. **Base URL Based on Environment**: Configure `grab.defaults.baseURL` once at the top, overide with `SERVER_API_URL` in `.env`.
  * 12. **Frontend Cache**: Set cache headers and retrieve from frontend memory for repeat requests to static data.
- * 13. **Modular Design**: Can be used in any frontend framework, Node.js 18+, Bun, Deno, Cloudflare Workers, etc.
+ * 13. **Regrab On Error**: Regrab on timeout error, or on window refocus, or on network change, or on stale data.
  * 14. **Framework Agnostic**: Alternatives like TanStack work only in component initialization and depend on React & others.
  * 15. **Globals**: Adds to window in browser or global in Node.js so you only import once: `grab()`, `log()`, `grab.log`, `grab.mock`, `grab.defaults`
- * 16. **TypeScript Tooltips**: Developers can hover over option names and autocomplete TypeScript. Add to top of file: `import 'grab-api.js/globals'`
+ * 16. **TypeScript Tooltips**: Developers can hover over option names and autocomplete TypeScript.
  * 17. **Request Stategies**: [🎯 Examples](https://grab.js.org/guide/Examples) show common stategies like debounce, repeat, proxy, unit tests, interceptors, file upload, etc
  * 18. **Rate Limiting**: Built-in rate limiting to prevent multi-click cascading responses, require to wait seconds between requests.
  * 19. **Repeat**: Repeat request this many times, or repeat every X seconds to poll for updates.
  * 20. **Loading Icons**: Import from `grab-api.js/icons` to get enhanced animated loading icons.
- * **GRAB is the FBEST Request Manager: Functionally Brilliant, Elegantly Simple Tool**
  *
  * @param {string} path The full URL path OR relative path on this server after `grab.defaults.baseURL`
  * @param {object} [options={}] Request params for GET or body for POST/PUT/PATCH and utility options
@@ -102,20 +102,18 @@ export async function grab(path, options = {}) {
     ...params // All other params become request params/query
   } = {
     // Destructure options with defaults, merging with any globally set defaults
-    ...(window?.grab?.defaults || global?.grab?.defaults || {}),
+    ...(typeof window !== "undefined" ? window?.grab?.defaults : global?.grab?.defaults || {}),
     ...options,
   };
-  // Try-catch block wraps all request handling logic
   try {
 
-
+    
     //handle debounce
     if (debounce > 0) {
       return await debouncer(async () => {
         await grab(path, { ...options, debounce: 0 });
       }, debounce * 1000);
     }
-
 
     // Handle repeat options:
     // - repeat: Makes the same request multiple times sequentially
@@ -144,7 +142,7 @@ export async function grab(path, options = {}) {
     }
 
     // regrab on stale, on window refocus, on network
-    if (regrabOnStale)
+    if (regrabOnStale && cache)
       setTimeout(async () => {
         await grab(path, { ...options, cache: false });
       }, 1000 * staleTime);
@@ -181,7 +179,8 @@ export async function grab(path, options = {}) {
           ? document.querySelector(paginateElement)
           : paginateElement;
 
-      paginateDOM.removeEventListener("scroll", window?.scrollListener);
+      if (paginateDOM)
+        paginateDOM.removeEventListener("scroll", window?.scrollListener);
 
       // Your modified scroll listener with position saving
       window.scrollListener = paginateDOM.addEventListener(
@@ -248,7 +247,10 @@ export async function grab(path, options = {}) {
     }
 
     // Set loading state on response object
-    response.isLoading = true;
+    if (typeof response === "function")
+      response = response({ isLoading: true });
+    else if (typeof response === "object") response.isLoading = true;
+
     if (resFunction) response = resFunction(response);
 
     // Enforce rate limiting between requests if configured
@@ -372,7 +374,10 @@ export async function grab(path, options = {}) {
       );
 
     // Clear request tracking states
-    delete response.isLoading;
+    if (typeof response === "function")
+      response = response({ isLoading: undefined });
+    else if (typeof response === "object") delete response?.isLoading;
+
     delete priorRequest?.controller;
 
     // Log debug information if enabled
@@ -401,11 +406,13 @@ export async function grab(path, options = {}) {
 
     // Update response object with results
     // For paginated requests, concatenates with existing results
-    for (let key of Object.keys(res))
-      response[key] =
-        paginateResult == key && response[key]?.length
-          ? [...response[key], ...res[key]]
-          : res[key];
+    if (typeof res === "object")
+      for (let key of Object.keys(res))
+        response[key] =
+          paginateResult == key && response[key]?.length
+            ? [...response[key], ...res[key]]
+            : res[key];
+    else response.data = res;
 
     // Store request/response in history log
     grab.log.unshift({
@@ -438,7 +445,9 @@ export async function grab(path, options = {}) {
       if (debug) showAlert(errorMessage);
       response.error = error.message;
     }
-    delete response.isLoading;
+    if (typeof response === "function")
+      response = response({ isLoading: undefined, error: error.message });
+    else delete response?.isLoading;
 
     // Log error in request history
     grab.log?.unshift({
@@ -452,6 +461,19 @@ export async function grab(path, options = {}) {
     return response;
   }
 }
+
+
+/**
+ * Creates a new instance of grab with default options
+ * to apply to all requests made by this instance
+ * @param {Object} defaultOptions - options for all requests by instance
+ * @returns {Function} grab() function using those options
+ */
+grab.instance =
+  (defaultOptions = {}) =>
+  (path, options = {}) =>
+    grab(path, { ...defaultOptions, ...options });
+
 
 const debouncer = async (func, wait) => {
   let timeout;
@@ -472,6 +494,9 @@ if (typeof window !== "undefined") {
   window.grab.log = [];
   window.grab.mock = {};
   window.grab.defaults = {};
+
+  //Ctrl+I setup dev tools
+  setupDevTools();
 
   // Restore scroll position when page loads or component mounts
   document.addEventListener("DOMContentLoaded", () => {

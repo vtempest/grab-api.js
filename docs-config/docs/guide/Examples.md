@@ -56,31 +56,27 @@ import React, { useState } from "react";
 import grab from "grab-api.js";
 
 function UserProfile() {
-  const [userState, setUserState] = useState({
-    data: null,
-    isLoading: false,
-    error: null,
-  });
+  const [userState, setUserState] = useState<Partial<{ 
+    name: string; 
+    email: string;
+    isLoading: boolean;
+    error: string; 
+  }>>({})
 
-  const loadUser = async (userId) => {
-    await grab(`users/${userId}`, {
-      response: userState,
-      method: "GET",
-    });
-    setUserState({ ...userState }); // Trigger re-render
-  };
+  await grab(`user`, {
+    response: setUserState
+  });
 
   return (
     <div>
       {userState.isLoading && <div>Loading...</div>}
       {userState.error && <div>Error: {userState.error}</div>}
-      {userState.data && (
+      {userState && (
         <div>
-          <h2>{userState.data.name}</h2>
-          <p>{userState.data.email}</p>
+          <h2>{userState.name}</h2>
+          <p>{userState.email}</p>
         </div>
       )}
-      <button onClick={() => loadUser(123)}>Load User</button>
     </div>
   );
 }
@@ -227,29 +223,25 @@ const data = await grabGoogleAPI("/api/endpoint");
 ### Pagination with Infinite Scroll
 
 ```javascript
-let productList = {
-  products: [],
-  isLoading: false,
-};
-
-// Load first page
-async function loadResults() {
-  await grab("products", {
-    response: productList,
-    paginateResult: "products", // Key to append results to
-    paginateKey: "page", // Parameter name for page number
-    limit: 20,
-  });
+let productList = $state({}) as {
+  products: Array<{name:string}>,
+  isLoading: boolean
 }
 
-// Infinite scroll implementation
-const setupInfiniteScroll = (e) =>
-  e.addEventListener(
-    "scroll",
-    () => e.innerHeight + e.scrollY >= e.offsetHeight - 1000 && loadResults()
-  );
+await grab("products", {
+  response: productList,
+  infiniteScroll: ["page", "products", ".results-container"]
+});
 
-setupInfiniteScroll(document.getElementById("results"));
+<div class="results-container">
+  {productList.products.map(product => (
+    <div className="product-item">
+      <h3>{product.name}</h3>
+    </div>
+  ))}
+  {productList.isLoading && <div className="loading">Loading more products...</div>}
+</div>
+
 ```
 
 ### Debounced Search

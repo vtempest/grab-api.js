@@ -13,11 +13,11 @@
 export function log(
   message,
   hideInProduction = undefined,
-  style = "color: blue; font-size: 13pt;"
+  style = "color: blue; font-size: 12pt;"
 ) {
   // Auto-detect if we should hide logs in production based on hostname
   if (typeof hideInProduction === "undefined")
-    hideInProduction = window?.location.hostname.includes("localhost");
+    hideInProduction = typeof window !== "undefined" && window?.location.hostname.includes("localhost");
 
   // For objects, print both the structure visualization and full JSON
   if (typeof message === "object")
@@ -134,7 +134,7 @@ export function printStructureJSON(obj, indent = 0) {
   
   // Only log at top level of recursion
   if (indent === 0) {
-    console.log(result);
+    // console.log(result);
   }
   return result;
 }
@@ -169,4 +169,24 @@ export function showAlert(msg) {
   
   // Add new message to list
   list.innerHTML += `<div style="border-bottom:1px solid #333; font-size:1.2em;margin:0.5em 0;">${msg}</div>`;
+}
+
+
+export function setupDevTools() {
+  //keyboard shortcut to toggle debug
+document.addEventListener("keydown", (e) => {
+  if (e.key === "i" && e.ctrlKey) {
+    //creeate html of the grab.log requests
+    let html = " ";
+    for (let request of grab.log) {
+      html += `<div style="margin-bottom:1em; border-bottom:1px solid #ccc; padding-bottom:1em;">
+        <b>Path:</b> ${request.path}<br>
+        <b>Request:</b> ${request.request}<br>
+        <b>Response:</b> ${JSON.stringify(request.response, null, 2)}<br>
+        <b>Time:</b> ${new Date(request.lastFetchTime).toLocaleString()}
+      </div>`;
+    }
+    showAlert(html);
+  }
+});
 }

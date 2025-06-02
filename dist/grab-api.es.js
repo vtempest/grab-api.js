@@ -1,6 +1,6 @@
-function log(message, hideInProduction = void 0, style = "color: blue; font-size: 13pt;") {
+function log(message, hideInProduction = void 0, style = "color: blue; font-size: 12pt;") {
   if (typeof hideInProduction === "undefined")
-    hideInProduction = window == null ? void 0 : window.location.hostname.includes("localhost");
+    hideInProduction = typeof window !== "undefined" && (window == null ? void 0 : window.location.hostname.includes("localhost"));
   if (typeof message === "object")
     message = printStructureJSON(message) + "\n\n" + JSON.stringify(message, null, 2);
   if (hideInProduction) console.debug((style ? "%c" : "") + message, style);
@@ -86,9 +86,6 @@ function printStructureJSON(obj, indent = 0) {
     result += "\n";
   });
   result += pad + colors.green + "}" + colors.reset;
-  if (indent === 0) {
-    console.log(result);
-  }
   return result;
 }
 function showAlert(msg) {
@@ -109,7 +106,23 @@ function showAlert(msg) {
   }
   list.innerHTML += `<div style="border-bottom:1px solid #333; font-size:1.2em;margin:0.5em 0;">${msg}</div>`;
 }
-async function grab(path, options = {}) {
+function setupDevTools() {
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "i" && e.ctrlKey) {
+      let html = " ";
+      for (let request of grab.log) {
+        html += `<div style="margin-bottom:1em; border-bottom:1px solid #ccc; padding-bottom:1em;">
+        <b>Path:</b> ${request.path}<br>
+        <b>Request:</b> ${request.request}<br>
+        <b>Response:</b> ${JSON.stringify(request.response, null, 2)}<br>
+        <b>Time:</b> ${new Date(request.lastFetchTime).toLocaleString()}
+      </div>`;
+      }
+      showAlert(html);
+    }
+  });
+}
+async function grab$1(path, options = {}) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
   let {
     headers,
@@ -160,24 +173,24 @@ async function grab(path, options = {}) {
     // All other params become request params/query
   } = {
     // Destructure options with defaults, merging with any globally set defaults
-    ...((_c = window == null ? void 0 : window.grab) == null ? void 0 : _c.defaults) || ((_d = global == null ? void 0 : global.grab) == null ? void 0 : _d.defaults) || {},
+    ...typeof window !== "undefined" ? (_c = window == null ? void 0 : window.grab) == null ? void 0 : _c.defaults : ((_d = global == null ? void 0 : global.grab) == null ? void 0 : _d.defaults) || {},
     ...options
   };
   try {
     if (debounce > 0) {
       return await debouncer(async () => {
-        await grab(path, { ...options, debounce: 0 });
+        await grab$1(path, { ...options, debounce: 0 });
       }, debounce * 1e3);
     }
     if (repeat > 1) {
       for (let i = 0; i < repeat; i++) {
-        await grab(path, { ...options, repeat: 0 });
+        await grab$1(path, { ...options, repeat: 0 });
       }
       return response;
     }
     if (repeatEvery) {
       setInterval(async () => {
-        await grab(path, { ...options, repeat: 0, repeatEvery: null });
+        await grab$1(path, { ...options, repeat: 0, repeatEvery: null });
       }, repeatEvery * 1e3);
       return response;
     }
@@ -187,24 +200,24 @@ async function grab(path, options = {}) {
       else global.grab.defaults = { ...options, setDefaults: void 0 };
       return {};
     }
-    if (regrabOnStale)
+    if (regrabOnStale && cache)
       setTimeout(async () => {
-        await grab(path, { ...options, cache: false });
+        await grab$1(path, { ...options, cache: false });
       }, 1e3 * staleTime);
     if (regrabOnFocus) {
       window.addEventListener("focus", async () => {
-        await grab(path, { ...options, cache: false });
+        await grab$1(path, { ...options, cache: false });
       });
       document.addEventListener("visibilitychange", async () => {
         if (document.visibilityState === "visible") {
-          await grab(path, { ...options, cache: false });
+          await grab$1(path, { ...options, cache: false });
         }
       });
     }
     if (regrabOnNetwork)
       window.addEventListener("online", async () => {
         if (document.visibilityState === "visible") {
-          await grab(path, { ...options, cache: false });
+          await grab$1(path, { ...options, cache: false });
         }
       });
     let resFunction = typeof response === "function" ? response : null;
@@ -212,7 +225,8 @@ async function grab(path, options = {}) {
     var [paginateKey, paginateResult, paginateElement] = infiniteScroll || [];
     if ((infiniteScroll == null ? void 0 : infiniteScroll.length) && typeof window == "undefined") {
       let paginateDOM = typeof paginateElement === "string" ? document.querySelector(paginateElement) : paginateElement;
-      paginateDOM.removeEventListener("scroll", window == null ? void 0 : window.scrollListener);
+      if (paginateDOM)
+        paginateDOM.removeEventListener("scroll", window == null ? void 0 : window.scrollListener);
       window.scrollListener = paginateDOM.addEventListener(
         "scroll",
         async ({ target: t }) => {
@@ -221,7 +235,7 @@ async function grab(path, options = {}) {
             JSON.stringify([t.scrollTop, t.scrollLeft, paginateElement])
           );
           if (t.scrollHeight - t.scrollTop <= t.clientHeight + 200) {
-            await grab(path, {
+            await grab$1(path, {
               ...options,
               cache: false,
               [paginateKey]: (priorRequest == null ? void 0 : priorRequest.currentPage) + 1
@@ -233,7 +247,7 @@ async function grab(path, options = {}) {
     let paramsAsText = JSON.stringify(
       paginateKey ? { ...params, [paginateKey]: void 0 } : params
     );
-    let priorRequest = (_e = grab.log) == null ? void 0 : _e.find(
+    let priorRequest = (_e = grab$1.log) == null ? void 0 : _e.find(
       (e) => e.request == paramsAsText && e.path == path
     );
     if (!paginateKey) {
@@ -253,7 +267,9 @@ async function grab(path, options = {}) {
       if (priorRequest) priorRequest.currentPage = pageNumber;
       params[paginateKey] = pageNumber;
     }
-    response.isLoading = true;
+    if (typeof response === "function")
+      response = response({ isLoading: true });
+    else if (typeof response === "object") response.isLoading = true;
     if (resFunction) response = resFunction(response);
     if (rateLimit > 0 && (priorRequest == null ? void 0 : priorRequest.lastFetchTime) && priorRequest.lastFetchTime > Date.now() - 1e3 * rateLimit)
       throw new Error(
@@ -263,7 +279,7 @@ async function grab(path, options = {}) {
       if (cancelOngoingIfNew) priorRequest.controller.abort();
       else if (cancelNewIfOngoing) return { isLoading: true };
     }
-    grab.log.unshift({
+    grab$1.log.unshift({
       path,
       request: paramsAsText,
       lastFetchTime: Date.now(),
@@ -278,7 +294,7 @@ async function grab(path, options = {}) {
       },
       redirect: "follow",
       cache: cache ? "force-cache" : "no-store",
-      signal: cancelOngoingIfNew ? (_g = (_f = grab.log[0]) == null ? void 0 : _f.controller) == null ? void 0 : _g.signal : AbortSignal.timeout(timeout * 1e3)
+      signal: cancelOngoingIfNew ? (_g = (_f = grab$1.log[0]) == null ? void 0 : _f.controller) == null ? void 0 : _g.signal : AbortSignal.timeout(timeout * 1e3)
     };
     let paramsGETRequest = "";
     if (["POST", "PUT", "PATCH"].includes(method))
@@ -293,7 +309,7 @@ async function grab(path, options = {}) {
       );
     if (!path.startsWith("/") && !baseURL.endsWith("/")) path = "/" + path;
     if (path.startsWith("http:") || path.startsWith("https:")) baseURL = "";
-    let res = null, startTime = /* @__PURE__ */ new Date(), mockHandler = (_h = grab.mock) == null ? void 0 : _h[path];
+    let res = null, startTime = /* @__PURE__ */ new Date(), mockHandler = (_h = grab$1.mock) == null ? void 0 : _h[path];
     let wait = (s) => new Promise((res2) => setTimeout(res2, s * 1e3 || 0));
     if (mockHandler && (!mockHandler.params || mockHandler.method == method) && (!mockHandler.params || paramsAsText == JSON.stringify(mockHandler.params))) {
       await wait(mockHandler.delay);
@@ -316,7 +332,9 @@ async function grab(path, options = {}) {
         params,
         fetchParams
       );
-    delete response.isLoading;
+    if (typeof response === "function")
+      response = response({ isLoading: void 0 });
+    else if (typeof response === "object") response == null ? true : delete response.isLoading;
     priorRequest == null ? true : delete priorRequest.controller;
     const elapsedTime = ((Number(/* @__PURE__ */ new Date()) - Number(startTime)) / 1e3).toFixed(1);
     if (debug) {
@@ -326,9 +344,11 @@ async function grab(path, options = {}) {
       console.log(res);
     }
     if (typeof res === "undefined") return;
-    for (let key of Object.keys(res))
-      response[key] = paginateResult == key && ((_i = response[key]) == null ? void 0 : _i.length) ? [...response[key], ...res[key]] : res[key];
-    grab.log.unshift({
+    if (typeof res === "object")
+      for (let key of Object.keys(res))
+        response[key] = paginateResult == key && ((_i = response[key]) == null ? void 0 : _i.length) ? [...response[key], ...res[key]] : res[key];
+    else response.data = res;
+    grab$1.log.unshift({
       path,
       request: JSON.stringify({ ...params, paginateKey: void 0 }),
       response,
@@ -340,7 +360,7 @@ async function grab(path, options = {}) {
     let errorMessage = "Error: " + error.message + "\nPath:" + baseURL + path + "\n";
     JSON.stringify(params);
     if (options.retryAttempts > 0)
-      return await grab(path, response, {
+      return await grab$1(path, response, {
         ...options,
         retryAttempts: --options.retryAttempts
       });
@@ -349,8 +369,10 @@ async function grab(path, options = {}) {
       if (debug) showAlert(errorMessage);
       response.error = error.message;
     }
-    delete response.isLoading;
-    (_j = grab.log) == null ? void 0 : _j.unshift({
+    if (typeof response === "function")
+      response = response({ isLoading: void 0, error: error.message });
+    else response == null ? true : delete response.isLoading;
+    (_j = grab$1.log) == null ? void 0 : _j.unshift({
       path,
       request: JSON.stringify(params),
       error: error.message
@@ -360,6 +382,7 @@ async function grab(path, options = {}) {
     return response;
   }
 }
+grab$1.instance = (defaultOptions = {}) => (path, options = {}) => grab$1(path, { ...defaultOptions, ...options });
 const debouncer = async (func, wait) => {
   let timeout;
   return async function executedFunction(...args) {
@@ -372,11 +395,12 @@ const debouncer = async (func, wait) => {
   };
 };
 if (typeof window !== "undefined") {
-  window.grab = grab;
+  window.grab = grab$1;
   window.log = log;
   window.grab.log = [];
   window.grab.mock = {};
   window.grab.defaults = {};
+  setupDevTools();
   document.addEventListener("DOMContentLoaded", () => {
     let [scrollTop, scrollLeft, paginateElement] = JSON.parse(localStorage.getItem("scroll")) || [];
     if (!scrollTop) return;
@@ -384,13 +408,13 @@ if (typeof window !== "undefined") {
     document.querySelector(paginateElement).scrollLeft = scrollLeft;
   });
 } else if (typeof global !== "undefined") {
-  global.grab = grab;
+  global.grab = grab$1;
   global.log = log;
   global.grab.log = [];
   global.grab.mock = {};
   global.grab.defaults = {};
 }
 export {
-  grab
+  grab$1 as grab
 };
 //# sourceMappingURL=grab-api.es.js.map

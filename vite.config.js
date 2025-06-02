@@ -1,9 +1,11 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import dts from 'vite-plugin-dts';
+import svgr from 'vite-plugin-svgr'
 
 export default defineConfig({
   plugins: [
+    svgr(),
     dts({
       insertTypesEntry: true,
       include: ['src/**/*.ts' ],
@@ -13,10 +15,13 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/grab-api.js'),
-      name: 'GrabAPI',
-      fileName: (format) => `grab-api.${format}.js`,
-      formats: ['es', 'umd', 'cjs']
+      entry: {
+        'grab-api': resolve(__dirname, 'src/grab-api.js'),
+        'icons': resolve(__dirname, 'src/icons/index.js')
+      },
+      
+      formats: ['es', 'cjs'],
+      fileName: (format, entryName) => `${entryName}.${format}.js`
     },
     rollupOptions: {
       // Disable inlineDynamicImports for multiple formats

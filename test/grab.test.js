@@ -1,14 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { grab, log, printStructureJSON } from '../grab-api.js';
+import { grab, log, printStructureJSON } from '../';
 
-
-// Mock globals that would normally be available in browser
-global.window = {
-  location: { hostname: 'localhost' },
-  grab.log: {},
-  grabMockServer: {},
-  grabDefaults: {}
-};
 
 // Mock fetch globally
 global.fetch = vi.fn();
