@@ -67,11 +67,11 @@ const loadingSquareBlocks = (options = {}) => customSVG(
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" width="200" height="200" style="shape-rendering: auto; display: block; "><g><rect fill="#e15b64" height="20" width="20" y="19" x="19"><animate calcMode="discrete" begin="0s" repeatCount="indefinite" dur="1s" keyTimes="0;0.125;1" values="#f8b26a;#e15b64;#e15b64" attributeName="fill"></animate></rect><rect fill="#e15b64" height="20" width="20" y="19" x="40"><animate calcMode="discrete" begin="0.125s" repeatCount="indefinite" dur="1s" keyTimes="0;0.125;1" values="#f8b26a;#e15b64;#e15b64" attributeName="fill"></animate></rect><rect fill="#e15b64" height="20" width="20" y="19" x="61"><animate calcMode="discrete" begin="0.25s" repeatCount="indefinite" dur="1s" keyTimes="0;0.125;1" values="#f8b26a;#e15b64;#e15b64" attributeName="fill"></animate></rect><rect fill="#e15b64" height="20" width="20" y="40" x="19"><animate calcMode="discrete" begin="0.875s" repeatCount="indefinite" dur="1s" keyTimes="0;0.125;1" values="#f8b26a;#e15b64;#e15b64" attributeName="fill"></animate></rect><rect fill="#e15b64" height="20" width="20" y="40" x="61"><animate calcMode="discrete" begin="0.375s" repeatCount="indefinite" dur="1s" keyTimes="0;0.125;1" values="#f8b26a;#e15b64;#e15b64" attributeName="fill"></animate></rect><rect fill="#e15b64" height="20" width="20" y="61" x="19"><animate calcMode="discrete" begin="0.75s" repeatCount="indefinite" dur="1s" keyTimes="0;0.125;1" values="#f8b26a;#e15b64;#e15b64" attributeName="fill"></animate></rect><rect fill="#e15b64" height="20" width="20" y="61" x="40"><animate calcMode="discrete" begin="0.625s" repeatCount="indefinite" dur="1s" keyTimes="0;0.125;1" values="#f8b26a;#e15b64;#e15b64" attributeName="fill"></animate></rect><rect fill="#e15b64" height="20" width="20" y="61" x="61"><animate calcMode="discrete" begin="0.5s" repeatCount="indefinite" dur="1s" keyTimes="0;0.125;1" values="#f8b26a;#e15b64;#e15b64" attributeName="fill"></animate></rect><g></g></g></svg>`
 );
 function customSVG(options, svgString) {
-  const { colors = [], width, height, size } = options;
+  const { colors = [], width, height, size, raw = false } = options;
   const widthMatch = svgString.match(/width="(d+)"/);
   const heightMatch = svgString.match(/height="(d+)"/);
-  const finalWidth = size || width || widthMatch[1] || "100";
-  const finalHeight = size || height || heightMatch[1] || "100";
+  const finalWidth = size || width || (widthMatch == null ? void 0 : widthMatch[1]) || "100";
+  const finalHeight = size || height || (heightMatch == null ? void 0 : heightMatch[1]) || "100";
   svgString = svgString.replace(/width="[^"]*"/g, `width="${finalWidth}"`);
   svgString = svgString.replace(/height="[^"]*"/g, `height="${finalHeight}"`);
   if (colors && colors.length > 0) {
@@ -81,11 +81,13 @@ function customSVG(options, svgString) {
       if (colorIndex < colors.length) {
         const replacement = colors[colorIndex];
         colorIndex++;
-        return replacement.startsWith("#") ? replacement : `#${replacement}`;
+        return (replacement == null ? void 0 : replacement.startsWith("#")) ? replacement : `#${replacement}`;
       }
       return match;
     });
   }
+  if (!raw)
+    svgString = `<img alt="icon" src="data:image/svg+xml;utf8,${encodeURIComponent(svgString)}" />`;
   return svgString;
 }
 export {

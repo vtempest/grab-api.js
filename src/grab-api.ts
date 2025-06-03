@@ -44,7 +44,7 @@ import { printStructureJSON, log, showAlert, setupDevTools } from "./log.js";
  * @param {string} [options.method] default="GET" The HTTP method to use
  * @param {object} [options.response] Pre-initialized object which becomes response JSON, no need for `.data`.
  *  isLoading and error may also be set on this object. May omit and use return if load status is not needed.
- * @param {boolean} [options.cancelOngoingIfNew]  default=true Cancel previous requests to same path
+ * @param {boolean} [options.cancelOngoingIfNew]  default=false Cancel previous requests to same path
  * @param {boolean} [options.cancelNewIfOngoing] default=false Cancel if a request to path is in progress
  * @param {boolean} [options.cache] default=false Whether to cache the request and from frontend cache
  * @param {boolean} [options.debug] default=false Whether to log the request and response
@@ -78,7 +78,7 @@ import { printStructureJSON, log, showAlert, setupDevTools } from "./log.js";
  *   query: "search words"
  * })
  */
-export async function grab(path: string, options: GrabOptions) {
+export default async function grab(path: string, options: GrabOptions) {
   let {
     headers,
     response = {}, // Pre-initialized object to set the response in. isLoading and error are also set on this object.
@@ -99,7 +99,7 @@ export async function grab(path: string, options: GrabOptions) {
     timeout = 20, // Request timeout in seconds
     baseURL = (typeof process !== "undefined" && process.env.SERVER_API_URL) ||
     "/api/", // Use env var or default to /api/
-    cancelOngoingIfNew = true, // Cancel previous request for same path
+    cancelOngoingIfNew = false, // Cancel previous request for same path
     cancelNewIfOngoing = false, // Don't make new request if one is ongoing
     rateLimit = 0, // Minimum seconds between requests
     debug = typeof window !== "undefined" &&
@@ -226,7 +226,7 @@ export async function grab(path: string, options: GrabOptions) {
     let paramsAsText = JSON.stringify(
       paginateKey ? { ...params, [paginateKey]: undefined } : params
     );
-    let priorRequest = grab.log?.find(
+    let priorRequest = grab?.log?.find(
       (e) => e.request == paramsAsText && e.path == path
     );
 
@@ -265,8 +265,8 @@ export async function grab(path: string, options: GrabOptions) {
     }
 
     // Set loading state on response object
-    if (typeof response === "function")
-      response = response({ isLoading: true });
+    if (resFunction)
+      resFunction({ isLoading: true });
     else if (typeof response === "object") response.isLoading = true;
 
     if (resFunction) response = resFunction(response);
@@ -393,8 +393,8 @@ export async function grab(path: string, options: GrabOptions) {
       );
 
     // Clear request tracking states
-    if (typeof response === "function")
-      response = response({ isLoading: undefined });
+    if (resFunction)
+      resFunction({ isLoading: undefined });
     else if (typeof response === "object") delete response?.isLoading;
 
     delete priorRequest?.controller;
@@ -425,13 +425,14 @@ export async function grab(path: string, options: GrabOptions) {
 
     // Update response object with results
     // For paginated requests, concatenates with existing results
-    if (typeof res === "object")
+    if (typeof res === "object") {
       for (let key of Object.keys(res))
         response[key] =
           paginateResult == key && response[key]?.length
             ? [...response[key], ...res[key]]
             : res[key];
-    else response.data = res;
+    } else if (resFunction) resFunction({ data: res });
+    else if (typeof response === "object") response.data = res;
 
     // Store request/response in history log
     grab.log.unshift({
@@ -509,6 +510,8 @@ const debouncer = async (func, wait) => {
 // Add globals to window in browser, or global in Node.js
 if (typeof window !== "undefined") {
   window.log = log;
+  // @ts-ignore
+  window.grab = grab;
   window.grab.log = [];
   window.grab.mock = {};
   window.grab.defaults = {};
@@ -530,6 +533,8 @@ if (typeof window !== "undefined") {
   grab.defaults = {};
   global.log = log;
 }
+
+/***************** TYPESCRIPT INTERFACES *****************/
 
 // Core response object that gets populated with API response data
 export interface GrabResponse<T = any> {
@@ -561,7 +566,7 @@ export interface GrabOptions<TResponse = any, TParams = Record<string, any>> {
   cancelOngoingIfNew?: boolean;
   /** default=false Cancel if a request to path is in progress */
   cancelNewIfOngoing?: boolean;
-  /** default=0 If set, how many seconds to wait between requests */
+  /** default=false If set, how many seconds to wait between requests */
   rateLimit?: number;
   /** default=false Whether to log the request and response */
   debug?: boolean;
@@ -589,11 +594,15 @@ export interface GrabOptions<TResponse = any, TParams = Record<string, any>> {
   regrabOnFocus?: boolean;
   /** default=false Refetch on network change */
   regrabOnNetwork?: boolean;
-  /** All other params become GET params, POST body, and other methods */
+  /** shortcut for method: "POST" */
   post?: boolean;
+  /** shortcut for method: "PUT" */
   put?: boolean;
+  /** shortcut for method: "PATCH" */
   patch?: boolean;
+  /** default=null The body of the POST/PUT/PATCH request (can be passed into main)*/
   body?: any;
+  /** All other params become GET params, POST body, and other methods */
   [key: string]: any;
 }
 
@@ -741,4 +750,8 @@ declare global {
   // Global variables available after script inclusion
   var log: LogFunction;
   var grab: GrabFunction;
+}
+
+export {
+  grab, log, showAlert, printStructureJSON
 }

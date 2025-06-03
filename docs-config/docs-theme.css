@@ -1,10 +1,14 @@
+/* Import Open Sans font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap');
+
+
 /**
  * Docusaurus OpenAPI Elegant Beige Aesthetic Theme
  * Featuring a sophisticated beige-based light theme
  * with sleek design elements and frosted-glass navbar.
  * @author [vtempest (2025)](https://github.com/vtempest)
  */
- :root {
+:root {
   /*  Beige Color Palette */
   --color-primary: #2c3e50;
   --color-secondary: #34495e;
@@ -21,7 +25,8 @@
   --shadow-elevation-2: 0 10px 20px rgba(0,0,0,0.15);
   
   /* Typography */
-  --font-primary: 'Roboto', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-primary: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-base: 14px;
   
   /* Infima Overrides with High-Tech Aesthetic */
   --ifm-color-primary: var(--color-primary);
@@ -35,7 +40,8 @@
   --ifm-background-color: var(--beige-light);
   --ifm-background-surface-color: var(--beige-medium);
   
-  --ifm-code-font-size: 90%;
+  --ifm-code-font-size: 85%;
+  --ifm-font-size-base: var(--font-size-base);
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   
   /* Additional Tech-Inspired Colors */

@@ -31,21 +31,6 @@
               "sidebar": "default"
             },
             {
-              "id": "lib/icons",
-              "path": "/lib/icons",
-              "sidebar": "default"
-            },
-            {
-              "id": "lib/icons-1",
-              "path": "/lib/icons-1",
-              "sidebar": "default"
-            },
-            {
-              "id": "lib/index",
-              "path": "/lib/",
-              "sidebar": "default"
-            },
-            {
               "id": "lib/log",
               "path": "/lib/log",
               "sidebar": "default"
@@ -97,8 +82,8 @@
   "docusaurus-lunr-search": {
     "default": {
       "fileNames": {
-        "searchDoc": "search-doc-1748810314838.json",
-        "lunrIndex": "lunr-index-1748810314838.json"
+        "searchDoc": "search-doc-1748966086129.json",
+        "lunrIndex": "lunr-index-1748966086129.json"
       }
     }
   }
