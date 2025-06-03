@@ -41,12 +41,12 @@
  * @param {string} [options.method] default="GET" The HTTP method to use
  * @param {object} [options.response] Pre-initialized object which becomes response JSON, no need for `.data`.
  *  isLoading and error may also be set on this object. May omit and use return if load status is not needed.
- * @param {boolean} [options.cancelOngoingIfNew]  default=true Cancel previous requests to same path
+ * @param {boolean} [options.cancelOngoingIfNew]  default=false Cancel previous requests to same path
  * @param {boolean} [options.cancelNewIfOngoing] default=false Cancel if a request to path is in progress
  * @param {boolean} [options.cache] default=false Whether to cache the request and from frontend cache
  * @param {boolean} [options.debug] default=false Whether to log the request and response
  * @param {number} [options.timeout] default=20 The timeout for the request in seconds
- * @param {number} [options.staleTime] default=60 Seconds to consider data stale and invalidate cache
+ * @param {number} [options.cacheForTime] default=60 Seconds to consider data stale and invalidate cache
  * @param {number} [options.rateLimit] default=0 If set, how many seconds to wait between requests
  * @param {string} [options.baseURL] default='/api/' base url prefix, override with SERVER_API_URL env
  * @param {boolean} [options.setDefaults] default=false Pass this with options to set
@@ -61,7 +61,7 @@
  * @param {function} [options.onAfterRequest] Set with defaults to modify each request data.
  *  Takes and returns in order: path, response, params, fetchParams
  * @param {number} [options.debounce] default=0 Seconds to debounce request, wait to execute so that other requests may override
- * @param {boolean} [options.regrabOnStale] default=false Refetch when cache is past staleTime
+ * @param {boolean} [options.regrabOnStale] default=false Refetch when cache is past cacheForTime
  * @param {boolean} [options.regrabOnFocus] default=false Refetch on window refocus
  * @param {boolean} [options.regrabOnNetwork] default=false Refetch on network change
  * @param {any} [...params] All other params become GET params, POST body, and other methods.
@@ -83,6 +83,7 @@ declare namespace grab_2 {
     var mock: {};
     var defaults: {};
 }
+export default grab_2;
 export { grab_2 as grab }
 
 export declare interface GrabFunction {
@@ -163,7 +164,7 @@ export declare interface GrabOptions<TResponse = any, TParams = Record<string, a
     /** default=false Whether to cache the request and from frontend cache */
     cache?: boolean;
     /** default=60 Seconds to consider data stale and invalidate cache */
-    staleTime?: number;
+    cacheForTime?: number;
     /** default=20 The timeout for the request in seconds */
     timeout?: number;
     /** default='/api/' base url prefix, override with SERVER_API_URL env */
@@ -172,7 +173,7 @@ export declare interface GrabOptions<TResponse = any, TParams = Record<string, a
     cancelOngoingIfNew?: boolean;
     /** default=false Cancel if a request to path is in progress */
     cancelNewIfOngoing?: boolean;
-    /** default=0 If set, how many seconds to wait between requests */
+    /** default=false If set, how many seconds to wait between requests */
     rateLimit?: number;
     /** default=false Whether to log the request and response */
     debug?: boolean;
@@ -194,23 +195,28 @@ export declare interface GrabOptions<TResponse = any, TParams = Record<string, a
     repeatEvery?: number;
     /** default=0 Seconds to debounce request, wait to execute so that other requests may override */
     debounce?: number;
-    /** default=false Refetch when cache is past staleTime */
+    /** default=false Refetch when cache is past cacheForTime */
     regrabOnStale?: boolean;
     /** default=false Refetch on window refocus */
     regrabOnFocus?: boolean;
     /** default=false Refetch on network change */
     regrabOnNetwork?: boolean;
-    /** All other params become GET params, POST body, and other methods */
+    /** shortcut for method: "POST" */
     post?: boolean;
+    /** shortcut for method: "PUT" */
     put?: boolean;
+    /** shortcut for method: "PATCH" */
     patch?: boolean;
+    /** default=null The body of the POST/PUT/PATCH request (can be passed into main)*/
     body?: any;
+    /** All other params become GET params, POST body, and other methods */
     [key: string]: any;
 }
 
 export declare interface GrabRequestConfig<TResponse = any, TParams = Record<string, any>> extends GrabOptions<TResponse, TParams> {
 }
 
+/***************** TYPESCRIPT INTERFACES *****************/
 export declare interface GrabResponse<T = any> {
     /** Indicates if request is currently in progress */
     isLoading?: boolean;
@@ -224,6 +230,20 @@ export declare type GrabResponseWithData<T> = GrabResponse<T> & {
     data?: T;
 };
 
+/**
+ * ### Colorized Log With JSON Structure
+ * ![Debug log](https://i.imgur.com/R8Qp6Vg.png)
+ * Logs messages to the console with custom styling,
+ * prints JSON with description of structure layout,
+ * and showing debug output in development only.
+ * @param {string|object} message - The message to log. If an object is provided, it will be stringified.
+ * @param {boolean} [hideInProduction] -  default = auto-detects based on hostname.
+ *  If true, uses `console.debug` (hidden in production). If false, uses `console.log`.
+ * @param {string} [style] default='color: blue; font-size: 15px' - CSS style string
+ */
+declare function log_2(message: any, hideInProduction?: any, style?: string): void;
+export { log_2 as log }
+
 export declare interface LogFunction {
     /**
      * Log messages with custom styling
@@ -234,6 +254,13 @@ export declare interface LogFunction {
     (message: string | object, hideInProduction?: boolean, style?: string): void;
 }
 
+/**
+ * Creates a colored visualization of a JSON object's structure
+ * Shows the shape and types of the data rather than actual values
+ * Recursively processes nested objects and arrays
+ */
+export declare function printStructureJSON(obj: any, indent?: number): string;
+
 export declare interface PrintStructureJSONFunction {
     /**
      * Generate TypeDoc-like description of JSON object structure
@@ -242,6 +269,14 @@ export declare interface PrintStructureJSONFunction {
      */
     (obj: any): string;
 }
+
+/**
+ * Shows message in a modal overlay with scrollable message stack
+ * and is easier to dismiss unlike alert() which blocks window.
+ * Creates a semi-transparent overlay with a white box containing the message.
+ * @param {string} msg - The message to display
+ */
+export declare function showAlert(msg: any): void;
 
 export declare type TypedGrabFunction = <TResponse = any, TParams = Record<string, any>>(path: string, config?: GrabRequestConfig<TResponse, TParams>) => Promise<GrabResponse<TResponse>>;
 

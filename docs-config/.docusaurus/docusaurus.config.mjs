@@ -4,27 +4,6 @@
  * Modify the docusaurus.config.js file at your site's root instead.
  */
 export default {
-  "future": {
-    "v4": {
-      "removeLegacyPostBuildHeadAttribute": true,
-      "useCssCascadeLayers": false
-    },
-    "experimental_faster": {
-      "swcJsLoader": true,
-      "swcJsMinimizer": true,
-      "swcHtmlMinimizer": true,
-      "lightningCssMinimizer": true,
-      "mdxCrossCompilerCache": true,
-      "rspackBundler": true,
-      "rspackPersistentCache": true,
-      "ssgWorkerThreads": true
-    },
-    "experimental_storage": {
-      "type": "localStorage",
-      "namespace": false
-    },
-    "experimental_router": "browser"
-  },
   "title": "GRAB-API API Routes Docs",
   "url": "https://grab.js.org",
   "baseUrl": "/",
@@ -39,8 +18,7 @@ export default {
         "docs": {
           "routeBasePath": "/",
           "sidebarPath": "./sidebars.ts",
-          "editUrl": "https://github.com/vtempest/grab-api.js/blob/main/",
-          "docItemComponent": "@theme/ApiItem"
+          "editUrl": "https://github.com/vtempest/grab-api.js/blob/main/"
         },
         "blog": false,
         "theme": {
@@ -73,6 +51,22 @@ export default {
           "title.indexPage": "GRAB-API API",
           "title.memberPage": "{name}"
         },
+        "sort": [
+          "kind"
+        ],
+        "kindSortOrder": [
+          "Function",
+          "Method",
+          "Project",
+          "Module",
+          "Namespace",
+          "Enum",
+          "EnumMember",
+          "Class",
+          "Interface",
+          "TypeAlias",
+          "Constructor"
+        ],
         "parametersFormat": "htmlTable",
         "indexFormat": "list",
         "expandParameters": true,
@@ -290,15 +284,6 @@ export default {
       "maxHeadingLevel": 3
     }
   },
-  "themes": [
-    "docusaurus-theme-openapi-docs"
-  ],
-  "stylesheets": [
-    {
-      "href": "https://use.fontawesome.com/releases/v5.11.0/css/all.css",
-      "type": "text/css"
-    }
-  ],
   "baseUrlIssueBanner": true,
   "i18n": {
     "defaultLocale": "en",
@@ -308,14 +293,37 @@ export default {
     ],
     "localeConfigs": {}
   },
+  "future": {
+    "v4": {
+      "removeLegacyPostBuildHeadAttribute": false,
+      "useCssCascadeLayers": false
+    },
+    "experimental_faster": {
+      "swcJsLoader": false,
+      "swcJsMinimizer": false,
+      "swcHtmlMinimizer": false,
+      "lightningCssMinimizer": false,
+      "mdxCrossCompilerCache": false,
+      "rspackBundler": false,
+      "rspackPersistentCache": false,
+      "ssgWorkerThreads": false
+    },
+    "experimental_storage": {
+      "type": "localStorage",
+      "namespace": false
+    },
+    "experimental_router": "browser"
+  },
   "onBrokenAnchors": "warn",
   "onDuplicateRoutes": "warn",
   "staticDirectories": [
     "static"
   ],
   "customFields": {},
+  "themes": [],
   "scripts": [],
   "headTags": [],
+  "stylesheets": [],
   "clientModules": [],
   "tagline": "",
   "titleDelimiter": "|",

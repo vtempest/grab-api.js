@@ -93,13 +93,13 @@ function showAlert(msg) {
   if (!o) {
     o = document.body.appendChild(document.createElement("div"));
     o.id = "alert-overlay";
-    o.style = "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center";
+    o.setAttribute("style", "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center");
     o.innerHTML = `<div id="alert-box" style="background:#fff;padding:1.5em 2em;border-radius:8px;box-shadow:0 2px 16px #0003;min-width:220px;max-height:80vh;position:relative;display:flex;flex-direction:column;">
       <button id="close-alert" style="position:absolute;top:12px;right:20px;font-size:1.5em;background:none;border:none;cursor:pointer;color:black;">&times;</button>
       <div id="alert-list" style="overflow:auto;flex:1;"></div>
     </div>`;
-    o.addEventListener("click", () => o.remove());
-    o.querySelector("#close-alert").onclick = () => o.remove();
+    o.addEventListener("click", (e) => e.target == o && o.remove());
+    document.getElementById("close-alert").onclick = () => o.remove();
     list = o.querySelector("#alert-list");
   } else {
     list = o.querySelector("#alert-list");
@@ -112,11 +112,11 @@ function setupDevTools() {
       let html = " ";
       for (let request of grab.log) {
         html += `<div style="margin-bottom:1em; border-bottom:1px solid #ccc; padding-bottom:1em;">
-        <b>Path:</b> ${request.path}<br>
-        <b>Request:</b> ${request.request}<br>
-        <b>Response:</b> ${JSON.stringify(request.response, null, 2)}<br>
-        <b>Time:</b> ${new Date(request.lastFetchTime).toLocaleString()}
-      </div>`;
+          <b>Path:</b> ${request.path}<br>
+          <b>Request:</b> ${request.request}<br>
+          <b>Response:</b> ${JSON.stringify(request.response, null, 2)}<br>
+          <b>Time:</b> ${new Date(request.lastFetchTime).toLocaleString()}
+        </div>`;
       }
       showAlert(html);
     }
@@ -135,13 +135,13 @@ async function grab$1(path, options) {
     put = false,
     patch = false,
     body = null,
-    staleTime = 60,
+    cacheForTime = 60,
     // Seconds to consider data stale and invalidate cache
     timeout = 20,
     // Request timeout in seconds
     baseURL = typeof process !== "undefined" && process.env.SERVER_API_URL || "/api/",
     // Use env var or default to /api/
-    cancelOngoingIfNew = true,
+    cancelOngoingIfNew = false,
     // Cancel previous request for same path
     cancelNewIfOngoing = false,
     // Don't make new request if one is ongoing
@@ -168,7 +168,7 @@ async function grab$1(path, options) {
     debounce = 0,
     // Seconds to debounce request, wait to execute so that other requests may override
     regrabOnStale = false,
-    // Refetch when cache is past staleTime
+    // Refetch when cache is past cacheForTime
     regrabOnFocus = false,
     // Refetch on window refocus
     regrabOnNetwork = false,
@@ -207,7 +207,7 @@ async function grab$1(path, options) {
     if (regrabOnStale && cache)
       setTimeout(async () => {
         await grab$1(path, { ...options, cache: false });
-      }, 1e3 * staleTime);
+      }, 1e3 * cacheForTime);
     if (regrabOnFocus) {
       window.addEventListener("focus", async () => {
         await grab$1(path, { ...options, cache: false });
@@ -252,11 +252,11 @@ async function grab$1(path, options) {
     let paramsAsText = JSON.stringify(
       paginateKey ? { ...params, [paginateKey]: void 0 } : params
     );
-    let priorRequest = (_f = grab$1.log) == null ? void 0 : _f.find(
+    let priorRequest = (_f = grab$1 == null ? void 0 : grab$1.log) == null ? void 0 : _f.find(
       (e) => e.request == paramsAsText && e.path == path
     );
     if (!paginateKey) {
-      if (cache && priorRequest && priorRequest.lastFetchTime > Date.now() - 1e3 * staleTime) {
+      if (cache && priorRequest && priorRequest.lastFetchTime > Date.now() - 1e3 * cacheForTime) {
         for (let key of Object.keys(priorRequest.res))
           response[key] = priorRequest.res[key];
         if (resFunction) response = resFunction(response);
@@ -272,8 +272,8 @@ async function grab$1(path, options) {
       if (priorRequest) priorRequest.currentPage = pageNumber;
       params[paginateKey] = pageNumber;
     }
-    if (typeof response === "function")
-      response = response({ isLoading: true });
+    if (resFunction)
+      resFunction({ isLoading: true });
     else if (typeof response === "object") response.isLoading = true;
     if (resFunction) response = resFunction(response);
     if (rateLimit > 0 && (priorRequest == null ? void 0 : priorRequest.lastFetchTime) && priorRequest.lastFetchTime > Date.now() - 1e3 * rateLimit)
@@ -338,8 +338,8 @@ async function grab$1(path, options) {
         params,
         fetchParams
       );
-    if (typeof response === "function")
-      response = response({ isLoading: void 0 });
+    if (resFunction)
+      resFunction({ isLoading: void 0 });
     else if (typeof response === "object") response == null ? true : delete response.isLoading;
     priorRequest == null ? true : delete priorRequest.controller;
     const elapsedTime = ((Number(/* @__PURE__ */ new Date()) - Number(startTime)) / 1e3).toFixed(1);
@@ -350,10 +350,11 @@ async function grab$1(path, options) {
       console.log(res);
     }
     if (typeof res === "undefined") return;
-    if (typeof res === "object")
+    if (typeof res === "object") {
       for (let key of Object.keys(res))
         response[key] = paginateResult == key && ((_j = response[key]) == null ? void 0 : _j.length) ? [...response[key], ...res[key]] : res[key];
-    else response.data = res;
+    } else if (resFunction) resFunction({ data: res });
+    else if (typeof response === "object") response.data = res;
     grab$1.log.unshift({
       path,
       request: JSON.stringify({ ...params, paginateKey: void 0 }),
@@ -402,6 +403,7 @@ const debouncer = async (func, wait) => {
 };
 if (typeof window !== "undefined") {
   window.log = log;
+  window.grab = grab$1;
   window.grab.log = [];
   window.grab.mock = {};
   window.grab.defaults = {};
@@ -419,6 +421,10 @@ if (typeof window !== "undefined") {
   global.log = log;
 }
 export {
-  grab$1 as grab
+  grab$1 as default,
+  grab$1 as grab,
+  log,
+  printStructureJSON,
+  showAlert
 };
 //# sourceMappingURL=grab-api.es.js.map

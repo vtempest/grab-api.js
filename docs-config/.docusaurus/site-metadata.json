@@ -41,11 +41,6 @@
       "type": "package",
       "name": "docusaurus-plugin-typedoc",
       "version": "1.4.0"
-    },
-    "docusaurus-theme-openapi": {
-      "type": "package",
-      "name": "docusaurus-theme-openapi-docs",
-      "version": "4.4.0"
     }
   }
 }

@@ -50,7 +50,6 @@ export default async function createConfig(options: any = {}) {
       {
         id: "lib",
         entryPoints: ["../src/**/*"],
-
       }
     ],
     showEditsOnGitHub = true,
@@ -60,7 +59,7 @@ export default async function createConfig(options: any = {}) {
     tsconfig = "./tsconfig.json",
     readme = "../readme.md",
     sanitizeComments = false,
-    appLogoURL =  "/apple-touch-icon.png",
+    appLogoURL = "/apple-touch-icon.png",
   } = options;
 
   // foldersWithFunctions - should also add to tsconfig.json include:[]
@@ -69,12 +68,6 @@ export default async function createConfig(options: any = {}) {
   // subdomain like docprojects.user.github.io
   // sanitizeComments helps avoid errors in markdown like <> {} etc
   return {
-    future: {
-      v4: {
-        removeLegacyPostBuildHeadAttribute: true, // REQUIRED for ssgWorkerThreads
-      },
-      experimental_faster: true,
-    },
     title: name + " API Routes Docs",
     url: domain,
     baseUrl: compileForSubdomain ? "/" : "/",
@@ -90,7 +83,6 @@ export default async function createConfig(options: any = {}) {
             routeBasePath: "/",
             sidebarPath: "./sidebars.ts",
             editUrl: gitRepo,
-            docItemComponent: "@theme/ApiItem", // Derived from docusaurus-theme-openapi
           },
           blog: false,
           theme: {
@@ -103,11 +95,8 @@ export default async function createConfig(options: any = {}) {
         } satisfies Preset.Options,
       ],
     ],
-
     plugins: [
-
       "docusaurus-lunr-search",
-
       ...(typedocFolders.map(({ id, entryPoints }) => [
         "docusaurus-plugin-typedoc",
         {
@@ -122,6 +111,20 @@ export default async function createConfig(options: any = {}) {
             "title.indexPage": name + " API",
             "title.memberPage": "{name}",
           },
+          sort: ["kind"],
+          kindSortOrder: [
+            "Function",
+            "Method",
+            "Project",
+            "Module",
+            "Namespace",
+            "Enum",
+            "EnumMember",
+            "Class",
+            "Interface",
+            "TypeAlias",
+            "Constructor",
+          ],
           parametersFormat: "htmlTable",
           indexFormat: "list",
           expandParameters: true,
@@ -142,7 +145,6 @@ export default async function createConfig(options: any = {}) {
         },
       ])),
     ],
-
     themeConfig: {
       docs: {
         sidebar: {
@@ -169,7 +171,7 @@ export default async function createConfig(options: any = {}) {
             position: "left",
           },
           {
-            to: "/guide/Performance", 
+            to: "/guide/Performance",
             label: "⚡ Performance",
             position: "left",
           },
@@ -180,19 +182,7 @@ export default async function createConfig(options: any = {}) {
           },
         ],
       },
-
-      
     } satisfies Preset.ThemeConfig,
-
-    themes: [
-      "docusaurus-theme-openapi-docs"
-    ],
-    stylesheets: [
-      {
-        href: "https://use.fontawesome.com/releases/v5.11.0/css/all.css",
-        type: "text/css",
-      },
-    ],
   } satisfies Config;
 }
 
