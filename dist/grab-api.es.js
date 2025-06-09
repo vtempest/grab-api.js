@@ -335,10 +335,12 @@ async function grab$1(path, options) {
         throw new Error(`HTTP error: ${res.status} ${res.statusText}`);
       if (onStream) {
         const { Readable } = await Promise.resolve().then(() => __viteBrowserExternal);
-        const nodeStream = Readable.fromWeb(response.body);
-        return await new Promise((resolve, reject) => {
-          nodeStream.pipe(onStream).on("finish", resolve).on("error", reject);
-        });
+        if (typeof Readable !== "undefined") {
+          const nodeStream = Readable == null ? void 0 : Readable.fromWeb(response.body);
+          await new Promise((resolve, reject) => {
+            nodeStream.pipe(onStream).on("finish", resolve).on("error", reject);
+          });
+        }
       }
       let type = res.headers.get("content-type");
       res = await (type ? type.includes("application/json") ? res && res.json() : type.includes("application/pdf") || type.includes("application/octet-stream") ? res.blob() : res.text() : res.json()).catch((e) => {

@@ -78,10 +78,10 @@
  *   query: "search words"
  * })
  */
-declare function grab_2(path: string, options: GrabOptions): Promise<unknown>;
+declare function grab_2(path: string, options: GrabOptions): Promise<Record<string, any> | ((...args: any[]) => Promise<void>)>;
 
 declare namespace grab_2 {
-    var instance: (defaultOptions?: {}) => (path: any, options?: {}) => Promise<unknown>;
+    var instance: (defaultOptions?: {}) => (path: any, options?: {}) => Promise<Record<string, any> | ((...args: any[]) => Promise<void>)>;
     var log: any[];
     var mock: {};
     var defaults: {};

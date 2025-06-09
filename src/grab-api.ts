@@ -383,13 +383,14 @@ export default async function grab(path: string, options: GrabOptions) {
 
       // Convert browser ReadableStream to Node.js stream
       if (onStream) {
-          const { Readable } = await import('stream');
+          const { Readable } = await import('node:stream');
+          if (typeof Readable !== 'undefined') {
+            const nodeStream = Readable?.fromWeb(response.body as any);
 
-          const nodeStream = Readable.fromWeb(response.body);
-
-          return await new Promise((resolve, reject) => {
-              nodeStream.pipe(onStream).on('finish', resolve).on('error', reject);
-          });
+            await new Promise((resolve, reject) => {
+                nodeStream.pipe(onStream as any).on('finish', resolve).on('error', reject);
+            });
+          }
       }
 
       let type = res.headers.get("content-type");
