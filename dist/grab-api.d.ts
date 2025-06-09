@@ -8,6 +8,7 @@
  *  - loading icons
  *  - repeat every
  *  - show net log in alert
+ *  - cache revalidation
  *  - refetch on stale, on window refocus, on network
  *  - scroll position recovery
  */
@@ -21,7 +22,7 @@
  * 4. **Debug Logging**: Adds global `log()` and prints colored JSON structure, response, timing for requests in test.
  * 5. **Mock Server Support**: Configure `window.grab.mock` for development and testing environments
  * 6. **Cancel Duplicates**: Prevent this request if one is ongoing to same path & params, or cancel the ongoing request.
- * 7. **Timeout & Retry**: Customizable request timeout, default 20s, and auto-retry on error
+ * 7. **Timeout & Retry**: Customizable request timeout, default 30s, and auto-retry on error
  * 8. **DevTools**: `Ctrl+I` overlays webpage with devtools showing all requests and responses, timing, and JSON structure.
  * 9. **Request History**: Stores all request and response data in global `grab.log` object
  * 10. **Pagination Infinite Scroll**: Built-in pagination for infinite scroll to auto-load and merge next result page, with scroll position recovery.
@@ -45,7 +46,7 @@
  * @param {boolean} [options.cancelNewIfOngoing] default=false Cancel if a request to path is in progress
  * @param {boolean} [options.cache] default=false Whether to cache the request and from frontend cache
  * @param {boolean} [options.debug] default=false Whether to log the request and response
- * @param {number} [options.timeout] default=20 The timeout for the request in seconds
+ * @param {number} [options.timeout] default=30 The timeout for the request in seconds
  * @param {number} [options.cacheForTime] default=60 Seconds to consider data stale and invalidate cache
  * @param {number} [options.rateLimit] default=0 If set, how many seconds to wait between requests
  * @param {string} [options.baseURL] default='/api/' base url prefix, override with SERVER_API_URL env
@@ -147,7 +148,7 @@ export declare interface GrabMockHandler<TParams = any, TResponse = any> {
     /** Mock response data or function that returns response */
     response: TResponse | ((params: TParams) => TResponse);
     /** HTTP method this mock should respond to */
-    method?: string;
+    method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD";
     /** Request parameters this mock should match */
     params?: TParams;
     /** Delay in seconds before returning mock response */
@@ -160,12 +161,12 @@ export declare interface GrabOptions<TResponse = any, TParams = Record<string, a
     /** Pre-initialized object which becomes response JSON, no need for .data */
     response?: Record<string, any>;
     /** default="GET" The HTTP method to use */
-    method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+    method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD";
     /** default=false Whether to cache the request and from frontend cache */
     cache?: boolean;
     /** default=60 Seconds to consider data stale and invalidate cache */
     cacheForTime?: number;
-    /** default=20 The timeout for the request in seconds */
+    /** default=30 The timeout for the request in seconds */
     timeout?: number;
     /** default='/api/' base url prefix, override with SERVER_API_URL env */
     baseURL?: string;
@@ -189,6 +190,8 @@ export declare interface GrabOptions<TResponse = any, TParams = Record<string, a
     onBeforeRequest?: (...args: any[]) => any;
     /** Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams */
     onAfterRequest?: (...args: any[]) => any;
+    /** Set with defaults to modify each request data. Takes and returns in order: error, path, params */
+    onError?: (...args: any[]) => any;
     /** default=0 Repeat request this many times */
     repeat?: number;
     /** default=null Repeat request every seconds */
@@ -222,6 +225,8 @@ export declare interface GrabResponse<T = any> {
     isLoading?: boolean;
     /** Error message if request failed */
     error?: string;
+    /** Binary or text response data (JSON is set to the root)*/
+    data?: T;
     /** The actual response data - type depends on API endpoint */
     [key: string]: T | boolean | string | undefined;
 }

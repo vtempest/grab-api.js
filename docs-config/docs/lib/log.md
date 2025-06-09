@@ -9,7 +9,7 @@ function log(
    style?: string): void;
 ```
 
-Defined in: log.ts:13
+Defined in: [log.ts:13](https://github.com/vtempest/grab-api/tree/master/src/log.ts#L13)
 
 ### Colorized Log With JSON Structure
 ![Debug log](https://i.imgur.com/R8Qp6Vg.png)  
@@ -111,7 +111,7 @@ default='color: blue; font-size: 15px' - CSS style string
 function printStructureJSON(obj: any, indent: number): string;
 ```
 
-Defined in: log.ts:87
+Defined in: [log.ts:87](https://github.com/vtempest/grab-api/tree/master/src/log.ts#L87)
 
 Creates a colored visualization of a JSON object's structure
 Shows the shape and types of the data rather than actual values
@@ -177,7 +177,7 @@ Recursively processes nested objects and arrays
 function showAlert(msg: any): void;
 ```
 
-Defined in: log.ts:149
+Defined in: [log.ts:149](https://github.com/vtempest/grab-api/tree/master/src/log.ts#L149)
 
 Shows message in a modal overlay with scrollable message stack
 and is easier to dismiss unlike alert() which blocks window.
@@ -226,7 +226,7 @@ The message to display
 function setupDevTools(): void;
 ```
 
-Defined in: log.ts:184
+Defined in: [log.ts:184](https://github.com/vtempest/grab-api/tree/master/src/log.ts#L184)
 
 Sets up development tools for debugging API requests
 Adds a keyboard shortcut (Ctrl+I) that shows a modal with request history

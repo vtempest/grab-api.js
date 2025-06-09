@@ -114,6 +114,11 @@ grab('user').then(log)
 
 ### Screenshots
 
+**Animated SVG Loading Icons Custom Colors**
+<p align="center">
+    <video src="https://i.imgur.com/hwQbZy5.mp4" width="550px" controls     />
+</p>
+
 **Debug Colorized log(JSON)**
 ![Debug log](https://i.imgur.com/R8Qp6Vg.png)
 
@@ -124,11 +129,6 @@ grab('user').then(log)
 **Hover over options for info**
 
 ![Info Tooltip](https://i.imgur.com/vV5jbZo.png)
-
-**Animated SVG Loading Icons Custom Colors**
-
-![Icons](https://i.imgur.com/QHtjLtA.png)
-[Video](https://i.imgur.com/hwQbZy5.mp4)
 
 ### Comparison of HTTP Request Libraries
 

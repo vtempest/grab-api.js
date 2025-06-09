@@ -40,11 +40,9 @@
     "make:main": "vite build",
     "check": "vitest --ui",
     "docs": "cd docs-config && npm run docs"
-    "docs": "cd docs-config && npm run docs"
   },
   "devDependencies": {
     "@vitest/ui": "^3.1.4",
-    "export-svg-typescript": "^0.1.6",
     "export-svg-typescript": "^0.1.6",
     "jsdoc": "^4.0.4",
     "terser": "^5.40.0",

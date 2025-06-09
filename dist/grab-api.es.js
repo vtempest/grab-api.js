@@ -129,15 +129,11 @@ async function grab$1(path, options) {
     response = {},
     // Pre-initialized object to set the response in. isLoading and error are also set on this object.
     method = options.post ? "POST" : options.put ? "PUT" : options.patch ? "PATCH" : "GET",
-    /* Enable/disable frontend caching */
     cache = false,
-    post = false,
-    put = false,
-    patch = false,
-    body = null,
+    // Enable/disable frontend caching
     cacheForTime = 60,
     // Seconds to consider data stale and invalidate cache
-    timeout = 20,
+    timeout = 30,
     // Request timeout in seconds
     baseURL = typeof process !== "undefined" && process.env.SERVER_API_URL || "/api/",
     // Use env var or default to /api/
@@ -161,6 +157,8 @@ async function grab$1(path, options) {
     // Hook to modify request data before request is made
     onAfterRequest = null,
     // Hook to modify request data after request is made
+    onError = null,
+    // Hook to modify request data after request is made
     repeatEvery = null,
     // Repeat request every seconds
     repeat = 0,
@@ -173,6 +171,10 @@ async function grab$1(path, options) {
     // Refetch on window refocus
     regrabOnNetwork = false,
     // Refetch on network change
+    post = false,
+    put = false,
+    patch = false,
+    body = null,
     ...params
     // All other params become request params/query
   } = {
@@ -256,13 +258,12 @@ async function grab$1(path, options) {
       (e) => e.request == paramsAsText && e.path == path
     );
     if (!paginateKey) {
-      if (cache && priorRequest && priorRequest.lastFetchTime > Date.now() - 1e3 * cacheForTime) {
+      for (let key of Object.keys(response)) response[key] = void 0;
+      if (cache && (!cacheForTime || (priorRequest == null ? void 0 : priorRequest.lastFetchTime) > Date.now() - 1e3 * cacheForTime)) {
         for (let key of Object.keys(priorRequest.res))
           response[key] = priorRequest.res[key];
         if (resFunction) response = resFunction(response);
-        return response;
       }
-      for (let key of Object.keys(response)) response[key] = void 0;
     } else {
       let pageNumber = (priorRequest == null ? void 0 : priorRequest.currentPage) + 1 || (params == null ? void 0 : params[paginateKey]) || 1;
       if (!priorRequest) {
@@ -326,6 +327,8 @@ async function grab$1(path, options) {
           throw new Error(e);
         }
       );
+      if (!res.ok)
+        throw new Error(`HTTP error: ${res.status} ${res.statusText}`);
       let type = res.headers.get("content-type");
       res = await (type ? type.includes("application/json") ? res && res.json() : type.includes("application/pdf") || type.includes("application/octet-stream") ? res.blob() : res.text() : res.json()).catch((e) => {
         throw new Error("Error parsing response: " + e);
@@ -366,6 +369,12 @@ async function grab$1(path, options) {
   } catch (error) {
     let errorMessage = "Error: " + error.message + "\nPath:" + baseURL + path + "\n";
     JSON.stringify(params);
+    if (typeof onError === "function")
+      onError(
+        error.message,
+        baseURL + path,
+        params
+      );
     if (options.retryAttempts > 0)
       return await grab$1(path, {
         ...options,
