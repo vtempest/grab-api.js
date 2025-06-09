@@ -333,6 +333,18 @@ async function grab$1(path, options) {
       );
       if (!res.ok)
         throw new Error(`HTTP error: ${res.status} ${res.statusText}`);
+<<<<<<< HEAD
+=======
+      if (onStream) {
+        const { Readable } = await Promise.resolve().then(() => __viteBrowserExternal);
+        if (typeof Readable !== "undefined") {
+          const nodeStream = Readable == null ? void 0 : Readable.fromWeb(response.body);
+          await new Promise((resolve, reject) => {
+            nodeStream.pipe(onStream).on("finish", resolve).on("error", reject);
+          });
+        }
+      }
+>>>>>>> 000f306f9bbeb3df7f238aa81114560edd97c2e8
       let type = res.headers.get("content-type");
       if (onStream)
         await onStream(res.body);
