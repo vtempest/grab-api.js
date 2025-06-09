@@ -256,7 +256,11 @@ default=false Whether to cache the request and from frontend cache
 <tr>
 <td>
 
+<<<<<<< HEAD
 <a id="cacheForTime"></a> `cacheForTime?`
+=======
+<a id="staletime"></a> `staleTime?`
+>>>>>>> b0b2a8a28e62eede88e8872196bdf4d62a673f3f
 
 </td>
 <td>
@@ -618,7 +622,11 @@ default=0 Seconds to debounce request, wait to execute so that other requests ma
 </td>
 <td>
 
+<<<<<<< HEAD
 default=false Refetch when cache is past cacheForTime
+=======
+default=false Refetch when cache is past staleTime
+>>>>>>> b0b2a8a28e62eede88e8872196bdf4d62a673f3f
 
 </td>
 <td>
@@ -943,7 +951,11 @@ default=false Whether to cache the request and from frontend cache
 <tr>
 <td>
 
+<<<<<<< HEAD
 <a id="cacheForTime-1"></a> `cacheForTime?`
+=======
+<a id="staletime-1"></a> `staleTime?`
+>>>>>>> b0b2a8a28e62eede88e8872196bdf4d62a673f3f
 
 </td>
 <td>
@@ -958,7 +970,11 @@ default=60 Seconds to consider data stale and invalidate cache
 </td>
 <td>
 
+<<<<<<< HEAD
 [`GrabOptions`](#graboptions).[`cacheForTime`](#cacheForTime)
+=======
+[`GrabOptions`](#graboptions).[`staleTime`](#staletime)
+>>>>>>> b0b2a8a28e62eede88e8872196bdf4d62a673f3f
 
 </td>
 <td>
@@ -1385,7 +1401,11 @@ default=0 Seconds to debounce request, wait to execute so that other requests ma
 </td>
 <td>
 
+<<<<<<< HEAD
 default=false Refetch when cache is past cacheForTime
+=======
+default=false Refetch when cache is past staleTime
+>>>>>>> b0b2a8a28e62eede88e8872196bdf4d62a673f3f
 
 </td>
 <td>
