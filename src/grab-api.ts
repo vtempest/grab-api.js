@@ -64,6 +64,8 @@ import { printStructureJSON, log, showAlert, setupDevTools } from "./log.js";
  *  Takes and returns in order: path, response, params, fetchParams
  * @param {function} [options.onAfterRequest] Set with defaults to modify each request data.
  *  Takes and returns in order: path, response, params, fetchParams
+ * @param {function} [options.onStream] Set with defaults to process the response as a stream (i.e., for instant unzip)
+ * @param {function} [options.onError] Set with defaults to modify the error data. Takes: error, path, params
  * @param {number} [options.debounce] default=0 Seconds to debounce request, wait to execute so that other requests may override
  * @param {boolean} [options.regrabOnStale] default=false Refetch when cache is past cacheForTime
  * @param {boolean} [options.regrabOnFocus] default=false Refetch on window refocus
@@ -107,6 +109,7 @@ export default async function grab(path: string, options: GrabOptions) {
     onBeforeRequest = null, // Hook to modify request data before request is made
     onAfterRequest = null, // Hook to modify request data after request is made
     onError = null, // Hook to modify request data after request is made
+    onStream = null, // Hook to process the response as a stream (i.e., for instant unarchiving)
     repeatEvery = null, // Repeat request every seconds
     repeat = 0, // Repeat request this many times
     debounce = 0, // Seconds to debounce request, wait to execute so that other requests may override
@@ -377,6 +380,18 @@ export default async function grab(path: string, options: GrabOptions) {
       if (!res.ok)
         throw new Error(`HTTP error: ${res.status} ${res.statusText}`);
 
+
+      // Convert browser ReadableStream to Node.js stream
+      if (onStream) {
+          const { Readable } = await import('stream');
+
+          const nodeStream = Readable.fromWeb(response.body);
+
+          return await new Promise((resolve, reject) => {
+              nodeStream.pipe(onStream).on('finish', resolve).on('error', reject);
+          });
+      }
+
       let type = res.headers.get("content-type");
       res = await (type
         ? type.includes("application/json")
@@ -610,6 +625,8 @@ export interface GrabOptions<TResponse = any, TParams = Record<string, any>> {
   onAfterRequest?: (...args: any[]) => any;
   /** Set with defaults to modify each request data. Takes and returns in order: error, path, params */
   onError?: (...args: any[]) => any;
+  /** Set with defaults to process the response as a stream (i.e., for instant unzip) */
+  onStream?: (...args: any[]) => any;
   /** default=0 Repeat request this many times */
   repeat?: number;
   /** default=null Repeat request every seconds */

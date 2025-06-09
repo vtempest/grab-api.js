@@ -160,6 +160,8 @@ async function grab$1(path, options) {
     // Hook to modify request data after request is made
     onError = null,
     // Hook to modify request data after request is made
+    onStream = null,
+    // Hook to process the response as a stream (i.e., for instant unarchiving)
     repeatEvery = null,
     // Repeat request every seconds
     repeat = 0,
@@ -331,6 +333,13 @@ async function grab$1(path, options) {
       );
       if (!res.ok)
         throw new Error(`HTTP error: ${res.status} ${res.statusText}`);
+      if (onStream) {
+        const { Readable } = await Promise.resolve().then(() => __viteBrowserExternal);
+        const nodeStream = Readable.fromWeb(response.body);
+        return await new Promise((resolve, reject) => {
+          nodeStream.pipe(onStream).on("finish", resolve).on("error", reject);
+        });
+      }
       let type = res.headers.get("content-type");
       res = await (type ? type.includes("application/json") ? res && res.json() : type.includes("application/pdf") || type.includes("application/octet-stream") ? res.blob() : res.text() : res.json()).catch((e) => {
         throw new Error("Error parsing response: " + e);
@@ -438,6 +447,9 @@ if (typeof window !== "undefined") {
   globalThis.log = log;
   globalThis.grab = grab$1.instance();
 }
+const __viteBrowserExternal = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null
+}, Symbol.toStringTag, { value: "Module" }));
 export {
   grab$1 as default,
   grab$1 as grab,

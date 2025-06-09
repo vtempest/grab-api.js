@@ -61,6 +61,8 @@
  *  Takes and returns in order: path, response, params, fetchParams
  * @param {function} [options.onAfterRequest] Set with defaults to modify each request data.
  *  Takes and returns in order: path, response, params, fetchParams
+ * @param {function} [options.onStream] Set with defaults to process the response as a stream (i.e., for instant unzip)
+ * @param {function} [options.onError] Set with defaults to modify the error data. Takes: error, path, params
  * @param {number} [options.debounce] default=0 Seconds to debounce request, wait to execute so that other requests may override
  * @param {boolean} [options.regrabOnStale] default=false Refetch when cache is past cacheForTime
  * @param {boolean} [options.regrabOnFocus] default=false Refetch on window refocus
@@ -76,10 +78,10 @@
  *   query: "search words"
  * })
  */
-declare function grab_2(path: string, options: GrabOptions): Promise<Record<string, any> | ((...args: any[]) => Promise<void>)>;
+declare function grab_2(path: string, options: GrabOptions): Promise<unknown>;
 
 declare namespace grab_2 {
-    var instance: (defaultOptions?: {}) => (path: any, options?: {}) => Promise<Record<string, any> | ((...args: any[]) => Promise<void>)>;
+    var instance: (defaultOptions?: {}) => (path: any, options?: {}) => Promise<unknown>;
     var log: any[];
     var mock: {};
     var defaults: {};
@@ -192,6 +194,8 @@ export declare interface GrabOptions<TResponse = any, TParams = Record<string, a
     onAfterRequest?: (...args: any[]) => any;
     /** Set with defaults to modify each request data. Takes and returns in order: error, path, params */
     onError?: (...args: any[]) => any;
+    /** Set with defaults to process the response as a stream (i.e., for instant unzip) */
+    onStream?: (...args: any[]) => any;
     /** default=0 Repeat request this many times */
     repeat?: number;
     /** default=null Repeat request every seconds */
