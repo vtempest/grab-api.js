@@ -382,18 +382,11 @@ export default async function grab(path: string, options: GrabOptions) {
 
 
       // Convert browser ReadableStream to Node.js stream
-      if (onStream) {
-          const { Readable } = await import('stream');
-
-          const nodeStream = Readable.fromWeb(response.body);
-
-          return await new Promise((resolve, reject) => {
-              nodeStream.pipe(onStream).on('finish', resolve).on('error', reject);
-          });
-      }
-
       let type = res.headers.get("content-type");
-      res = await (type
+      
+      if (onStream) 
+        await onStream(res.body)
+      else  res = await (type
         ? type.includes("application/json")
           ? res && res.json()
           : type.includes("application/pdf") ||
