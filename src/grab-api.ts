@@ -98,8 +98,8 @@ export default async function grab(path: string, options: GrabOptions) {
     cancelOngoingIfNew = false, // Cancel previous request for same path
     cancelNewIfOngoing = false, // Don't make new request if one is ongoing
     rateLimit = 0, // Minimum seconds between requests
-    debug = typeof window !== "undefined" &&
-    window?.location?.hostname?.includes("localhost"), // Auto-enable debug on localhost
+    debug = false, // Auto-enable debug on localhost
+    // typeof window !== "undefined" && window?.location?.hostname?.includes("localhost"), 
     infiniteScroll = null, // page key, response field to concatenate, element with results
     setDefaults = false, // Set these options as defaults for future requests
     retryAttempts = 0, // Retry failed requests once
@@ -153,7 +153,8 @@ export default async function grab(path: string, options: GrabOptions) {
     if (options?.setDefaults) {
       if (typeof window !== "undefined")
         window.grab.defaults = { ...options, setDefaults: undefined };
-      else global.grab.defaults = { ...options, setDefaults: undefined };
+      else if (typeof (global || globalThis).grab !== "undefined")
+        (global || globalThis).grab.defaults = { ...options, setDefaults: undefined };
 
       return {};
     }
@@ -526,8 +527,8 @@ const debouncer = async (func, wait) => {
 // Add globals to window in browser, or global in Node.js
 if (typeof window !== "undefined") {
   window.log = log;
-  // @ts-ignore
-  window.grab = grab;
+  
+  window.grab = grab.instance();
   window.grab.log = [];
   window.grab.mock = {};
   window.grab.defaults = {};
@@ -548,6 +549,13 @@ if (typeof window !== "undefined") {
   grab.mock = {};
   grab.defaults = {};
   global.log = log;
+  global.grab = grab.instance();
+} else if (typeof globalThis !== "undefined") {
+  grab.log = [];
+  grab.mock = {};
+  grab.defaults = {};
+  globalThis.log = log;
+  globalThis.grab = grab.instance();
 }
 
 /***************** TYPESCRIPT INTERFACES *****************/

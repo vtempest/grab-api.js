@@ -123,7 +123,7 @@ function setupDevTools() {
   });
 }
 async function grab$1(path, options) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i;
   let {
     headers,
     response = {},
@@ -143,8 +143,9 @@ async function grab$1(path, options) {
     // Don't make new request if one is ongoing
     rateLimit = 0,
     // Minimum seconds between requests
-    debug = typeof window !== "undefined" && ((_b = (_a = window == null ? void 0 : window.location) == null ? void 0 : _a.hostname) == null ? void 0 : _b.includes("localhost")),
+    debug = false,
     // Auto-enable debug on localhost
+    // typeof window !== "undefined" && window?.location?.hostname?.includes("localhost"), 
     infiniteScroll = null,
     // page key, response field to concatenate, element with results
     setDefaults = false,
@@ -179,7 +180,7 @@ async function grab$1(path, options) {
     // All other params become request params/query
   } = {
     // Destructure options with defaults, merging with any globally set defaults
-    ...typeof window !== "undefined" ? (_c = window == null ? void 0 : window.grab) == null ? void 0 : _c.defaults : ((_d = global == null ? void 0 : global.grab) == null ? void 0 : _d.defaults) || {},
+    ...typeof window !== "undefined" ? (_a = window == null ? void 0 : window.grab) == null ? void 0 : _a.defaults : ((_b = global == null ? void 0 : global.grab) == null ? void 0 : _b.defaults) || {},
     ...options
   };
   try {
@@ -203,7 +204,8 @@ async function grab$1(path, options) {
     if (options == null ? void 0 : options.setDefaults) {
       if (typeof window !== "undefined")
         window.grab.defaults = { ...options, setDefaults: void 0 };
-      else global.grab.defaults = { ...options, setDefaults: void 0 };
+      else if (typeof (global || globalThis).grab !== "undefined")
+        (global || globalThis).grab.defaults = { ...options, setDefaults: void 0 };
       return {};
     }
     if (regrabOnStale && cache)
@@ -232,7 +234,7 @@ async function grab$1(path, options) {
     if ((infiniteScroll == null ? void 0 : infiniteScroll.length) && typeof window == "undefined") {
       let paginateDOM = typeof paginateElement === "string" ? document.querySelector(paginateElement) : paginateElement;
       if (paginateDOM)
-        paginateDOM.removeEventListener("scroll", (_e = window ?? globalThis) == null ? void 0 : _e.scrollListener);
+        paginateDOM.removeEventListener("scroll", (_c = window ?? globalThis) == null ? void 0 : _c.scrollListener);
       (window ?? globalThis).scrollListener = paginateDOM.addEventListener(
         "scroll",
         async ({ target }) => {
@@ -254,7 +256,7 @@ async function grab$1(path, options) {
     let paramsAsText = JSON.stringify(
       paginateKey ? { ...params, [paginateKey]: void 0 } : params
     );
-    let priorRequest = (_f = grab$1 == null ? void 0 : grab$1.log) == null ? void 0 : _f.find(
+    let priorRequest = (_d = grab$1 == null ? void 0 : grab$1.log) == null ? void 0 : _d.find(
       (e) => e.request == paramsAsText && e.path == path
     );
     if (!paginateKey) {
@@ -301,7 +303,7 @@ async function grab$1(path, options) {
       body: params.body,
       redirect: "follow",
       cache: cache ? "force-cache" : "no-store",
-      signal: cancelOngoingIfNew ? (_h = (_g = grab$1.log[0]) == null ? void 0 : _g.controller) == null ? void 0 : _h.signal : AbortSignal.timeout(timeout * 1e3)
+      signal: cancelOngoingIfNew ? (_f = (_e = grab$1.log[0]) == null ? void 0 : _e.controller) == null ? void 0 : _f.signal : AbortSignal.timeout(timeout * 1e3)
     };
     let paramsGETRequest = "";
     if (["POST", "PUT", "PATCH"].includes(method))
@@ -316,7 +318,7 @@ async function grab$1(path, options) {
       );
     if (!path.startsWith("/") && !baseURL.endsWith("/")) path = "/" + path;
     if (path.startsWith("http:") || path.startsWith("https:")) baseURL = "";
-    let res = null, startTime = /* @__PURE__ */ new Date(), mockHandler = (_i = grab$1.mock) == null ? void 0 : _i[path];
+    let res = null, startTime = /* @__PURE__ */ new Date(), mockHandler = (_g = grab$1.mock) == null ? void 0 : _g[path];
     let wait = (s) => new Promise((res2) => setTimeout(res2, s * 1e3 || 0));
     if (mockHandler && (!mockHandler.params || mockHandler.method == method) && (!mockHandler.params || paramsAsText == JSON.stringify(mockHandler.params))) {
       await wait(mockHandler.delay);
@@ -355,7 +357,7 @@ async function grab$1(path, options) {
     if (typeof res === "undefined") return;
     if (typeof res === "object") {
       for (let key of Object.keys(res))
-        response[key] = paginateResult == key && ((_j = response[key]) == null ? void 0 : _j.length) ? [...response[key], ...res[key]] : res[key];
+        response[key] = paginateResult == key && ((_h = response[key]) == null ? void 0 : _h.length) ? [...response[key], ...res[key]] : res[key];
     } else if (resFunction) resFunction({ data: res });
     else if (typeof response === "object") response.data = res;
     grab$1.log.unshift({
@@ -388,7 +390,7 @@ async function grab$1(path, options) {
     if (typeof response === "function")
       response = response({ isLoading: void 0, error: error.message });
     else response == null ? true : delete response.isLoading;
-    (_k = grab$1.log) == null ? void 0 : _k.unshift({
+    (_i = grab$1.log) == null ? void 0 : _i.unshift({
       path,
       request: JSON.stringify(params),
       error: error.message
@@ -412,7 +414,7 @@ const debouncer = async (func, wait) => {
 };
 if (typeof window !== "undefined") {
   window.log = log;
-  window.grab = grab$1;
+  window.grab = grab$1.instance();
   window.grab.log = [];
   window.grab.mock = {};
   window.grab.defaults = {};
@@ -428,6 +430,13 @@ if (typeof window !== "undefined") {
   grab$1.mock = {};
   grab$1.defaults = {};
   global.log = log;
+  global.grab = grab$1.instance();
+} else if (typeof globalThis !== "undefined") {
+  grab$1.log = [];
+  grab$1.mock = {};
+  grab$1.defaults = {};
+  globalThis.log = log;
+  globalThis.grab = grab$1.instance();
 }
 export {
   grab$1 as default,
