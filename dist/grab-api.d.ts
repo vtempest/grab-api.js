@@ -78,10 +78,18 @@
  *   query: "search words"
  * })
  */
-declare function grab_2(path: string, options: GrabOptions): Promise<Record<string, any> | ((...args: any[]) => Promise<void>)>;
+declare function grab_2<TResponse, TParams>(path: string, options: GrabOptions<TResponse, TParams>): Promise<GrabResponse<TResponse>>;
 
 declare namespace grab_2 {
-    var instance: (defaultOptions?: {}) => (path: any, options?: {}) => Promise<Record<string, any> | ((...args: any[]) => Promise<void>)>;
+    var instance: (defaultOptions?: {}) => (path: any, options?: {}) => Promise<{
+        [key: string]: unknown;
+        /** Indicates if request is currently in progress */
+        isLoading?: boolean;
+        /** Error message if request failed */
+        error?: string;
+        /** Binary or text response data (JSON is set to the root)*/
+        data?: unknown;
+    }>;
     var log: any[];
     var mock: {};
     var defaults: {};
@@ -107,7 +115,7 @@ export declare interface GrabFunction {
      * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
      * @see  [🎯 Examples](https://grab.js.org/guide/Examples) [📑 Docs](https://grab.js.org/lib)
      */
-    <TResponse = any, TParams = Record<string, any>>(path: string, config: GrabRequestConfig<TResponse, TParams>): Promise<GrabResponse<TResponse>>;
+    <TResponse = any, TParams = Record<string, any>>(path: string, config: GrabOptions<TResponse, TParams>): Promise<GrabResponse<TResponse>>;
     /** Default options applied to all requests */
     defaults?: Partial<GrabOptions>;
     /** Request history and debugging info for all requests */
@@ -157,11 +165,11 @@ export declare interface GrabMockHandler<TParams = any, TResponse = any> {
     delay?: number;
 }
 
-export declare interface GrabOptions<TResponse = any, TParams = Record<string, any>> {
+export declare type GrabOptions<TResponse = any, TParams = any> = TParams & {
     /** include headers and authorization in the request */
     headers?: Record<string, string>;
     /** Pre-initialized object which becomes response JSON, no need for .data */
-    response?: Record<string, any>;
+    response?: TResponse | ((params: TParams) => TResponse) | any;
     /** default="GET" The HTTP method to use */
     method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD";
     /** default=false Whether to cache the request and from frontend cache */
@@ -217,23 +225,20 @@ export declare interface GrabOptions<TResponse = any, TParams = Record<string, a
     /** default=null The body of the POST/PUT/PATCH request (can be passed into main)*/
     body?: any;
     /** All other params become GET params, POST body, and other methods */
-    [key: string]: any;
-}
-
-export declare interface GrabRequestConfig<TResponse = any, TParams = Record<string, any>> extends GrabOptions<TResponse, TParams> {
-}
+    [key: string]: TParams | any;
+};
 
 /***************** TYPESCRIPT INTERFACES *****************/
-export declare interface GrabResponse<T = any> {
+export declare type GrabResponse<TResponse = any> = TResponse & {
     /** Indicates if request is currently in progress */
     isLoading?: boolean;
     /** Error message if request failed */
     error?: string;
     /** Binary or text response data (JSON is set to the root)*/
-    data?: T;
+    data?: TResponse;
     /** The actual response data - type depends on API endpoint */
-    [key: string]: T | boolean | string | undefined;
-}
+    [key: string]: unknown;
+};
 
 export declare type GrabResponseWithData<T> = GrabResponse<T> & {
     data?: T;
@@ -287,6 +292,6 @@ export declare interface PrintStructureJSONFunction {
  */
 export declare function showAlert(msg: any): void;
 
-export declare type TypedGrabFunction = <TResponse = any, TParams = Record<string, any>>(path: string, config?: GrabRequestConfig<TResponse, TParams>) => Promise<GrabResponse<TResponse>>;
+export declare type TypedGrabFunction = <TResponse = any, TParams = Record<string, any>>(path: string, config?: GrabOptions<TResponse, TParams>) => Promise<GrabResponse<TResponse>>;
 
 export { }

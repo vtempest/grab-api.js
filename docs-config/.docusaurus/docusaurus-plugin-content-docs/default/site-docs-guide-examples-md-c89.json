@@ -11,14 +11,13 @@
   "editUrl": "https://github.com/vtempest/grab-api.js/blob/main/docs/guide/Examples.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {},
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
   "sidebar": "default",
-  "previous": {
+  "next": {
     "title": "Comparisons",
     "permalink": "/guide/Comparisons"
-  },
-  "next": {
-    "title": "Performance",
-    "permalink": "/guide/Performance"
   }
 }

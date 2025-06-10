@@ -208,7 +208,7 @@ async function grab$1(path, options) {
         window.grab.defaults = { ...options, setDefaults: void 0 };
       else if (typeof (global || globalThis).grab !== "undefined")
         (global || globalThis).grab.defaults = { ...options, setDefaults: void 0 };
-      return {};
+      return;
     }
     if (regrabOnStale && cache)
       setTimeout(async () => {

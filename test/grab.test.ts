@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { grab, log, printStructureJSON } from 'grab-api.js';
+import { grab,type GrabOptions, log, printStructureJSON, type GrabFunction } from 'grab-api.js';
 
 
 // Mock fetch globally
@@ -25,9 +25,20 @@ describe('GRAB API Library - Core Functions', () => {
         text: () => Promise.resolve(JSON.stringify(mockResponse))
       });
 
-      const response = {};
-      const result = await grab('test-path', {
-        response
+      type User = { 
+        /** Name of the user  */ 
+        name: string;
+        /** Age of the user  */ 
+        age: number;
+      };
+
+      type TQuery = { 
+        /** Query String  to search for */ 
+        q : 
+      };
+
+      const result = await grab<User, TQuery>('test-path', {
+        q: " react"
       });
 
       expect(global.fetch).toHaveBeenCalledWith(

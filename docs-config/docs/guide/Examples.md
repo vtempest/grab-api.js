@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
@@ -211,6 +215,27 @@ const grabGoogleAPI = grab.instance({
 const data = await grabGoogleAPI("/api/endpoint");
 
 // Options Order of Precedence: Request Call > Instance > User Globals > Package Defaults
+```
+
+### TypeScript ToolTips & Error Check on Request & Response
+
+```javascript
+type User = { 
+  /** Name of the user  */ 
+  name: string;
+  /** Age of the user  */ 
+  age: number;
+};
+
+type Params = { 
+  /** Query String  to search for */ 
+  q : string 
+};
+
+const result = await grab<User, Params>('/users', {
+  q: "username"
+});
+
 ```
 
 

@@ -4,7 +4,8 @@
 <p align="center">
     <br />
     <a href="https://npmjs.org/package/grab-api.js">
-        <img src="https://i.imgur.com/ifE8SbX.png" alt="NPM badge" />
+        <img src="https://i.imgur.com/ifE8SbX.png"
+            alt="NPM badge" />
     </a>
 </p>
 <p align="center">
@@ -89,15 +90,13 @@ grab('user').then(log)
     {res.error}
 {/if}
 
-//Setup Mock testing server, response is object or function
-grab.mock = {
-  search: {
-    response: (params) => {
-      return { results: [ {title:`Result about ${params.query}`} ] };
-    },
-    method: "POST"
-  }
- }
+ //Setup Mock testing server, response is object or function
+ window.grab.mock["search"] = {
+   response: (params) => {
+     return { results: [{title:`Result about ${params.query}`}] };
+   },
+   method: "POST"
+ };
 
  //set defaults for all requests
  grab("", { 

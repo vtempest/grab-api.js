@@ -81,10 +81,10 @@ import { printStructureJSON, log, showAlert, setupDevTools } from "./log.js";
  *   query: "search words"
  * })
  */
-export default async function grab(path: string, options: GrabOptions) {
+export default async function grab<TResponse, TParams>(path: string, options: GrabOptions<TResponse, TParams>) : Promise<GrabResponse<TResponse>> {
   let {
     headers,
-    response = {}, // Pre-initialized object to set the response in. isLoading and error are also set on this object.
+    response = {} as any, // Pre-initialized object to set the response in. isLoading and error are also set on this object.
     method = options.post // set post: true for POST, omit for GET
       ? "POST"
       : options.put
@@ -120,19 +120,19 @@ export default async function grab(path: string, options: GrabOptions) {
     put = false,
     patch = false,
     body = null,
-    ...params // All other params become request params/query
+    ...params  // All other params become request params/query
   } = {
     // Destructure options with defaults, merging with any globally set defaults
     ...(typeof window !== "undefined" ? window?.grab?.defaults : global?.grab?.defaults || {}),
     ...options,
   };
   try {
-
+    // params = params as TParams;
     //handle debounce
     if (debounce > 0) {
       return await debouncer(async () => {
         await grab(path, { ...options, debounce: 0 });
-      }, debounce * 1000);
+      }, debounce * 1000) as GrabResponse;
     }
 
     // Handle repeat options:
@@ -159,7 +159,7 @@ export default async function grab(path: string, options: GrabOptions) {
       else if (typeof (global || globalThis).grab !== "undefined")
         (global || globalThis).grab.defaults = { ...options, setDefaults: undefined };
 
-      return {};
+      return;
     }
 
     // regrab on stale, on window refocus, on network
@@ -270,6 +270,7 @@ export default async function grab(path: string, options: GrabOptions) {
 
       // Update page tracking
       if (priorRequest) priorRequest.currentPage = pageNumber;
+      // @ts-ignore
       params[paginateKey] = pageNumber;
     }
 
@@ -299,7 +300,7 @@ export default async function grab(path: string, options: GrabOptions) {
     // - cancelNewIfOngoing: Prevents new request if one is already in progress
     if (priorRequest?.controller)
       if (cancelOngoingIfNew) priorRequest.controller.abort();
-      else if (cancelNewIfOngoing) return { isLoading: true };
+      else if (cancelNewIfOngoing) return { isLoading: true } as GrabResponse;
 
     // Track new request in history log
     grab.log.unshift({
@@ -505,7 +506,7 @@ export default async function grab(path: string, options: GrabOptions) {
       response = options.response(response);
     return response;
   }
-}
+} ;
 
 
 /**
@@ -569,23 +570,23 @@ if (typeof window !== "undefined") {
 /***************** TYPESCRIPT INTERFACES *****************/
 
 // Core response object that gets populated with API response data
-export interface GrabResponse<T = any> {
+export type GrabResponse<TResponse = any> = TResponse & {
   /** Indicates if request is currently in progress */
   isLoading?: boolean;
   /** Error message if request failed */
   error?: string;
   /** Binary or text response data (JSON is set to the root)*/
-  data?: T;
+  data?: TResponse;
   /** The actual response data - type depends on API endpoint */
-  [key: string]: T | boolean | string | undefined;
+  [key: string]: unknown;
 }
 
 
-export interface GrabOptions<TResponse = any, TParams = Record<string, any>> {
+export type GrabOptions<TResponse = any, TParams = any> = TParams & {
   /** include headers and authorization in the request */
   headers?: Record<string, string>;
   /** Pre-initialized object which becomes response JSON, no need for .data */
-  response?: Record<string, any>;
+  response?: TResponse | ((params: TParams) => TResponse) | any;
   /** default="GET" The HTTP method to use */
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD";
   /** default=false Whether to cache the request and from frontend cache */
@@ -641,15 +642,11 @@ export interface GrabOptions<TResponse = any, TParams = Record<string, any>> {
   /** default=null The body of the POST/PUT/PATCH request (can be passed into main)*/
   body?: any;
   /** All other params become GET params, POST body, and other methods */
-  [key: string]: any;
+  [key: string]: TParams | any;
 }
 
 
 // Combined options and parameters interface
-export interface GrabRequestConfig<
-  TResponse = any,
-  TParams = Record<string, any>
-> extends GrabOptions<TResponse, TParams> { }
 
 // Mock server configuration for testing
 export interface GrabMockHandler<TParams = any, TResponse = any> {
@@ -715,7 +712,7 @@ export interface GrabFunction {
    */
   <TResponse = any, TParams = Record<string, any>>(
     path: string,
-    config: GrabRequestConfig<TResponse, TParams>
+    config: GrabOptions<TResponse, TParams>
   ): Promise<GrabResponse<TResponse>>;
 
   /** Default options applied to all requests */
@@ -765,7 +762,7 @@ export type TypedGrabFunction = <
   TParams = Record<string, any>
 >(
   path: string,
-  config?: GrabRequestConfig<TResponse, TParams>
+  config?: GrabOptions<TResponse, TParams>
 ) => Promise<GrabResponse<TResponse>>;
 
 

@@ -13,8 +13,12 @@
   "version": "current",
   "frontMatter": {},
   "sidebar": "default",
-  "next": {
+  "previous": {
     "title": "Examples",
     "permalink": "/guide/Examples"
+  },
+  "next": {
+    "title": "Performance",
+    "permalink": "/guide/Performance"
   }
 }

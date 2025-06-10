@@ -1,6 +1,6 @@
 ---
 id: index
-title: Overview
+title: ​​​​​‌‌‌
 sidebar_position: 1
 displayed_sidebar: lib
 ---

@@ -55,20 +55,20 @@
           "sidebars": {
             "lib": {
               "link": {
-                "path": "/guide/Comparisons",
-                "label": "guide/Comparisons"
+                "path": "/guide/Examples",
+                "label": "guide/Examples"
               }
             },
             "guide": {
               "link": {
-                "path": "/guide/Comparisons",
-                "label": "guide/Comparisons"
+                "path": "/guide/Examples",
+                "label": "guide/Examples"
               }
             },
             "default": {
               "link": {
-                "path": "/guide/Comparisons",
-                "label": "guide/Comparisons"
+                "path": "/guide/Examples",
+                "label": "guide/Examples"
               }
             }
           }
@@ -89,8 +89,8 @@
   "docusaurus-lunr-search": {
     "default": {
       "fileNames": {
-        "searchDoc": "search-doc-1749540092015.json",
-        "lunrIndex": "lunr-index-1749540092015.json"
+        "searchDoc": "search-doc-1749546988573.json",
+        "lunrIndex": "lunr-index-1749546988573.json"
       }
     }
   }
