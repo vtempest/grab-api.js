@@ -27,5 +27,6 @@ const sidebarConfig = [
 
 export default {
   lib: sidebarConfig,
+  guide: sidebarConfig,
   default: sidebarConfig,
 };

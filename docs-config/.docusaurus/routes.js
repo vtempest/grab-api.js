@@ -4,15 +4,15 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 export default [
   {
     path: '/',
-    component: ComponentCreator('/', '4d3'),
+    component: ComponentCreator('/', 'a07'),
     routes: [
       {
         path: '/',
-        component: ComponentCreator('/', 'ee7'),
+        component: ComponentCreator('/', '3a2'),
         routes: [
           {
             path: '/',
-            component: ComponentCreator('/', 'b8c'),
+            component: ComponentCreator('/', '46e'),
             routes: [
               {
                 path: '/guide/Comparisons',
@@ -58,8 +58,9 @@ export default [
               },
               {
                 path: '/',
-                component: ComponentCreator('/', '48d'),
-                exact: true
+                component: ComponentCreator('/', '9bd'),
+                exact: true,
+                sidebar: "lib"
               }
             ]
           }

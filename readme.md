@@ -115,10 +115,8 @@ grab('user').then(log)
 
 ### Screenshots
 
-**Animated SVG Loading Icons Custom Colors**
-<p align="center">
-    <video src="https://i.imgur.com/hwQbZy5.mp4" width="550px" controls     />
-</p>
+**Animated SVG Loading Icons with Customizable Colors**
+![icons](https://i.imgur.com/OqpWya1.gif)
 
 **Debug Colorized log(JSON)**
 ![Debug log](https://i.imgur.com/R8Qp6Vg.png)
@@ -151,3 +149,10 @@ grab('user').then(log)
 | Debug Logging | ✅ Colored output | ⚠️ Basic | ✅ DevTools | ✅ DevTools | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic |
 | Request History | ✅ Built-in | ❌ Manual | ✅ DevTools | ✅ DevTools | ❌ Manual | ❌ Manual | ❌ Manual | ❌ Manual |
 | Easy Syntax | ✅ Minimal | ⚠️ Medium | ❌ High | ❌ High | ⚠️ Medium | ⚠️ Medium | ✅ Low | ✅ Minimal |
+
+
+**Stop trying to make fetch happen!** [*](https://knowyourmeme.com/memes/stop-trying-to-make-fetch-happen)
+
+**Why fetch things when you can just GRAB?**
+
+**Debugging requests is a bitch. [Make the switch!](https://grab.js.org/guide/Comparisons)**

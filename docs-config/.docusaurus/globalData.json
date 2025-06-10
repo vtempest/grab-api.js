@@ -8,7 +8,7 @@
           "label": "Next",
           "isLast": true,
           "path": "/",
-          "mainDocId": "README",
+          "mainDocId": "index",
           "docs": [
             {
               "id": "guide/Comparisons",
@@ -24,6 +24,11 @@
               "id": "guide/Performance",
               "path": "/guide/Performance",
               "sidebar": "default"
+            },
+            {
+              "id": "index",
+              "path": "/",
+              "sidebar": "lib"
             },
             {
               "id": "lib/grab-api",
@@ -44,15 +49,17 @@
               "id": "lib/README",
               "path": "/lib/",
               "sidebar": "default"
-            },
-            {
-              "id": "README",
-              "path": "/"
             }
           ],
           "draftIds": [],
           "sidebars": {
             "lib": {
+              "link": {
+                "path": "/guide/Comparisons",
+                "label": "guide/Comparisons"
+              }
+            },
+            "guide": {
               "link": {
                 "path": "/guide/Comparisons",
                 "label": "guide/Comparisons"
@@ -82,8 +89,8 @@
   "docusaurus-lunr-search": {
     "default": {
       "fileNames": {
-        "searchDoc": "search-doc-1749457260007.json",
-        "lunrIndex": "lunr-index-1749457260007.json"
+        "searchDoc": "search-doc-1749540092015.json",
+        "lunrIndex": "lunr-index-1749540092015.json"
       }
     }
   }

@@ -2,7 +2,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
 
-## Import 
+## Install & Import 
 
 ```bash npm2yarn
 npm install grab-api.js
@@ -16,12 +16,6 @@ bun i grab-api.js
 import grab from "grab-api.js";
 ```
 
-### Import with TypeScript Type Tooltips
-
-```javascript
-import "grab-api.js/global"; //supports tooltips and autocomplete
-import grab from "grab-api.js";
-```
 
 ### Basic Request
 
