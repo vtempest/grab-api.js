@@ -118,6 +118,9 @@ grab('user').then(log)
 **Animated SVG Loading Icons with Customizable Colors**
 ![icons](https://i.imgur.com/OqpWya1.gif)
 
+**Set Types for Tooltips on Request &Response**
+![types](https://i.imgur.com/IfR4OmC.png)
+
 **Debug Colorized log(JSON)**
 ![Debug log](https://i.imgur.com/R8Qp6Vg.png)
 

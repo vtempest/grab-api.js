@@ -32,14 +32,23 @@ describe('GRAB API Library - Core Functions', () => {
         age: number;
       };
 
-      type TQuery = { 
+      type RequestParams = { 
         /** Query String  to search for */ 
-        q : 
+        q : string;
+        /** Category of search  */
+        category?: "news" | "general";
+
       };
 
-      const result = await grab<User, TQuery>('test-path', {
-        q: " react"
+      const result = await grab<User, RequestParams>('test-path', {
+        
+        
+        q: " react",
+        category: "general",
+        fd: 5,
+
       });
+      result.name
 
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/test-path?',

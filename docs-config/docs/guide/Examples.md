@@ -227,14 +227,22 @@ type User = {
   age: number;
 };
 
-type Params = { 
+type RequestParams = { 
   /** Query String  to search for */ 
-  q : string 
+  q : string;
+  /** Category of search  */
+  category?: "news" | "general";
+
 };
 
-const result = await grab<User, Params>('/users', {
-  q: "username"
+const result = await grab<User, RequestParams>('test-path', {
+  q: " react",
+  category: "general"
 });
+
+log(result.name)
+
+// instant error highlight and description tooltips over "category" and "name"
 
 ```
 
