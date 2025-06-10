@@ -1,11 +1,9 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import dts from 'vite-plugin-dts';
-import svgr from 'vite-plugin-svgr'
 
 export default defineConfig({
   plugins: [
-    svgr(),
     dts({
       insertTypesEntry: true,
       include: [
