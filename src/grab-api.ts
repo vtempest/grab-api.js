@@ -81,7 +81,7 @@ import { printStructureJSON, log, showAlert, setupDevTools } from "./log.js";
  *   query: "search words"
  * })
  */
-export default async function grab<TResponse, TParams>(path: string, options: GrabOptions<TResponse, TParams>) : Promise<GrabResponse<TResponse>> {
+export default async function grab<TResponse, TParams>(path: string, options: GrabOptions<TResponse, TParams>): Promise<GrabResponse<TResponse>> {
   let {
     headers,
     response = {} as any, // Pre-initialized object to set the response in. isLoading and error are also set on this object.
@@ -131,7 +131,7 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
   // Ensures proper joining of baseURL and path
   if (path.startsWith("http:") || path.startsWith("https:")) baseURL = "";
   if (!path.startsWith("/") && !baseURL.endsWith("/")) path = "/" + path;
-  
+
   try {
     // params = params as TParams;
     //handle debounce
@@ -386,10 +386,10 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
 
       // Convert browser ReadableStream to Node.js stream
       let type = res.headers.get("content-type");
-      
-      if (onStream) 
+
+      if (onStream)
         await onStream(res.body)
-      else  res = await (type
+      else res = await (type
         ? type.includes("application/json")
           ? res && res.json()
           : type.includes("application/pdf") ||
@@ -447,10 +447,13 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
     // For paginated requests, concatenates with existing results
     if (typeof res === "object") {
       for (let key of Object.keys(res))
-        response[key] = response.data[key] = // for axios compat
+        response[key] =
           paginateResult == key && response[key]?.length
             ? [...response[key], ...res[key]]
             : res[key];
+
+      if (typeof response !== "undefined")
+        response.data = response // for axios compat
     } else if (resFunction) resFunction({ data: res, ...res });
     else if (typeof response === "object") response.data = res;
 
@@ -490,7 +493,7 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
     // Do not show errors for duplicate aborted requests
     if (!error.message.includes("signal")) {
       log(errorMessage, true, "color: red;");
-      if (debug && typeof document !==undefined) showAlert(errorMessage);
+      if (debug && typeof document !== undefined) showAlert(errorMessage);
       response.error = error.message;
     }
     if (typeof response === "function") {
@@ -510,7 +513,7 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
     //   response = options.response(response);
     return response;
   }
-} ;
+};
 
 
 /**
@@ -540,7 +543,7 @@ const debouncer = async (func, wait) => {
 // Add globals to window in browser, or global in Node.js
 if (typeof window !== "undefined") {
   window.log = log;
-  
+
   window.grab = grab.instance();
   window.grab.log = [];
   window.grab.mock = {};

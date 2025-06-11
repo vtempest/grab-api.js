@@ -361,8 +361,9 @@ async function grab$1(path, options) {
     if (typeof res === "undefined") return;
     if (typeof res === "object") {
       for (let key of Object.keys(res))
-        response[key] = response.data[key] = // for axios compat
-        paginateResult == key && ((_h = response[key]) == null ? void 0 : _h.length) ? [...response[key], ...res[key]] : res[key];
+        response[key] = paginateResult == key && ((_h = response[key]) == null ? void 0 : _h.length) ? [...response[key], ...res[key]] : res[key];
+      if (typeof response !== "undefined")
+        response.data = response;
     } else if (resFunction) resFunction({ data: res, ...res });
     else if (typeof response === "object") response.data = res;
     grab$1.log.unshift({
