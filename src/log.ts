@@ -147,6 +147,7 @@ export function printStructureJSON(obj, indent = 0) {
  * @param {string} msg - The message to display
  */
 export function showAlert(msg) {
+  if (typeof document === "undefined") return;
   let o = document.getElementById('alert-overlay'), list;
   
   // Create overlay and alert box if they don't exist

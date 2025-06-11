@@ -126,6 +126,12 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
     ...(typeof window !== "undefined" ? window?.grab?.defaults : global?.grab?.defaults || {}),
     ...options,
   };
+
+  // Handle URL construction
+  // Ensures proper joining of baseURL and path
+  if (path.startsWith("http:") || path.startsWith("https:")) baseURL = "";
+  if (!path.startsWith("/") && !baseURL.endsWith("/")) path = "/" + path;
+  
   try {
     // params = params as TParams;
     //handle debounce
@@ -345,10 +351,6 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
         fetchParams
       );
 
-    // Handle URL construction
-    // Ensures proper joining of baseURL and path
-    if (!path.startsWith("/") && !baseURL.endsWith("/")) path = "/" + path;
-    if (path.startsWith("http:") || path.startsWith("https:")) baseURL = "";
 
     // Process request through mock handler if configured
     // Otherwise make actual API request
@@ -436,7 +438,7 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
         "s\nResponse: " +
         printStructureJSON(res)
       );
-      console.log(res);
+      // console.log(res);
     }
 
     if (typeof res === "undefined") return;
@@ -445,11 +447,11 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
     // For paginated requests, concatenates with existing results
     if (typeof res === "object") {
       for (let key of Object.keys(res))
-        response[key] =
+        response[key] = response.data[key] = // for axios compat
           paginateResult == key && response[key]?.length
             ? [...response[key], ...res[key]]
             : res[key];
-    } else if (resFunction) resFunction({ data: res });
+    } else if (resFunction) resFunction({ data: res, ...res });
     else if (typeof response === "object") response.data = res;
 
     // Store request/response in history log
@@ -488,11 +490,13 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
     // Do not show errors for duplicate aborted requests
     if (!error.message.includes("signal")) {
       log(errorMessage, true, "color: red;");
-      if (debug) showAlert(errorMessage);
+      if (debug && typeof document !==undefined) showAlert(errorMessage);
       response.error = error.message;
     }
-    if (typeof response === "function")
-      response = response({ isLoading: undefined, error: error.message });
+    if (typeof response === "function") {
+      response.data = response({ isLoading: undefined, error: error.message });
+      response = response.data
+    }
     else delete response?.isLoading;
 
     // Log error in request history
@@ -502,8 +506,8 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
       error: error.message,
     });
 
-    if (typeof options.response === "function")
-      response = options.response(response);
+    // if (typeof options.response === "function")
+    //   response = options.response(response);
     return response;
   }
 } ;

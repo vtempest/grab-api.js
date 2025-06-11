@@ -41,12 +41,9 @@ describe('GRAB API Library - Core Functions', () => {
       };
 
       const result = await grab<User, RequestParams>('test-path', {
-        
-        
         q: " react",
-        category: "general",
+        category: "gen",
         fd: 5,
-
       });
       result.name
 

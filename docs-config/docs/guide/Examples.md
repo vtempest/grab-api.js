@@ -1,4 +1,5 @@
 ---
+title: Request Stategies
 sidebar_position: 1
 ---
 
@@ -6,7 +7,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
 
-## Install & Import 
+### Install & Import 
 
 ```bash npm2yarn
 npm install grab-api.js
@@ -41,8 +42,6 @@ await grab("users", {
   age: 25,
 });
 ```
-
-## Request Stategies
 
 ### Reactive Loading Status
 

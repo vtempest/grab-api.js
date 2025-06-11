@@ -2,7 +2,7 @@
   "name": "grab-api.js",
   "description": "Generate Request to API from Browser",
   "type": "module",
-  "version": "0.9.121",
+  "version": "0.9.122",
   "author": "vtempest",
   "license": "MIT",
   "repository": {
@@ -48,8 +48,7 @@
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "vite-plugin-dts": "^4.5.4",
-    "vitest": "^3.1.4",
-    "web-streams-node": "^0.4.0"
+    "vitest": "^3.1.4"
   },
   "keywords": [
     "api",

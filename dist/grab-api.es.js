@@ -89,6 +89,7 @@ function printStructureJSON(obj, indent = 0) {
   return result;
 }
 function showAlert(msg) {
+  if (typeof document === "undefined") return;
   let o = document.getElementById("alert-overlay"), list;
   if (!o) {
     o = document.body.appendChild(document.createElement("div"));
@@ -185,6 +186,8 @@ async function grab$1(path, options) {
     ...typeof window !== "undefined" ? (_a = window == null ? void 0 : window.grab) == null ? void 0 : _a.defaults : ((_b = global == null ? void 0 : global.grab) == null ? void 0 : _b.defaults) || {},
     ...options
   };
+  if (path.startsWith("http:") || path.startsWith("https:")) baseURL = "";
+  if (!path.startsWith("/") && !baseURL.endsWith("/")) path = "/" + path;
   try {
     if (debounce > 0) {
       return await debouncer(async () => {
@@ -318,8 +321,6 @@ async function grab$1(path, options) {
         params,
         fetchParams
       );
-    if (!path.startsWith("/") && !baseURL.endsWith("/")) path = "/" + path;
-    if (path.startsWith("http:") || path.startsWith("https:")) baseURL = "";
     let res = null, startTime = /* @__PURE__ */ new Date(), mockHandler = (_g = grab$1.mock) == null ? void 0 : _g[path];
     let wait = (s) => new Promise((res2) => setTimeout(res2, s * 1e3 || 0));
     if (mockHandler && (!mockHandler.params || mockHandler.method == method) && (!mockHandler.params || paramsAsText == JSON.stringify(mockHandler.params))) {
@@ -356,13 +357,13 @@ async function grab$1(path, options) {
       log(
         "Path:" + baseURL + path + paramsGETRequest + "\n" + JSON.stringify(options, null, 2) + "\nTime: " + elapsedTime + "s\nResponse: " + printStructureJSON(res)
       );
-      console.log(res);
     }
     if (typeof res === "undefined") return;
     if (typeof res === "object") {
       for (let key of Object.keys(res))
-        response[key] = paginateResult == key && ((_h = response[key]) == null ? void 0 : _h.length) ? [...response[key], ...res[key]] : res[key];
-    } else if (resFunction) resFunction({ data: res });
+        response[key] = response.data[key] = // for axios compat
+        paginateResult == key && ((_h = response[key]) == null ? void 0 : _h.length) ? [...response[key], ...res[key]] : res[key];
+    } else if (resFunction) resFunction({ data: res, ...res });
     else if (typeof response === "object") response.data = res;
     grab$1.log.unshift({
       path,
@@ -388,19 +389,18 @@ async function grab$1(path, options) {
       });
     if (!error.message.includes("signal")) {
       log(errorMessage, true, "color: red;");
-      if (debug) showAlert(errorMessage);
+      if (debug && typeof document !== void 0) showAlert(errorMessage);
       response.error = error.message;
     }
-    if (typeof response === "function")
-      response = response({ isLoading: void 0, error: error.message });
-    else response == null ? true : delete response.isLoading;
+    if (typeof response === "function") {
+      response.data = response({ isLoading: void 0, error: error.message });
+      response = response.data;
+    } else response == null ? true : delete response.isLoading;
     (_i = grab$1.log) == null ? void 0 : _i.unshift({
       path,
       request: JSON.stringify(params),
       error: error.message
     });
-    if (typeof options.response === "function")
-      response = options.response(response);
     return response;
   }
 }

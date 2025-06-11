@@ -226,7 +226,7 @@ The message to display
 function setupDevTools(): void;
 ```
 
-Defined in: [log.ts:184](https://github.com/vtempest/grab-api/tree/master/src/log.ts#L184)
+Defined in: [log.ts:185](https://github.com/vtempest/grab-api/tree/master/src/log.ts#L185)
 
 Sets up development tools for debugging API requests
 Adds a keyboard shortcut (Ctrl+I) that shows a modal with request history
