@@ -187,7 +187,7 @@ async function grab$1(path, options) {
     ...options
   };
   if (path.startsWith("http:") || path.startsWith("https:")) baseURL = "";
-  if (!path.startsWith("/") && !baseURL.endsWith("/")) path = "/" + path;
+  else if (!path.startsWith("/") && !path.startsWith("http:") && !baseURL.endsWith("/")) path = "/" + path;
   try {
     if (debounce > 0) {
       return await debouncer(async () => {
