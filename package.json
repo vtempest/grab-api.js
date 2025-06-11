@@ -2,13 +2,13 @@
   "name": "grab-api.js",
   "description": "Generate Request to API from Browser",
   "type": "module",
-  "version": "0.9.125",
+  "version": "0.9.126",
   "author": "vtempest",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/vtempest/GRAB-API"
-  }, 
+  },
   "main": "./dist/grab-api.cjs.js",
   "types": "./dist/grab-api.d.ts",
   "module": "./dist/grab-api.es.js",
