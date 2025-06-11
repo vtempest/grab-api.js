@@ -130,7 +130,7 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
   // Handle URL construction
   // Ensures proper joining of baseURL and path
   if (path.startsWith("http:") || path.startsWith("https:")) baseURL = "";
-  if (!path.startsWith("/") && !baseURL.endsWith("/")) path = "/" + path;
+  else if (!path.startsWith("/") && !baseURL.endsWith("/")) path = "/" + path;
 
   try {
     // params = params as TParams;
