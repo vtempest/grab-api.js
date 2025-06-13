@@ -38,12 +38,18 @@ jobs:
           git config --global user.email "grokthiscontact@gmail.com"
           git config --global user.name "vtempest"
           npm install
-          npm version patch
-          npm publish --access public
           cd docs-config
           npm install
           cd ..
           DOCS_ON_SUBDOMAIN=true npm run make
+      
+      - name: Publish to NPM
+        run: |
+          npm version patch
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
