@@ -35,6 +35,9 @@ jobs:
         uses: actions/configure-pages@v5
       - name: Generate documentation
         run: |
+
+          npm error   git config --global user.email "grokthiscontact@gmail.com"
+          npm error   git config --global user.name "vtempest"
           npm install
           npm version patch
           npm publish --access public

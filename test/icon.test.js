@@ -25,3 +25,4 @@ function testIcon(icon) {
 }
 
 testIcon(loadingBouncyBall);
+
