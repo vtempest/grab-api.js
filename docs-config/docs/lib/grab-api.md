@@ -1332,7 +1332,7 @@ default=log Custom logger to override the built-in color JSON log()
 <tr>
 <td>
 
-`onBeforeRequest()?`
+`onRequest()?`
 
 </td>
 <td>
@@ -1354,7 +1354,7 @@ Set with defaults to modify each request data. Takes and returns in order: path,
 <tr>
 <td>
 
-`onAfterRequest()?`
+`onResponse()?`
 
 </td>
 <td>

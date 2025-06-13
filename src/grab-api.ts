@@ -1,23 +1,21 @@
-import { printStructureJSON, log, showAlert, setupDevTools } from "./log.js";
+import { printStructureJSON, log, showAlert, setupDevTools, type LogOptions } from "./log";
 
 /**
  * TODO
- *  - pagination working
  *  - react tests
- *  - progress
  *  - grab error popup and dev tool
+ *  - show net log in alert
+ *  - progress
+ *  - pagination working
  *  - tests in stackblitz
  *  - loading icons
- *  - repeat every
- *  - show net log in alert
  *  - cache revalidation
- *  - refetch on stale, on window refocus, on network
- *  - scroll position recovery
  */
 
 /**
  * ### GRAB: Generate Request to API from Browser
  * ![GrabAPILogo](https://i.imgur.com/qrQWkeb.png)
+ * 
  * **GRAB is the FBEST Request Manager: Functionally Brilliant, Elegantly Simple Tool**
  * 1. **One Function**: 3Kb min, 0 dependencies, minimalist syntax, [more features than top alternatives](https://grab.js.org/guide/Comparisons)
  * 2. **Auto-JSON Convert**: Pass parameters and get response or error in JSON, handling other data types as is.
@@ -60,9 +58,9 @@ import { printStructureJSON, log, showAlert, setupDevTools } from "./log.js";
  * @param {number} [options.repeat] default=0 Repeat request this many times
  * @param {number} [options.repeatEvery] default=null Repeat request every seconds
  * @param {function} [options.logger] default=log Custom logger to override the built-in color JSON log()
- * @param {function} [options.onBeforeRequest] Set with defaults to modify each request data.
+ * @param {function} [options.onRequest] Set with defaults to modify each request data.
  *  Takes and returns in order: path, response, params, fetchParams
- * @param {function} [options.onAfterRequest] Set with defaults to modify each request data.
+ * @param {function} [options.onResponse] Set with defaults to modify each request data.
  *  Takes and returns in order: path, response, params, fetchParams
  * @param {function} [options.onStream] Set with defaults to process the response as a stream (i.e., for instant unzip)
  * @param {function} [options.onError] Set with defaults to modify the error data. Takes: error, path, params
@@ -81,7 +79,7 @@ import { printStructureJSON, log, showAlert, setupDevTools } from "./log.js";
  *   query: "search words"
  * })
  */
-export default async function grab<TResponse, TParams>(path: string, options: GrabOptions<TResponse, TParams>): Promise<GrabResponse<TResponse>> {
+export default async function grab<TResponse = any, TParams = any>(path: string, options: GrabOptions<TResponse, TParams>): Promise<GrabResponse<TResponse>> {
   let {
     headers,
     response = {} as any, // Pre-initialized object to set the response in. isLoading and error are also set on this object.
@@ -106,8 +104,8 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
     setDefaults = false, // Set these options as defaults for future requests
     retryAttempts = 0, // Retry failed requests once
     logger = log, // Custom logger to override the built-in color JSON log()
-    onBeforeRequest = null, // Hook to modify request data before request is made
-    onAfterRequest = null, // Hook to modify request data after request is made
+    onRequest = null, // Hook to modify request data before request is made
+    onResponse = null, // Hook to modify request data after request is made
     onError = null, // Hook to modify request data after request is made
     onStream = null, // Hook to process the response as a stream (i.e., for instant unarchiving)
     repeatEvery = null, // Repeat request every seconds
@@ -123,7 +121,7 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
     ...params  // All other params become request params/query
   } = {
     // Destructure options with defaults, merging with any globally set defaults
-    ...(typeof window !== "undefined" ? window?.grab?.defaults : global?.grab?.defaults || {}),
+    ...(typeof window !== "undefined" ? window?.grab?.defaults : (global||globalThis)?.grab?.defaults || {}),
     ...options,
   };
 
@@ -133,13 +131,12 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
   else if (!path.startsWith("/") && !path.startsWith("http:") && !baseURL.endsWith("/")) path = "/" + path;
 
   try {
-    // params = params as TParams;
     //handle debounce
-    if (debounce > 0) {
+    if (debounce > 0) 
       return await debouncer(async () => {
         await grab(path, { ...options, debounce: 0 });
       }, debounce * 1000) as GrabResponse;
-    }
+    
 
     // Handle repeat options:
     // - repeat: Makes the same request multiple times sequentially
@@ -169,27 +166,22 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
     }
 
     // regrab on stale, on window refocus, on network
-    if (regrabOnStale && cache)
-      setTimeout(async () => {
+    if (typeof window !== undefined) {
+      const regrab = async () =>
         await grab(path, { ...options, cache: false });
-      }, 1000 * cacheForTime);
+      if (regrabOnStale && cache)
+        setTimeout(regrab, 1000 * cacheForTime);
+      if (regrabOnNetwork)
+        window.addEventListener("online", regrab);
+      if (regrabOnFocus) {
+        window.addEventListener("focus", regrab);
+        document.addEventListener("visibilitychange", async () => {
+          if (document.visibilityState === "visible")
+            await regrab()
 
-    if (regrabOnFocus) {
-      window.addEventListener("focus", async () => {
-        await grab(path, { ...options, cache: false });
-      });
-      document.addEventListener("visibilitychange", async () => {
-        if (document.visibilityState === "visible") {
-          await grab(path, { ...options, cache: false });
-        }
-      });
+        });
+      }
     }
-    if (regrabOnNetwork)
-      window.addEventListener("online", async () => {
-        if (document.visibilityState === "visible") {
-          await grab(path, { ...options, cache: false });
-        }
-      });
 
     // Handle response parameter which can be either an object to populate
     // or a function to call with results (e.g. React setState)
@@ -293,13 +285,8 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
       priorRequest?.lastFetchTime &&
       priorRequest.lastFetchTime > Date.now() - 1000 * rateLimit
     )
-      throw new Error(
-        "Fetch rate limit exceeded for " +
-        path +
-        ". Wait " +
-        rateLimit +
-        "s between requests."
-      );
+      throw new Error(`Fetch rate limit exceeded for ${path}. 
+        Wait ${rateLimit}s between requests.`);
 
     // Handle request cancellation based on configuration:
     // - cancelOngoingIfNew: Cancels any in-progress request for same path
@@ -309,7 +296,8 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
       else if (cancelNewIfOngoing) return { isLoading: true } as GrabResponse;
 
     // Track new request in history log
-    grab.log.unshift({
+    if (typeof grab.log != "undefined")
+    grab.log?.unshift({
       path,
       request: paramsAsText,
       lastFetchTime: Date.now(),
@@ -339,12 +327,12 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
     let paramsGETRequest = "";
     if (["POST", "PUT", "PATCH"].includes(method))
       fetchParams.body = params.body || JSON.stringify(params);
-    else paramsGETRequest = "?" + new URLSearchParams(params).toString();
+    else paramsGETRequest = (Object.keys(params).length?"?":"") + new URLSearchParams(params).toString();
 
     // Execute pre-request hook if configured
     // Allows modifying request data before sending
-    if (typeof onBeforeRequest === "function")
-      [path, response, params, fetchParams] = onBeforeRequest(
+    if (typeof onRequest === "function")
+      [path, response, params, fetchParams] = onRequest(
         path,
         response,
         params,
@@ -373,6 +361,7 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
           ? mockHandler.response(params)
           : mockHandler.response;
     } else {
+
       // Make actual API request and handle response based on content type
       res = await fetch(baseURL + path + paramsGETRequest, fetchParams).catch(
         (e) => {
@@ -404,8 +393,8 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
 
     // Execute post-request hook if configured
     // Allows modifying response data before processing
-    if (typeof onAfterRequest === "function")
-      [path, response, params, fetchParams] = onAfterRequest(
+    if (typeof onResponse === "function")
+      [path, response, params, fetchParams] = onResponse(
         path,
         response,
         params,
@@ -426,7 +415,7 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
       1000
     ).toFixed(1);
     if (debug) {
-      log(
+      logger(
         "Path:" +
         baseURL +
         path +
@@ -453,12 +442,13 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
             : res[key];
 
       if (typeof response !== "undefined")
-        response.data = response // for axios compat
+        response.data = res // for axios compat
     } else if (resFunction) resFunction({ data: res, ...res });
     else if (typeof response === "object") response.data = res;
 
     // Store request/response in history log
-    grab.log.unshift({
+    if (typeof grab.log != "undefined")
+    grab.log?.unshift({
       path,
       request: JSON.stringify({ ...params, paginateKey: undefined }),
       response,
@@ -491,11 +481,11 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
 
     // Update error state in response object
     // Do not show errors for duplicate aborted requests
-    if (!error.message.includes("signal")) {
-      log(errorMessage, true, "color: red;");
+    if (!error.message.includes("signal") && options.debug) {
+      logger(errorMessage, {color: "red"});
       if (debug && typeof document !== undefined) showAlert(errorMessage);
-      response.error = error.message;
     }
+    response.error = error.message;
     if (typeof response === "function") {
       response.data = response({ isLoading: undefined, error: error.message });
       response = response.data
@@ -503,7 +493,8 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
     else delete response?.isLoading;
 
     // Log error in request history
-    grab.log?.unshift({
+    if (typeof grab.log != "undefined")
+      grab.log?.unshift({
       path,
       request: JSON.stringify(params),
       error: error.message,
@@ -519,15 +510,13 @@ export default async function grab<TResponse, TParams>(path: string, options: Gr
 /**
  * Creates a new instance of grab with default options
  * to apply to all requests made by this instance
- * @param {Object} defaultOptions - options for all requests by instance
+ * @param {Object} defaults - options for all requests by instance
  * @returns {Function} grab() function using those options
  */
-grab.instance =
-  (defaultOptions = {}) =>
-    (path, options = {}) =>
-      grab(path, { ...defaultOptions, ...options });
+grab.instance = (defaults = {}) => (path, options = {}) =>
+  grab(path, { ...defaults, ...options });
 
-
+// delays execution so that future calls may override and only executes last one
 const debouncer = async (func, wait) => {
   let timeout;
   return async function executedFunction(...args) {
@@ -543,8 +532,9 @@ const debouncer = async (func, wait) => {
 // Add globals to window in browser, or global in Node.js
 if (typeof window !== "undefined") {
   window.log = log;
+  // @ts-ignore
+  window.grab = grab
 
-  window.grab = grab.instance();
   window.grab.log = [];
   window.grab.mock = {};
   window.grab.defaults = {};
@@ -583,7 +573,7 @@ export type GrabResponse<TResponse = any> = TResponse & {
   /** Error message if request failed */
   error?: string;
   /** Binary or text response data (JSON is set to the root)*/
-  data?: TResponse;
+  data?: TResponse | any;
   /** The actual response data - type depends on API endpoint */
   [key: string]: unknown;
 }
@@ -621,9 +611,9 @@ export type GrabOptions<TResponse = any, TParams = any> = TParams & {
   /** default=log Custom logger to override the built-in color JSON log() */
   logger?: (...args: any[]) => void;
   /** Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams */
-  onBeforeRequest?: (...args: any[]) => any;
+  onRequest?: (...args: any[]) => any;
   /** Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams */
-  onAfterRequest?: (...args: any[]) => any;
+  onResponse?: (...args: any[]) => any;
   /** Set with defaults to modify each request data. Takes and returns in order: error, path, params */
   onError?: (...args: any[]) => any;
   /** Set with defaults to process the response as a stream (i.e., for instant unzip) */
@@ -698,7 +688,7 @@ export interface GrabGlobal {
 }
 
 // Main grab function signature with overloads for different use cases
-export interface GrabFunction {
+export interface GrabFunction{
   /**
  * ### GRAB: Generate Request to API from Browser
  * ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
@@ -707,7 +697,7 @@ export interface GrabFunction {
  * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
  * @see  [🎯 Examples](https://grab.js.org/guide/Examples) [📑 Docs](https://grab.js.org/lib)
  */
-  <TResponse = any>(path: string): Promise<GrabResponse<TResponse>>;
+  <TResponse = any, TParams = Record<string, any>>(path: string): Promise<GrabResponse<TResponse>>;
 
   /**
    * ### GRAB: Generate Request to API from Browser
@@ -740,10 +730,8 @@ export interface LogFunction {
   /**
    * Log messages with custom styling
    * @param message - Message to log (string or object)
-   * @param hideInProduction - Whether to hide in production (auto-detected if undefined)
-   * @param style - CSS style string for console output
    */
-  (message: string | object, hideInProduction?: boolean, style?: string): void;
+  (message: string | object, options?: LogOptions): void;
 }
 
 // Utility function to describe JSON structure
@@ -757,20 +745,15 @@ export interface PrintStructureJSONFunction {
 }
 
 
-// Type helpers for common use cases
-export type GrabResponseWithData<T> = GrabResponse<T> & {
-  data?: T;
-};
-
 
 // Helper type for creating typed API clients
-export type TypedGrabFunction = <
-  TResponse = any,
-  TParams = Record<string, any>
->(
-  path: string,
-  config?: GrabOptions<TResponse, TParams>
-) => Promise<GrabResponse<TResponse>>;
+// export type TypedGrabFunction = <
+//   TResponse = any,
+//   TParams = Record<string, any>
+// >(
+//   path: string,
+//   config?: GrabOptions<TResponse, TParams>
+// ) => Promise<GrabResponse<TResponse>>;
 
 
 

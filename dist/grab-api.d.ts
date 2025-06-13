@@ -1,20 +1,18 @@
 /**
  * TODO
- *  - pagination working
  *  - react tests
- *  - progress
  *  - grab error popup and dev tool
+ *  - show net log in alert
+ *  - progress
+ *  - pagination working
  *  - tests in stackblitz
  *  - loading icons
- *  - repeat every
- *  - show net log in alert
  *  - cache revalidation
- *  - refetch on stale, on window refocus, on network
- *  - scroll position recovery
  */
 /**
  * ### GRAB: Generate Request to API from Browser
  * ![GrabAPILogo](https://i.imgur.com/qrQWkeb.png)
+ *
  * **GRAB is the FBEST Request Manager: Functionally Brilliant, Elegantly Simple Tool**
  * 1. **One Function**: 3Kb min, 0 dependencies, minimalist syntax, [more features than top alternatives](https://grab.js.org/guide/Comparisons)
  * 2. **Auto-JSON Convert**: Pass parameters and get response or error in JSON, handling other data types as is.
@@ -57,9 +55,9 @@
  * @param {number} [options.repeat] default=0 Repeat request this many times
  * @param {number} [options.repeatEvery] default=null Repeat request every seconds
  * @param {function} [options.logger] default=log Custom logger to override the built-in color JSON log()
- * @param {function} [options.onBeforeRequest] Set with defaults to modify each request data.
+ * @param {function} [options.onRequest] Set with defaults to modify each request data.
  *  Takes and returns in order: path, response, params, fetchParams
- * @param {function} [options.onAfterRequest] Set with defaults to modify each request data.
+ * @param {function} [options.onResponse] Set with defaults to modify each request data.
  *  Takes and returns in order: path, response, params, fetchParams
  * @param {function} [options.onStream] Set with defaults to process the response as a stream (i.e., for instant unzip)
  * @param {function} [options.onError] Set with defaults to modify the error data. Takes: error, path, params
@@ -78,18 +76,10 @@
  *   query: "search words"
  * })
  */
-declare function grab_2<TResponse, TParams>(path: string, options: GrabOptions<TResponse, TParams>): Promise<GrabResponse<TResponse>>;
+declare function grab_2<TResponse = any, TParams = any>(path: string, options: GrabOptions<TResponse, TParams>): Promise<GrabResponse<TResponse>>;
 
 declare namespace grab_2 {
-    var instance: (defaultOptions?: {}) => (path: any, options?: {}) => Promise<{
-        [key: string]: unknown;
-        /** Indicates if request is currently in progress */
-        isLoading?: boolean;
-        /** Error message if request failed */
-        error?: string;
-        /** Binary or text response data (JSON is set to the root)*/
-        data?: unknown;
-    }>;
+    var instance: (defaults?: {}) => (path: any, options?: {}) => Promise<any>;
     var log: any[];
     var mock: {};
     var defaults: {};
@@ -106,7 +96,7 @@ export declare interface GrabFunction {
      * @author [vtempest (2025)](https://github.com/vtempest/grab-api)
      * @see  [🎯 Examples](https://grab.js.org/guide/Examples) [📑 Docs](https://grab.js.org/lib)
      */
-    <TResponse = any>(path: string): Promise<GrabResponse<TResponse>>;
+    <TResponse = any, TParams = Record<string, any>>(path: string): Promise<GrabResponse<TResponse>>;
     /**
      * ### GRAB: Generate Request to API from Browser
      * ![grabAPILogo](https://i.imgur.com/qrQWkeb.png)
@@ -197,9 +187,9 @@ export declare type GrabOptions<TResponse = any, TParams = any> = TParams & {
     /** default=log Custom logger to override the built-in color JSON log() */
     logger?: (...args: any[]) => void;
     /** Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams */
-    onBeforeRequest?: (...args: any[]) => any;
+    onRequest?: (...args: any[]) => any;
     /** Set with defaults to modify each request data. Takes and returns in order: path, response, params, fetchParams */
-    onAfterRequest?: (...args: any[]) => any;
+    onResponse?: (...args: any[]) => any;
     /** Set with defaults to modify each request data. Takes and returns in order: error, path, params */
     onError?: (...args: any[]) => any;
     /** Set with defaults to process the response as a stream (i.e., for instant unzip) */
@@ -235,13 +225,9 @@ export declare type GrabResponse<TResponse = any> = TResponse & {
     /** Error message if request failed */
     error?: string;
     /** Binary or text response data (JSON is set to the root)*/
-    data?: TResponse;
+    data?: TResponse | any;
     /** The actual response data - type depends on API endpoint */
     [key: string]: unknown;
-};
-
-export declare type GrabResponseWithData<T> = GrabResponse<T> & {
-    data?: T;
 };
 
 /**
@@ -251,21 +237,22 @@ export declare type GrabResponseWithData<T> = GrabResponse<T> & {
  * prints JSON with description of structure layout,
  * and showing debug output in development only.
  * @param {string|object} message - The message to log. If an object is provided, it will be stringified.
- * @param {boolean} [hideInProduction] -  default = auto-detects based on hostname.
+ * @param {string|string[]} [options.style] default='color: blue; font-size: 12pt;' - CSS style string
+ * @param {boolean} [options.hideInProduction] -  default = auto-detects based on hostname.
  *  If true, uses `console.debug` (hidden in production). If false, uses `console.log`.
- * @param {string} [style] default='color: blue; font-size: 15px' - CSS style string
+ *
  */
-declare function log_2(message: any, hideInProduction?: any, style?: string): void;
+declare function log_2(message?: string, options?: any): boolean;
 export { log_2 as log }
 
 export declare interface LogFunction {
     /**
      * Log messages with custom styling
      * @param message - Message to log (string or object)
-     * @param hideInProduction - Whether to hide in production (auto-detected if undefined)
      * @param style - CSS style string for console output
+     * @param hideInProduction - Whether to hide in production (auto-detected if undefined)
      */
-    (message: string | object, hideInProduction?: boolean, style?: string): void;
+    (message: string | object, style?: string, hideInProduction?: boolean): void;
 }
 
 /**
@@ -291,7 +278,5 @@ export declare interface PrintStructureJSONFunction {
  * @param {string} msg - The message to display
  */
 export declare function showAlert(msg: any): void;
-
-export declare type TypedGrabFunction = <TResponse = any, TParams = Record<string, any>>(path: string, config?: GrabOptions<TResponse, TParams>) => Promise<GrabResponse<TResponse>>;
 
 export { }

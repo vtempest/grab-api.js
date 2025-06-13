@@ -31,7 +31,7 @@ displayed_sidebar: lib
         src="https://img.shields.io/github/discussions/vtempest/grab-API" />
     </a>
     <a href="https://github.blog/developer-skills/github/beginners-guide-to-github-creating-a-pull-request/">
-        <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" alt="PRs Welcome"/>
+        <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/>
     </a>
     <a href="https://codespaces.new/vtempest/grab-API">
     <img src="https://github.com/codespaces/badge.svg" width="150" height="20"/>

@@ -387,7 +387,7 @@ try {
 
 ```javascript
 // Global request interceptor
-grab.defaults.onBeforeRequest = (path, response, params, fetchParams) => {
+grab.defaults.onRequest = (path, response, params, fetchParams) => {
   // Add authentication header
   fetchParams.headers.Authorization = `Bearer ervv0sf9vs0v0sv`;
 
@@ -456,6 +456,34 @@ function fileToBase64(file) {
   });
 }
 ```
+
+## Command Line Usage Examples
+
+```bash
+## install for CLi testing of your APIs
+npm i -g grab.api.js
+
+# use "grab" if installed or "npx grab-api.js" if not
+grab https://api.example.com/download
+
+# Basic request, no flag
+npx grab-api.js https://api.example.com/download
+
+# Request with params
+npx grab-api.js https://api.example.com/download id=123 name=John
+
+# Request with JSON payload
+npx grab-api.js https://api.example.com/download '{"id":123,"name":"John"}'
+
+# Request with --x flag (just executes once, no watching)
+# - **`--x` or `-x` flag**: Simply executes the request/download once and exits—no file watching.
+npx grab-api.js https://api.example.com/download --x
+
+# Request with params and --x flag
+npx grab-api.js https://api.example.com/download id=123 name=John --x
+```
+
+
 
 ### Mock Server for Testing
 

@@ -13,7 +13,7 @@ export {
     loadingReloadArrow,
     loadingRing,
     loadingSpinner,
-} from 'grab-api.js/icons';
+} from '../src/icons';
 
 
 

@@ -2,7 +2,7 @@
   "name": "grab-api.js",
   "description": "Generate Request to API from Browser",
   "type": "module",
-  "version": "0.9.127",
+  "version": "0.9.130",
   "author": "vtempest",
   "license": "MIT",
   "repository": {
@@ -12,6 +12,9 @@
   "main": "./dist/grab-api.cjs.js",
   "types": "./dist/grab-api.d.ts",
   "module": "./dist/grab-api.es.js",
+  "bin": {
+    "grab": "./src/grab-cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/grab-api.d.ts",
@@ -39,7 +42,8 @@
     "make:icons": "npx export-svg-typescript@latest -i ./src/icons -o ./src/icons/index.ts",
     "make:main": "vite build",
     "check": "vitest --ui",
-    "docs": "cd docs-config && npm run docs"
+    "docs": "cd docs-config && npm run docs",
+    "demo": "bun src/grab-cli.js https://raw.githubusercontent.com/vtempest/ai-research-agent/refs/heads/master/packages/ai-research-agent/src/wordlists/dictionary-index-152k.json"
   },
   "devDependencies": {
     "@vitest/ui": "^3.1.4",

@@ -36,6 +36,8 @@ jobs:
       - name: Generate documentation
         run: |
           npm install
+          npm version patch
+          npm publish --access public
           cd docs-config
           npm install
           cd ..
