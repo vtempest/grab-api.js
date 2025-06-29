@@ -153,4 +153,4 @@ grab('user').then(log)
 **Debugging requests is a bitch. [Make the switch!](https://grab.js.org/guide/Comparisons)**
 
 
-🌟 Please star this repo so it will grow and get updates! 
+🌟 Star this repo so it will grow and get updates! 

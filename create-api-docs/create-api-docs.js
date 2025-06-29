@@ -4,6 +4,7 @@ import inquirer from 'inquirer';
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
+import { execSync, spawn } from "child_process";
 import { fileURLToPath } from 'url';
 import GithubAPI from 'git0'
 
@@ -276,12 +277,25 @@ async function main() {
   return config;
 }
 
+
+/**
+ * Executes a shell command with error handling
+ * @param {string} cmd - Command to execute
+ * @param {boolean} [showError=false] - Whether to display error messages
+ */
+function exec(cmd, showError = false) {
+  try {
+    execSync(cmd, { stdio: "inherit" });
+  } catch (error) {
+    if (showError) console.error(chalk.red(`❌ Failed: ${cmd}`));
+  }
+}
 async function runMain() {
   try {
    
 
     /// download the grab-api repo
-    Github.downloadRepo('https://github.com/vtempest/grab-api')
+    await Github.downloadRepo('https://github.com/vtempest/grab-api')
 
     /// move the api-docs-standard folder to ./docs-config
     // Move the api-docs-standard folder to ./docs-config
@@ -314,12 +328,25 @@ async function runMain() {
       };
       
       copyRecursive(sourcePath, targetPath);
+      
+      //delete grab-api folder
+      fs.rmSync('./grab-api', { recursive: true, force: true });
+
+      // install dependencies
+      process.chdir('./docs-config');
+      exec("bun install > /dev/null 2>&1", false);
+      process.chdir('../');
 
 
       const config = await main();
     
       // Create customize-docs.js in current directory
       const created = await createCustomizeDocs(config);
+
+      process.chdir('./docs-config');
+
+      await exec("bun install > /dev/null 2>&1", false);
+
       if (!created) {
         console.log('❌ Setup failed. Please check your inputs and try again.');
         process.exit(1);
@@ -337,8 +364,4 @@ async function runMain() {
 }
 
 // Handle command line arguments
-if (import.meta.url === `file://${process.argv[1]}`) {
-  runMain().catch(console.error);
-}
-
-export { main };
+runMain()

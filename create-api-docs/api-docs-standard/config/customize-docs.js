@@ -1,31 +1,36 @@
 export default {
-    name: "git0",
-    domain: "https://git0.js.org",
-    typedocFolders: [
-      {
-        id: "functions",
-        entryPoints: [
-          "../src/**/*"
-        ], // also remember to set in ../tsconfig.json {entryPoints:[...]}
-      },
-    ],
-    showEditsOnGitHub: true,
-    GOOGLE_ANALYTICS_ID: "G-E5TZ32BZD",
-    compileForSubdomain: true, // !!process?.env?.DOCS_ON_SUBDOMAIN,
-    tsconfig: "./tsconfig.json",
-    readme: "../readme.md",
-    sanitizeComments: false,
-    logoURL: "/",
-    baseFolder: "./",
-    logo: "https://i.imgur.com/857meew.png",
-    favicon: "https://i.imgur.com/857meew.png",
-    enableFasterBuildV4: false,
-    enableReadmeAsHome: false,
-    topbar: [
-      // {
-      //   to: "/functions",
-      //   label: "👋 Intro",
-      //   position: "left",
-      // }
-  ] 
+  name: "API Docs",
+  domain: "https://example.com",
+  typedocFolders: [
+    {
+      id: "functions",
+      entryPoints: [
+        "../src/**/*"
+      ],
+    },
+  ],
+  gitRepoDocsPath: "https://github.com/your-username/your-repo/tree/master/",
+  sourceLinkTemplate: "https://github.com/your-username/your-repo/tree/master/{path}#L{line}",
+  openAPISpecPath: false,
+  openAPIDocsOutput: "./src/api",
+  openAPIShowSchemas: false,
+  showEditsOnGitHub: true,
+  GOOGLE_ANALYTICS_ID: "x",
+  compileForSubdomain: true,
+  tsconfig: "./tsconfig.json",
+  readme: "../README.md",
+  sanitizeComments: false,
+  logoURL: "/",
+  baseFolder: "./",
+  logo: "/icon.png",
+  favicon: "/icon.png",
+  enableFasterBuildV4: false,
+  enableReadmeAsHome: true,
+  topbar: [
+    // {
+    //   to: "/functions",
+    //   label: "👋 Intro",
+    //   position: "left",
+    // }
+  ]
 }

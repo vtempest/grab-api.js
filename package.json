@@ -36,11 +36,11 @@
     "dist"
   ],
   "scripts": {
-    "publish:npm": "npm version patch && npm publish --access public",
     "make": "npm run make:icons; npm run make:docs; npm run make:main",
     "make:docs": "cd docs-config && npm run make:docs",
     "make:icons": "npx export-svg-typescript@latest -i ./src/icons -o ./src/icons/index.ts",
     "make:main": "vite build",
+    "ship": "npx standard-version --release-as patch; npm publish",
     "check": "vitest --ui",
     "docs": "cd docs-config && npm run docs",
     "demo": "bun src/grab-cli.js https://raw.githubusercontent.com/vtempest/ai-research-agent/refs/heads/master/packages/ai-research-agent/src/wordlists/dictionary-index-152k.json"

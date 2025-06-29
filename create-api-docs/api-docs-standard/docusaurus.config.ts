@@ -67,6 +67,12 @@ export default async function createConfig(options: any = {}) {
     topbar = [],
     enableFasterBuildV4 = false,
     enableReadmeAsHome = true,
+
+    sourceLinkTemplate,
+    gitRepoDocsPath,
+    openAPISpecPath = false,
+    openAPIDocsOutput = "./src/api",
+    openAPIShowSchemas = false,
   } = { ...customizeDocs, ...options };
 
 
@@ -103,7 +109,7 @@ export default async function createConfig(options: any = {}) {
       },
       experimental_faster: true,
     } : undefined,
-    title: name + " Docs",
+    title: name,
     url: domain,
     baseUrl: compileForSubdomain ? "/" : "/docs/",
     onBrokenLinks: "ignore",
@@ -117,16 +123,19 @@ export default async function createConfig(options: any = {}) {
           docs: {
             path: "src",
             routeBasePath: "/",
+            editUrl: gitRepoDocsPath,
             sidebarPath: "./config/sidebars.ts",
           },
           blog: false,
           theme: {
             customCss: baseFolder + "config/docs-theme.css",
           },
-          gtag: {
-            trackingID: GOOGLE_ANALYTICS_ID,
-            anonymizeIP: false,
-          },
+          ...(GOOGLE_ANALYTICS_ID && {
+            gtag: {
+              trackingID: GOOGLE_ANALYTICS_ID,
+              anonymizeIP: false,
+            },
+          }),
         } satisfies Preset.Options,
       ],
     ],
@@ -134,6 +143,28 @@ export default async function createConfig(options: any = {}) {
     plugins: [
 
 
+      openAPISpecPath && [
+        "docusaurus-plugin-openapi-docs",
+        {
+          id: "openapi",
+          docsPluginId: "classic",
+          config: {
+            [name + "api"]: {
+              specPath: openAPISpecPath,
+              outputDir: openAPIDocsOutput,
+              sidebarOptions: {
+                groupPathsBy: "tag",
+                categoryLinkSource: "auto",
+                sidebarCollapsed: false
+              },
+              template: "./config/openapi.mustache", // Customize API MDX with mustache template
+              hideSendButton: false,
+              markdownGenerators: { createApiPageMD }, // customize MDX with markdown generator
+              showSchemas: openAPIShowSchemas,
+            } satisfies OpenApiPlugin.Options,
+          } satisfies Plugin.PluginOptions,
+        },
+      ],
       require.resolve("docusaurus-lunr-search"),
 
       ...(typedocFolders.map(({ id, entryPoints }) => [
@@ -148,6 +179,7 @@ export default async function createConfig(options: any = {}) {
           tsconfig,
           out: baseFolder + "src/" + id,
           readme,
+          sourceLinkTemplate,
           disableSources: !showEditsOnGitHub,
           sidebar: { pretty: true },
           textContentMappings: {
