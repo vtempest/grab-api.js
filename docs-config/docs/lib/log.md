@@ -105,10 +105,10 @@ default='color: blue; font-size: 15px' - CSS style string
 
 ***
 
-## printStructureJSON()
+## printJSONStructure()
 
 ```ts
-function printStructureJSON(obj: any, indent: number): string;
+function printJSONStructure(obj: any, indent: number): string;
 ```
 
 Defined in: [log.ts:87](https://github.com/vtempest/grab-api/tree/master/src/log.ts#L87)

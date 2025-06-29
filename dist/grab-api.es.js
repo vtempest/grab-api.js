@@ -9,7 +9,7 @@ function log(message = "", options = {}) {
   if (typeof hideInProduction === "undefined")
     hideInProduction = typeof window !== "undefined" && (window == null ? void 0 : window.location.hostname.includes("localhost"));
   if (typeof message === "object")
-    message = printStructureJSON(message) + "\n\n" + JSON.stringify(message, null, 2);
+    message = printJSONStructure(message) + "\n\n" + JSON.stringify(message, null, 2);
   if (style.split(" ").length == 1 || color) {
     style = `color: ${style || color}; font-size: 12pt;`;
   } else {
@@ -76,7 +76,7 @@ function getTypeString(value) {
   if (typeof value === "object") return "{...}";
   return typeof value;
 }
-function printStructureJSON(obj, indent = 0) {
+function printJSONStructure(obj, indent = 0) {
   const pad = "  ".repeat(indent);
   if (typeof obj !== "object" || obj === null) {
     const color = getColorForType(obj);
@@ -86,7 +86,7 @@ function printStructureJSON(obj, indent = 0) {
     let result2 = colors.blue + "[" + colors.reset;
     if (obj.length) result2 += "\n";
     obj.forEach((item, idx) => {
-      result2 += pad + "  " + printStructureJSON(item, indent + 1);
+      result2 += pad + "  " + printJSONStructure(item, indent + 1);
       if (idx < obj.length - 1) result2 += ",";
       result2 += "\n";
     });
@@ -101,9 +101,9 @@ function printStructureJSON(obj, indent = 0) {
     const color = getColorForType(value);
     result += pad + "  ";
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-      result += color + key + colors.reset + ": " + printStructureJSON(value, indent + 1);
+      result += color + key + colors.reset + ": " + printJSONStructure(value, indent + 1);
     } else if (Array.isArray(value)) {
-      result += color + key + colors.reset + ": " + printStructureJSON(value, indent + 1);
+      result += color + key + colors.reset + ": " + printJSONStructure(value, indent + 1);
     } else {
       result += color + key + ": " + getTypeString(value) + colors.reset;
     }
@@ -374,7 +374,7 @@ async function grab$1(path, options) {
     const elapsedTime = ((Number(/* @__PURE__ */ new Date()) - Number(startTime)) / 1e3).toFixed(1);
     if (debug) {
       logger(
-        "Path:" + baseURL + path + paramsGETRequest + "\n" + JSON.stringify(options, null, 2) + "\nTime: " + elapsedTime + "s\nResponse: " + printStructureJSON(res)
+        "Path:" + baseURL + path + paramsGETRequest + "\n" + JSON.stringify(options, null, 2) + "\nTime: " + elapsedTime + "s\nResponse: " + printJSONStructure(res)
       );
     }
     if (typeof res === "undefined") return;
@@ -468,7 +468,7 @@ export {
   grab$1 as default,
   grab$1 as grab,
   log,
-  printStructureJSON,
+  printJSONStructure,
   showAlert
 };
 //# sourceMappingURL=grab-api.es.js.map

@@ -808,14 +808,14 @@ CSS style string for console output
 
 ***
 
-## PrintStructureJSONFunction()
+## printJSONStructureFunction()
 
 Defined in: [grab-api.ts:747](https://github.com/vtempest/grab-api/tree/master/src/grab-api.ts#L747)
 
 Utility function to describe JSON structure
 
 ```ts
-PrintStructureJSONFunction(obj: any): string;
+printJSONStructureFunction(obj: any): string;
 ```
 
 Defined in: [grab-api.ts:753](https://github.com/vtempest/grab-api/tree/master/src/grab-api.ts#L753)
@@ -1982,6 +1982,6 @@ Re-exports [showAlert](log.md#showalert)
 
 ***
 
-## printStructureJSON
+## printJSONStructure
 
-Re-exports [printStructureJSON](log.md#printstructurejson)
+Re-exports [printJSONStructure](log.md#printJSONStructure)

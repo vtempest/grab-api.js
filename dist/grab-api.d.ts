@@ -260,9 +260,9 @@ export declare interface LogFunction {
  * Shows the shape and types of the data rather than actual values
  * Recursively processes nested objects and arrays
  */
-export declare function printStructureJSON(obj: any, indent?: number): string;
+export declare function printJSONStructure(obj: any, indent?: number): string;
 
-export declare interface PrintStructureJSONFunction {
+export declare interface printJSONStructureFunction {
     /**
      * Generate TypeDoc-like description of JSON object structure
      * @param obj - The JSON object to describe
