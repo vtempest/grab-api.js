@@ -7,8 +7,7 @@
     "build:docs:subdomain": "DOCS_ON_SUBDOMAIN=true npm run docs:build",
     "build:docs": " mkdir -p ../docs;  DOCUSAURUS_IGNORE_SSG_WARNINGS=true npx docusaurus build --out-dir ../docs; npm run docs",
     "build:docs:openapi": " NODE_NO_WARNINGS=1 npx docusaurus clean-api-docs  all   ; NODE_NO_WARNINGS=1 npx docusaurus  gen-api-docs all",
-
-    "docs:copy": "cp ../docs/functions/index.html ../docs/index.html; rm -rf ../web-app/static/docs; cp -r ../docs ../web-app/static; mv ../web-app/static/dist ../web-app/static/docs"
+  "docs:copy": "TARGET_FOLDER=../public && rm -rf $TARGET_FOLDER/docs && cp -r ../docs $TARGET_FOLDER && mv $TARGET_FOLDER/dist $TARGET_FOLDER/docs"
   },
  
   "dependencies": {

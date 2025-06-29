@@ -58,7 +58,6 @@ export default async function createConfig(options: any = {}) {
     showEditsOnGitHub = true,
     GOOGLE_ANALYTICS_ID = undefined,
     compileForSubdomain = !!process.env.DOCS_ON_SUBDOMAIN,
-    tsconfig = "./tsconfig.json",
     readme = "../readme.md",
     sanitizeComments = false,
     favicon = undefined,
@@ -167,13 +166,14 @@ export default async function createConfig(options: any = {}) {
       ],
       require.resolve("docusaurus-lunr-search"),
 
-      ...(typedocFolders.map(({ id, entryPoints }) => [
+      ...(typedocFolders.map(({ id, entryPoints, tsconfig }) => [
         "docusaurus-plugin-typedoc",
         {
           id,
           entryPoints,
           exclude: [
             "**/node_modules/**/*",
+            "**/components/ui/**/*",
             "pages/**/*"
           ],
           tsconfig,
@@ -353,7 +353,9 @@ export function createApiPageMD({
     createCallbacks({ callbacks }),
   ]);
 }
-interface RequestBodyProps {
+
+
+export interface RequestBodyProps {
   title: string;
   body: {
     content?: {
@@ -362,4 +364,191 @@ interface RequestBodyProps {
     description?: string;
     required?: boolean;
   };
+}
+
+
+/**
+ * Configuration schema for API documentation generation
+ * Supports TypeDoc, OpenAPI, and custom documentation features
+ */
+export interface APIDocsConfig {
+  /** 
+   * Display name for the API documentation
+   * Used in page titles, navigation, and browser tabs
+   * @example "My API Documentation"
+   */
+  name: string;
+
+  /** 
+   * Base domain URL where the documentation will be hosted
+   * Should include protocol (http/https)
+   * @example "https://api.example.com" 
+   */
+  domain: string;
+
+  /** 
+   * Configuration for TypeDoc-generated documentation folders
+   * Each folder represents a separate documentation section
+   */
+  typedocFolders: Array<{
+    /** 
+     * Unique identifier for this TypeDoc folder
+     * Used in URLs and internal references
+     * @example "functions", "classes", "types"
+     */
+    id: string;
+
+    /** 
+     * Array of glob patterns specifying which TypeScript files to include
+     * Supports standard glob syntax (*, **, ?)
+     * @example ["../src/**"]
+     */
+    entryPoints: string[];
+
+    /** 
+     * Path to the TypeScript configuration file for this folder
+     * Used for compilation and type resolution
+     * @example "../tsconfig.json"
+     */
+    tsconfig?: string;
+  }>;
+
+  /** 
+   * Base URL path to the GitHub repository's documentation folder
+   * Used for generating "Edit on GitHub" links
+   * @example "https://github.com/username/repo/tree/master/"
+   */
+  gitRepoDocsPath: string;
+
+  /** 
+   * Template string for generating source code links
+   * Placeholders: {path} for file path, {line} for line number
+   * @example "https://github.com/username/repo/tree/master/{path}#L{line}"
+   */
+  sourceLinkTemplate: string;
+
+  /** 
+   * Path to OpenAPI/Swagger specification file
+   * Set to false to disable OpenAPI documentation
+   * @example "./openapi.json" or false
+   */
+  openAPISpecPath: string | false;
+
+  /** 
+   * Output directory for generated OpenAPI documentation
+   * Relative to the base documentation folder
+   * @example "./src/api"
+   */
+  openAPIDocsOutput: string;
+
+  /** 
+   * Whether to display OpenAPI schema definitions in the documentation
+   * When true, shows detailed schema information for API models
+   */
+  openAPIShowSchemas: boolean;
+
+  /** 
+   * Enable "Edit on GitHub" links throughout the documentation
+   * Allows users to suggest changes directly on GitHub
+   */
+  showEditsOnGitHub: boolean;
+
+  /** 
+   * Google Analytics tracking ID for usage analytics
+   * Set to false or empty string to disable analytics
+   * @example "GA-XXXXXXXXX-X" or false
+   */
+  GOOGLE_ANALYTICS_ID: string | false;
+
+  /** 
+   * Optimize build output for subdomain hosting
+   * Affects asset paths and routing configuration
+   */
+  compileForSubdomain: boolean;
+
+  /** 
+   * Path to the main TypeScript configuration file
+   * Used for global TypeScript settings and compilation
+   * @example "./tsconfig.json"
+   */
+  tsconfig: string;
+
+  /** 
+   * Path to the README file to use as documentation homepage
+   * Supports Markdown files that will be converted to HTML
+   * @example "../README.md"
+   */
+  readme: string;
+
+  /** 
+   * Remove HTML tags and sanitize comments from JSDoc
+   * Helps ensure clean, consistent documentation output
+   */
+  sanitizeComments: boolean;
+
+  /** 
+   * URL to navigate to when the logo is clicked
+   * Typically the homepage or main documentation page
+   * @example "/"
+   */
+  logoURL: string;
+
+  /** 
+   * Base folder for all documentation-related files
+   * Used as the root directory for relative paths
+   * @example "./"
+   */
+  baseFolder: string;
+
+  /** 
+   * Path to the logo image file
+   * Displayed in the documentation header/navigation
+   * @example "/icon.png"
+   */
+  logo: string;
+
+  /** 
+   * Path to the favicon image file
+   * Shown in browser tabs and bookmarks
+   * @example "/icon.png"
+   */
+  favicon: string;
+
+  /** 
+   * Enable experimental faster build system (version 4)
+   * Faster but has "module.exports" error with odler plugins
+   */
+  enableFasterBuildV4: boolean;
+
+  /** 
+   * Use the README file as the homepage instead of default layout
+   * When true, visitors see README content immediately upon arrival
+   */
+  enableReadmeAsHome: boolean;
+
+  /** 
+   * Configuration for the top navigation bar
+   * Array of navigation items with links and labels
+   */
+  topbar: Array<{
+    /** 
+     * URL path for the navigation link
+     * Can be relative or absolute
+     * @example "/functions", "/getting-started"
+     */
+    to: string;
+
+    /** 
+     * Display text for the navigation item
+     * Can include emojis or special characters
+     * @example "👋 Intro", "API Reference"
+     */
+    label: string;
+
+    /** 
+     * Position of the navigation item in the top bar
+     * @example "left", "right"
+     */
+    position: "left" | "right";
+  }>;
 }

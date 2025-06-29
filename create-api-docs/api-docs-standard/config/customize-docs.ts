@@ -1,3 +1,5 @@
+import type { APIDocsConfig } from "../docusaurus.config";
+
 export default {
   name: "API Docs",
   domain: "https://example.com",
@@ -7,6 +9,7 @@ export default {
       entryPoints: [
         "../src/**/*"
       ],
+      tsconfig: "../tsconfig.json",
     },
   ],
   gitRepoDocsPath: "https://github.com/your-username/your-repo/tree/master/",
@@ -27,10 +30,10 @@ export default {
   enableFasterBuildV4: false,
   enableReadmeAsHome: true,
   topbar: [
-    // {
-    //   to: "/functions",
-    //   label: "👋 Intro",
-    //   position: "left",
-    // }
+    {
+      to: "/",
+      label: "👋 Intro",
+      position: "left",
+    }
   ]
-}
+} satisfies APIDocsConfig;
