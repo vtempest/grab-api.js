@@ -57,7 +57,7 @@ export default async function createConfig(options: any = {}) {
     typedocFolders = [],
     showEditsOnGitHub = true,
     GOOGLE_ANALYTICS_ID = undefined,
-    compileForSubdomain = !!process.env.DOCS_ON_SUBDOMAIN,
+    usePathSlashDocs = !!process?.env?.PATH_ON_SLASH_DOCS,
     readme = "../readme.md",
     sanitizeComments = false,
     favicon = undefined,
@@ -66,7 +66,6 @@ export default async function createConfig(options: any = {}) {
     topbar = [],
     enableFasterBuildV4 = false,
     enableReadmeAsHome = true,
-
     sourceLinkTemplate,
     gitRepoDocsPath,
     openAPISpecPath = false,
@@ -97,7 +96,7 @@ export default async function createConfig(options: any = {}) {
 
 
   // foldersWithFunctions - should also add to tsconfig.json include:[]
-  // compileForSubdomain is used to generate at domain.com/docs 
+  // usePathSlashDocs is used to generate at domain.com/docs 
   // but on github pages workflow, it outputs to
   // subdomain like docprojects.user.github.io
   // sanitizeComments helps avoid errors in markdown like <> {} etc
@@ -110,7 +109,7 @@ export default async function createConfig(options: any = {}) {
     } : undefined,
     title: name,
     url: domain,
-    baseUrl: compileForSubdomain ? "/" : "/docs/",
+    baseUrl: usePathSlashDocs ? "/docs/" : "/",
     onBrokenLinks: "ignore",
     onBrokenMarkdownLinks: "ignore",
     favicon,
@@ -464,7 +463,7 @@ export interface APIDocsConfig {
    * Optimize build output for subdomain hosting
    * Affects asset paths and routing configuration
    */
-  compileForSubdomain: boolean;
+  usePathSlashDocs: boolean;
 
   /** 
    * Path to the main TypeScript configuration file
@@ -530,13 +529,18 @@ export interface APIDocsConfig {
    * Configuration for the top navigation bar
    * Array of navigation items with links and labels
    */
-  topbar: Array<{
+  topbar: Partial<Array<{
     /** 
      * URL path for the navigation link
      * Can be relative or absolute
      * @example "/functions", "/getting-started"
      */
-    to: string;
+    to?: string;
+
+      /** 
+     * External URL path for the navigation link
+     */
+    href?: string;
 
     /** 
      * Display text for the navigation item
@@ -550,5 +554,5 @@ export interface APIDocsConfig {
      * @example "left", "right"
      */
     position: "left" | "right";
-  }>;
+  }>>;
 }

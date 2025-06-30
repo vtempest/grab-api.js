@@ -55,7 +55,7 @@ export default async function createConfig(options: any = {}) {
     showEditsOnGitHub = true,
     GOOGLE_ANALYTICS_ID = "/////G-E5TZ32BZD",
     gitRepo = "https://github.com/vtempest/grab-api.js/blob/main/",
-    compileForSubdomain = 1, //!!process.env.DOCS_ON_SUBDOMAIN,
+    usePathSlashDocs = 1, //!!process.env.PATH_ON_SLASH_DOCS,
     tsconfig = "./tsconfig.json",
     readme = "../readme.md",
     sanitizeComments = false,
@@ -63,14 +63,14 @@ export default async function createConfig(options: any = {}) {
   } = options;
 
   // foldersWithFunctions - should also add to tsconfig.json include:[]
-  // compileForSubdomain is used to generate at domain.com/docs 
+  // usePathSlashDocs is used to generate at domain.com/docs 
   // but on github pages workflow, it outputs to
   // subdomain like docprojects.user.github.io
   // sanitizeComments helps avoid errors in markdown like <> {} etc
   return {
     title: name + " API Routes Docs",
     url: domain,
-    baseUrl: compileForSubdomain ? "/" : "/",
+    baseUrl: usePathSlashDocs ? "/docs" : "/",
     onBrokenLinks: "ignore",
     onBrokenMarkdownLinks: "ignore",
     favicon: "/favicon.ico",

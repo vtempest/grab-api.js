@@ -48,7 +48,7 @@ jobs:
           cd docs-config
           npm install
           cd ..
-          DOCS_ON_SUBDOMAIN=true npm run make
+          PATH_ON_SLASH_DOCS=true npm run make
       
 
       - name: Upload artifact

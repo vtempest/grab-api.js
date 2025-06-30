@@ -19,7 +19,7 @@ export default {
   openAPIShowSchemas: false,
   showEditsOnGitHub: true,
   GOOGLE_ANALYTICS_ID: "x",
-  compileForSubdomain: true,
+  usePathSlashDocs: true,
   tsconfig: "./tsconfig.json",
   readme: "../README.md",
   sanitizeComments: false,

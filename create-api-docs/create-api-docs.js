@@ -52,7 +52,7 @@ async function createCustomizeDocs(config) {
     openAPIShowSchemas: ${config.openAPIShowSchemas},
     showEditsOnGitHub: ${config.showEditsOnGitHub},
     GOOGLE_ANALYTICS_ID: ${config.googleAnalyticsId ? `"${config.googleAnalyticsId}"` : 'false'},
-    compileForSubdomain: ${config.compileForSubdomain},
+    usePathSlashDocs: ${config.usePathSlashDocs},
     tsconfig: "${config.tsconfig}",
     readme: "${config.readme}",
     sanitizeComments: ${config.sanitizeComments},
@@ -137,7 +137,7 @@ async function editOption(optionName, currentValue, config) {
       type: 'input',
       message: 'Enter Google Analytics ID (or press Enter to skip):'
     },
-    compileForSubdomain: {
+    usePathSlashDocs: {
       type: 'confirm',
       message: 'Compile for subdomain?'
     },
@@ -212,7 +212,7 @@ async function main() {
     openAPIShowSchemas: false,
     showEditsOnGitHub: true,
     googleAnalyticsId: false,
-    compileForSubdomain: true,
+    usePathSlashDocs: true,
     tsconfig: './tsconfig.json',
     readme: '../readme.md',
     sanitizeComments: false,
@@ -236,7 +236,7 @@ async function main() {
     openAPIShowSchemas: '📊 Show OpenAPI Schemas (Display schema definitions)',
     showEditsOnGitHub: '✏️ Show Edit Links on GitHub (Add edit page links)',
     googleAnalyticsId: '📈 Google Analytics ID (Tracking ID for usage monitoring)',
-    compileForSubdomain: '🌍 Compile for Subdomain (Optimize for subdomain hosting)',
+    usePathSlashDocs: '🌍 Compile for Subdomain (Optimize for subdomain hosting)',
     tsconfig: '⚙️ TSConfig Path (TypeScript config file path)',
     readme: '📖 README Path (README file for homepage)',
     sanitizeComments: '🧹 Sanitize Comments (Remove HTML from JSDoc)',
