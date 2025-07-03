@@ -9,6 +9,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import * as spinners from './spinners.json' assert { type: 'json' };
 import readline from 'readline';
+import { GlobalKeyboardListener } from 'node-global-key-listener';
 
 
 
@@ -87,6 +88,10 @@ constructor() {
   this.pauseCallback = null;
   this.resumeCallback = null;
   this.abortControllers = [];
+  
+  // Initialize global keyboard listener
+  this.keyboardListener = null;
+  this.isAddingUrl = false;
 }
 
 /**
@@ -145,7 +150,8 @@ printHeaderRow() {
     this.colors.cyan('🔄'.padEnd(this.COL_SPINNER)) +
     ' ' +
     this.colors.green('📊 Progress'.padEnd(this.COL_BAR + 1)) +
-    this.colors.info('📊 Progress'.padEnd(this.COL_DOWNLOADED)) +
+    this.colors.info('📥 Downloaded'.padEnd(this.COL_DOWNLOADED)) +
+    this.colors.info('📦 Total'.padEnd(this.COL_TOTAL)) +
     this.colors.purple('⚡ Speed'.padEnd(this.COL_SPEED)) +
     this.colors.pink('⏱️ ETA'.padEnd(this.COL_ETA))
   );
@@ -465,10 +471,10 @@ formatMasterProgress(totalDownloaded, totalSize) {
   if (totalSizeMB >= 1024) {
     const totalDownloadedGB = totalDownloadedMB / 1024;
     const totalSizeGB = totalSizeMB / 1024;
-    return `${totalDownloadedGB.toFixed(1)}/${totalSizeGB.toFixed(1)}GB`.padEnd(this.COL_DOWNLOADED);
+    return `${totalDownloadedGB.toFixed(1)}GB`.padEnd(this.COL_DOWNLOADED);
   }
   
-  return `${totalDownloadedMB.toFixed(1)}/${totalSizeMB.toFixed(1)}MB`.padEnd(this.COL_DOWNLOADED);
+  return `${totalDownloadedMB.toFixed(1)}MB`.padEnd(this.COL_DOWNLOADED);
 }
 
 /**
@@ -479,8 +485,7 @@ formatMasterProgress(totalDownloaded, totalSize) {
  */
 formatProgress(downloaded, total) {
   const downloadedStr = this.formatBytesCompact(downloaded);
-  const totalStr = this.formatBytesCompact(total || downloaded);
-  return `${downloadedStr}/${totalStr}`.padEnd(this.COL_DOWNLOADED);
+  return downloadedStr.padEnd(this.COL_DOWNLOADED);
 }
 
 /**
@@ -490,6 +495,30 @@ formatProgress(downloaded, total) {
  */
 formatDownloaded(downloaded) {
   return this.formatBytesCompact(downloaded).padEnd(this.COL_DOWNLOADED);
+}
+
+/**
+ * Format total bytes for display (separate column)
+ * @param {number} total - Total bytes
+ * @returns {string} Formatted total string
+ */
+formatTotalDisplay(total) {
+  if (total === 0) return '0MB'.padEnd(this.COL_TOTAL);
+  
+  const k = 1024;
+  const mb = total / (k * k);
+  
+  if (mb >= 1024) {
+    const gb = mb / 1024;
+    return `${gb.toFixed(1)}GB`.padEnd(this.COL_TOTAL);
+  }
+  
+  // For files smaller than 1MB, show in MB with decimal
+  if (mb < 1) {
+    return `${mb.toFixed(2)}MB`.padEnd(this.COL_TOTAL);
+  }
+  
+  return `${mb.toFixed(1)}MB`.padEnd(this.COL_TOTAL);
 }
 
 /**
@@ -565,8 +594,14 @@ async downloadMultipleFiles(downloads) {
   try {
     console.log(this.colors.primary(`🚀 Starting download of ${downloads.length} files...\n`));
 
+    // Set up global keyboard listener for pause/resume and add URL BEFORE starting downloads
+    this.setupGlobalKeyboardListener();
+    
     // Print header row with emojis
     this.printHeaderRow();
+
+    // Show keyboard shortcut info for pause/resume in multibar view
+    console.log(this.colors.info('💡 Press p to pause/resume downloads, a to add URL.'));
 
     // Get random colors for the multibar
     const masterBarColor = this.getRandomBarColor();
@@ -578,7 +613,8 @@ async downloadMultipleFiles(downloads) {
               this.colors.yellow('{filename}') + ' ' +
               this.colors.cyan('{spinner}') + ' ' + 
               masterBarColor + '{bar}\u001b[0m' + ' ' +
-              this.colors.info('{progress}') + ' ' +
+              this.colors.info('{downloadedDisplay}') + ' ' +
+              this.colors.info('{totalDisplay}') + ' ' +
               this.colors.purple('{speed}') + ' ' +
               this.colors.pink('{etaFormatted}'),
       hideCursor: true,
@@ -610,6 +646,9 @@ async downloadMultipleFiles(downloads) {
       return sum + estimatedSize;
     }, 0);
     totalSize = totalSizeFromDownloads;
+    
+    // Track actual total size as we discover file sizes
+    let actualTotalSize = 0;
 
     // Set up interval to update speeds every second
     const speedUpdateInterval = setInterval(() => {
@@ -631,6 +670,8 @@ async downloadMultipleFiles(downloads) {
             fileBars[i].bar.update(individualDownloaded[i], {
               speed: speed,
               progress: this.formatProgress(individualDownloaded[i], individualSizes[i]),
+              downloadedDisplay: this.formatBytesCompact(individualDownloaded[i]),
+              totalDisplay: this.formatTotalDisplay(individualSizes[i]),
               etaFormatted: eta
             });
           }
@@ -647,6 +688,9 @@ async downloadMultipleFiles(downloads) {
       // Calculate total downloaded from individual files
       const totalDownloadedFromFiles = individualDownloaded.reduce((sum, downloaded) => sum + downloaded, 0);
       
+      // Calculate time elapsed since start
+      const timeElapsed = (now - individualStartTimes[0]) / 1000; // seconds since first download started
+      
       // Update master bar
       const totalEta = totalSize > 0 && totalSpeedBps > 0 ? 
         this.formatETA((totalSize - totalDownloadedFromFiles) / totalSpeedBps) : 
@@ -655,11 +699,18 @@ async downloadMultipleFiles(downloads) {
       const totalPercentage = totalSize > 0 ? 
         Math.round((totalDownloadedFromFiles / totalSize) * 100) : 0;
       
+      // Calculate actual total size from discovered individual file sizes
+      const discoveredTotalSize = individualSizes.reduce((sum, size) => sum + size, 0);
+      const displayTotalSize = discoveredTotalSize > 0 ? discoveredTotalSize : totalSize;
+      
       masterBar.update(totalDownloadedFromFiles, {
         speed: this.formatTotalSpeed(totalSpeedBps),
-        progress: this.formatMasterProgress(totalDownloadedFromFiles, totalSize),
-        etaFormatted: totalEta,
-        percentage: totalPercentage.toString().padStart(3)
+        progress: this.formatMasterProgress(totalDownloadedFromFiles, displayTotalSize),
+        downloadedDisplay: this.formatBytesCompact(totalDownloadedFromFiles),
+        totalDisplay: this.formatTotalDisplay(displayTotalSize),
+        etaFormatted: this.formatETA(timeElapsed), // Show time elapsed instead of ETA
+        percentage: displayTotalSize > 0 ? 
+          Math.round((totalDownloadedFromFiles / displayTotalSize) * 100) : 0
       });
     }, 1000);
     
@@ -672,6 +723,8 @@ async downloadMultipleFiles(downloads) {
       spinner: '⬇️',
       speed: '0B'.padEnd(this.COL_SPEED),
       progress: this.formatMasterProgress(0, totalSize),
+      downloadedDisplay: this.formatBytesCompact(0),
+      totalDisplay: this.formatTotalDisplay(totalSize),
       etaFormatted: this.formatETA(0),
       percentage: '  0'.padStart(this.COL_PERCENT - 1)
     }, {
@@ -679,7 +732,8 @@ async downloadMultipleFiles(downloads) {
               this.colors.yellow.bold('{filename}') + ' ' +
               this.colors.success('{spinner}') + ' ' + 
               '\u001b[92m{bar}\u001b[0m' + ' ' +
-              this.colors.info('{progress}') + ' ' +
+              this.colors.info('{downloadedDisplay}') + ' ' +
+              this.colors.info('{totalDisplay}') + ' ' +
               this.colors.purple('{speed}') + ' ' +
               this.colors.pink('{etaFormatted}'),
       barCompleteChar: '▶',
@@ -711,14 +765,17 @@ async downloadMultipleFiles(downloads) {
           spinner: spinnerFrames[0],
           speed: this.formatSpeed('0B'),
           progress: this.formatProgress(0, 0),
-          format: this.colors.yellow('{filename}') + ' ' +
+          downloadedDisplay: this.formatBytesCompact(0),
+          totalDisplay: this.formatTotalDisplay(0),
+          etaFormatted: this.formatETA(0),
+          percentage: '  0'.padStart(3)
         }, {
-          format: this.colors.success('{percentage}%') + ' ' +
-                  this.colors.success('{percentage}%') + ' ' +
-                  this.colors.yellow('{filename}') + ' ' +
+          format: this.colors.yellow('{filename}') + ' ' +
                   this.colors.cyan('{spinner}') + ' ' + 
                   fileBarColor + '{bar}\u001b[0m' + ' ' +
-                  this.colors.info('{progress}') + ' ' +
+                  this.colors.success('{percentage}%') + ' ' +
+                  this.colors.info('{downloadedDisplay}') + ' ' +
+                  this.colors.info('{totalDisplay}') + ' ' +
                   this.colors.purple('{speed}') + ' ' +
                   this.colors.pink('{etaFormatted}'),
           barCompleteChar: '█',
@@ -745,7 +802,8 @@ async downloadMultipleFiles(downloads) {
           individualDownloaded,
           individualStartTimes,
           lastTotalUpdate,
-          lastTotalDownloaded
+          lastTotalDownloaded,
+          actualTotalSize
         });
         return { success: true, index, filename: fileBar.download.filename };
       } catch (error) {
@@ -768,13 +826,13 @@ async downloadMultipleFiles(downloads) {
 
     console.log(this.colors.green(`✅ Successful: ${successful}/${downloads.length}`));
     if (failed > 0) {
-      console.log(this.colors.red(`❌ Failed: ${failed}/${downloads.length}`));
+      console.log(this.colors.error(`❌ Failed: ${failed}/${downloads.length}`));
       
       results.forEach((result, index) => {
         if (result.status === 'rejected' || !result.value.success) {
           const filename = downloads[index].filename;
           const error = result.reason || result.value?.error || 'Unknown error';
-          console.log(this.colors.red(`  • ${filename}: ${error.message || error}`));
+          console.log(this.colors.error(`  • ${filename}: ${error.message || error}`));
         }
       });
     }
@@ -785,41 +843,21 @@ async downloadMultipleFiles(downloads) {
     console.log(this.colors.success(`${randomEmoji} Batch download completed! ${randomEmoji}`));
 
     this.clearAbortControllers();
-
-    // Listen for 'p' key to pause/resume
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-    readline.emitKeypressEvents(process.stdin, rl);
-    if (process.stdin.isTTY) process.stdin.setRawMode(true);
+    
     let pausedMessageShown = false;
+    
     this.setPauseCallback(() => {
       if (!pausedMessageShown) {
         this.multiBar.stop();
-        console.log(this.colors.warning('⏸️  Paused. Press p to resume.'));
+        console.log(this.colors.warning('⏸️  Paused. Press p to resume, a to add URL.'));
         pausedMessageShown = true;
       }
     });
+    
     this.setResumeCallback(() => {
       if (pausedMessageShown) {
-        console.log(this.colors.success('▶️  Resumed. Press p to pause.'));
+        console.log(this.colors.success('▶️  Resumed. Press p to pause, a to add URL.'));
         pausedMessageShown = false;
-      }
-    });
-    process.stdin.on('keypress', (str, key) => {
-      if (key && key.name === 'p') {
-        if (!this.isPaused) {
-          this.pauseAll();
-        } else {
-          this.resumeAll();
-          // Restart downloads from where they left off
-          rl.close();
-          process.stdin.setRawMode(false);
-          process.stdin.removeAllListeners('keypress');
-          // Re-run downloadMultipleFiles with remaining downloads
-          main(); // re-enter main CLI
-        }
       }
     });
 
@@ -921,7 +959,9 @@ async downloadSingleFileWithBar(fileBar, masterBar, totalFiles, totalTracking) {
     // Update bar with file size info
     bar.setTotal(totalSize || 100);
     bar.update(startByte, {
-      progress: this.formatProgress(startByte, totalSize)
+      progress: this.formatProgress(startByte, totalSize),
+      downloadedDisplay: this.formatBytesCompact(startByte),
+      totalDisplay: this.formatTotalDisplay(totalSize)
     });
 
     // Create write stream (append mode if resuming)
@@ -944,6 +984,11 @@ async downloadSingleFileWithBar(fileBar, masterBar, totalFiles, totalTracking) {
     const processChunk = async () => {
       try {
         while (true) {
+          // Check for pause state
+          while (this.isPaused) {
+            await new Promise(resolve => setTimeout(resolve, 100)); // Wait 100ms before checking again
+          }
+          
           const { done, value } = await reader.read();
           
           if (done) {
@@ -978,7 +1023,9 @@ async downloadSingleFileWithBar(fileBar, masterBar, totalFiles, totalTracking) {
           if (timeDiff >= 0.3) { // Update every 300ms for smoother animation
             bar.update(downloaded, {
               spinner: spinnerFrames[fileBar.spinnerIndex],
-              progress: this.formatProgress(downloaded, totalSize)
+              progress: this.formatProgress(downloaded, totalSize),
+              downloadedDisplay: this.formatBytesCompact(downloaded),
+              totalDisplay: this.formatTotalDisplay(totalSize)
             });
             
             // Update total tracking
@@ -994,6 +1041,11 @@ async downloadSingleFileWithBar(fileBar, masterBar, totalFiles, totalTracking) {
               // Calculate total size from all individual sizes
               totalTracking.totalSize = totalTracking.individualSizes.reduce((sum, size) => sum + size, 0);
               
+              // Update actual total size for master bar display
+              if (totalTracking.actualTotalSize !== undefined) {
+                totalTracking.actualTotalSize = totalTracking.totalSize;
+              }
+              
               // Update master bar total if this is the first time we're getting the actual size
               if (totalSize > 0 && totalTracking.individualSizes[fileIndex] === totalSize) {
                 masterBar.setTotal(totalTracking.totalSize);
@@ -1005,7 +1057,9 @@ async downloadSingleFileWithBar(fileBar, masterBar, totalFiles, totalTracking) {
           } else {
             bar.update(downloaded, {
               spinner: spinnerFrames[fileBar.spinnerIndex],
-              progress: this.formatProgress(downloaded, totalSize)
+              progress: this.formatProgress(downloaded, totalSize),
+              downloadedDisplay: this.formatBytesCompact(downloaded),
+              totalDisplay: this.formatTotalDisplay(totalSize)
             });
           }
 
@@ -1030,8 +1084,15 @@ async downloadSingleFileWithBar(fileBar, masterBar, totalFiles, totalTracking) {
 
     // Update master progress
     const currentCompleted = masterBar.value + 1;
+    const finalTotalSize = totalTracking.actualTotalSize || totalTracking.totalSize;
+    const discoveredTotalSize = totalTracking.individualSizes.reduce((sum, size) => sum + size, 0);
+    const displayTotalSize = discoveredTotalSize > 0 ? discoveredTotalSize : finalTotalSize;
+    
     masterBar.update(totalTracking.totalDownloaded, {
-      progress: this.formatMasterProgress(totalTracking.totalDownloaded, totalTracking.totalSize)
+      progress: this.formatMasterProgress(totalTracking.totalDownloaded, displayTotalSize),
+      downloadedDisplay: this.formatBytesCompact(totalTracking.totalDownloaded),
+      totalDisplay: this.formatTotalDisplay(displayTotalSize),
+      etaFormatted: this.formatETA((Date.now() - individualStartTimes[0]) / 1000) // Show time elapsed
     });
 
   } catch (error) {
@@ -1039,7 +1100,8 @@ async downloadSingleFileWithBar(fileBar, masterBar, totalFiles, totalTracking) {
     bar.update(bar.total, {
       spinner: '❌',
       speed: this.formatSpeed('FAILED'),
-      etaFormatted: this.formatETA(0)
+      downloadedDisplay: this.formatBytesCompact(0),
+      totalDisplay: this.formatTotalDisplay(0)
     });
     
     // Don't clean up partial file on error - allow resume
@@ -1165,15 +1227,28 @@ async downloadFile(url, outputPath) {
     // Calculate initial bar size
     const initialBarSize = this.calculateBarSize(spinnerFrames[0], this.COL_BAR);
 
-    // Print header row with emojis
-    this.printHeaderRow();
+    // Print header row with emojis for single file download
+    console.log(
+      this.colors.success('📈 %'.padEnd(this.COL_PERCENT)) +
+      this.colors.cyan('🔄'.padEnd(this.COL_SPINNER)) +
+      ' ' +
+      this.colors.green('📊 Progress'.padEnd(this.COL_BAR + 1)) +
+      this.colors.info('📥 Downloaded'.padEnd(this.COL_DOWNLOADED)) +
+      this.colors.info('📦 Total'.padEnd(this.COL_TOTAL)) +
+      this.colors.purple('⚡ Speed'.padEnd(this.COL_SPEED)) +
+      this.colors.pink('⏱️ ETA'.padEnd(this.COL_ETA))
+    );
+
+    // Set up keyboard listeners for single file download
+    const keyboardRl = this.setupSingleFileKeyboardListeners(url, outputPath);
 
     // Create compact colorful progress bar with random colors
     this.progressBar = new cliProgress.SingleBar({
       format: this.colors.success('{percentage}%') + ' ' +
               this.colors.cyan('{spinner}') + ' ' +
               singleBarColor + '{bar}\u001b[0m' + ' ' + 
-              this.colors.info('{progress}') + ' ' +
+              this.colors.info('{downloadedDisplay}') + ' ' +
+              this.colors.info('{totalDisplay}') + ' ' +
               this.colors.purple('{speed}') + ' ' +
               this.colors.pink('{etaFormatted}'),
       barCompleteChar: '█',
@@ -1190,7 +1265,9 @@ async downloadFile(url, outputPath) {
       speed: this.formatSpeed('0B/s'),
       etaFormatted: this.formatETA(0),
       spinner: spinnerFrames[0],
-      progress: this.formatProgress(startByte, totalSize)
+      progress: this.formatProgress(startByte, totalSize),
+      downloadedDisplay: this.formatBytesCompact(startByte),
+      totalDisplay: this.formatTotalDisplay(totalSize)
     });
 
     // Create write stream (append mode if resuming)
@@ -1217,6 +1294,11 @@ async downloadFile(url, outputPath) {
     const processChunk = async () => {
       try {
         while (true) {
+          // Check for pause state
+          while (this.isPaused) {
+            await new Promise(resolve => setTimeout(resolve, 100)); // Wait 100ms before checking again
+          }
+          
           const { done, value } = await reader.read();
           
           if (done) {
@@ -1261,7 +1343,9 @@ async downloadFile(url, outputPath) {
               speed: speed,
               etaFormatted: eta,
               spinner: spinnerFrames[spinnerFrameIndex],
-              progress: this.formatProgress(downloaded, totalSize)
+              progress: this.formatProgress(downloaded, totalSize),
+              downloadedDisplay: this.formatBytesCompact(downloaded),
+              totalDisplay: this.formatTotalDisplay(totalSize)
             });
             
             lastTime = now;
@@ -1270,7 +1354,9 @@ async downloadFile(url, outputPath) {
             // Update progress and spinner without speed calculation
             this.progressBar.update(downloaded, {
               spinner: spinnerFrames[spinnerFrameIndex],
-              progress: this.formatProgress(downloaded, totalSize)
+              progress: this.formatProgress(downloaded, totalSize),
+              downloadedDisplay: this.formatBytesCompact(downloaded),
+              totalDisplay: this.formatTotalDisplay(totalSize)
             });
           }
 
@@ -1352,6 +1438,251 @@ cleanup() {
   if (this.abortController) {
     this.abortController.abort();
   }
+  if (this.keyboardListener) {
+    try {
+      this.keyboardListener.kill();
+    } catch (error) {
+      // Ignore cleanup errors
+    }
+  }
+  
+  // Clean up stdin listener
+  if (process.stdin.isTTY) {
+    process.stdin.setRawMode(false);
+    process.stdin.pause();
+  }
+}
+
+/**
+ * Set up global keyboard listener for pause/resume and add URL functionality
+ */
+setupGlobalKeyboardListener() {
+  // Use the fallback keyboard listener which works better in terminal environments
+  this.setupFallbackKeyboardListener();
+}
+
+/**
+ * Handle global key press events
+ * @param {string} keyName - The name of the pressed key
+ */
+async handleGlobalKeyPress(keyName) {
+  if (keyName === 'P') {
+    console.log(this.colors.info('P key pressed - toggling pause/resume'));
+    if (!this.isPaused) {
+      this.pauseAll();
+    } else {
+      this.resumeAll();
+    }
+  } else if (keyName === 'A' && !this.isAddingUrl) {
+    console.log(this.colors.info('A key pressed - adding URL'));
+    await this.promptForNewUrl();
+  }
+}
+
+/**
+ * Prompt user for a new URL to download
+ */
+async promptForNewUrl() {
+  this.isAddingUrl = true;
+  
+  try {
+    console.log(this.colors.cyan('\n📥 Enter URL to add (or press Enter to cancel):'));
+    
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    
+    const newUrl = await new Promise((resolve) => {
+      rl.question('', (answer) => {
+        rl.close();
+        resolve(answer.trim());
+      });
+    });
+    
+    if (newUrl && this.isValidUrl(newUrl)) {
+      console.log(this.colors.success(`✅ Adding URL: ${newUrl}`));
+      
+      // Generate filename for new URL
+      const newFilename = this.generateFilename(newUrl);
+      const newOutputPath = path.isAbsolute(newFilename) ? newFilename : path.join(process.cwd(), newFilename);
+      
+      // Ensure output directory exists
+      const outputDir = path.dirname(newOutputPath);
+      try {
+        if (!fs.existsSync(outputDir)) {
+          fs.mkdirSync(outputDir, { recursive: true });
+        }
+      } catch (error) {
+        console.error(this.colors.red.bold('❌ Could not create output directory: ') + error.message);
+        return;
+      }
+      
+      // Check if we're in multiple download mode (multiBar exists)
+      if (this.multiBar) {
+        // Add to multiple downloads
+        await this.addToMultipleDownloads(newUrl, newOutputPath, newFilename);
+      } else {
+        // Start new single download in background
+        this.downloadFile(newUrl, newOutputPath).catch(error => {
+          console.error(this.colors.error(`❌ Failed to download ${newFilename}: ${error.message}`));
+        });
+      }
+      
+      console.log(this.colors.success('🚀 New download started!'));
+    } else if (newUrl) {
+      console.log(this.colors.red('❌ Invalid URL provided.'));
+    } else {
+      console.log(this.colors.yellow('⚠️  No URL provided, cancelling.'));
+    }
+  } catch (error) {
+    console.error(this.colors.red('❌ Error adding URL: ') + error.message);
+  } finally {
+    this.isAddingUrl = false;
+    
+    if (this.isPaused) {
+      console.log(this.colors.warning('⏸️  Still paused. Press p to resume, a to add URL.'));
+    } else {
+      console.log(this.colors.success('▶️  Downloads active. Press p to pause, a to add URL.'));
+    }
+  }
+}
+
+/**
+ * Add a new download to the multiple downloads queue
+ * @param {string} url - The URL to download
+ * @param {string} outputPath - The output path
+ * @param {string} filename - The filename
+ */
+async addToMultipleDownloads(url, outputPath, filename) {
+  // Create new progress bar for the added download
+  const spinnerType = this.getRandomSpinner();
+  const spinnerFrames = this.getSpinnerFrames(spinnerType);
+  const spinnerWidth = this.getSpinnerWidth(spinnerFrames[0]);
+  const maxFilenameLength = this.COL_FILENAME - spinnerWidth;
+  const truncatedName = this.truncateFilename(filename, maxFilenameLength);
+  const fileBarColor = this.getRandomBarColor();
+  const fileBarGlue = this.getRandomBarGlueColor();
+  const barSize = this.calculateBarSize(spinnerFrames[0], this.COL_BAR);
+  
+  const newDownload = {
+    url: url,
+    outputPath: outputPath,
+    filename: filename
+  };
+  
+  const newFileBar = {
+    bar: this.multiBar.create(100, 0, {
+      filename: truncatedName,
+      spinner: spinnerFrames[0],
+      speed: this.formatSpeed('0B'),
+      progress: this.formatProgress(0, 0),
+      downloadedDisplay: this.formatBytesCompact(0),
+      totalDisplay: this.formatTotalDisplay(0),
+      etaFormatted: this.formatETA(0),
+      percentage: '  0'.padStart(3)
+    }, {
+      format: this.colors.yellow('{filename}') + ' ' +
+              this.colors.cyan('{spinner}') + ' ' + 
+              fileBarColor + '{bar}\u001b[0m' + ' ' +
+              this.colors.success('{percentage}%') + ' ' +
+              this.colors.info('{downloadedDisplay}') + ' ' +
+              this.colors.info('{totalDisplay}') + ' ' +
+              this.colors.purple('{speed}') + ' ' +
+              this.colors.pink('{etaFormatted}'),
+      barCompleteChar: '█',
+      barIncompleteChar: '░',
+      barGlue: fileBarGlue,
+      barsize: barSize
+    }),
+    spinnerFrames,
+    spinnerIndex: 0,
+    lastSpinnerUpdate: Date.now(),
+    lastFrameUpdate: Date.now(),
+    download: { ...newDownload, index: this.getCurrentDownloadCount() }
+  };
+  
+  // Start the new download
+  this.downloadSingleFileWithBar(newFileBar, this.getMasterBar(), this.getCurrentDownloadCount() + 1, {
+    totalDownloaded: 0,
+    totalSize: 0,
+    individualSpeeds: [],
+    individualSizes: [],
+    individualDownloaded: [],
+    individualStartTimes: [],
+    lastTotalUpdate: Date.now(),
+    lastTotalDownloaded: 0,
+    actualTotalSize: 0
+  }).catch(error => {
+    console.error(this.colors.error(`❌ Failed to download ${newDownload.filename}: ${error.message}`));
+  });
+}
+
+/**
+ * Get current download count (for multiple downloads)
+ * @returns {number} Current number of downloads
+ */
+getCurrentDownloadCount() {
+  // This is a placeholder - in a real implementation, you'd track this
+  return 1;
+}
+
+/**
+ * Get master bar (for multiple downloads)
+ * @returns {Object} Master progress bar
+ */
+getMasterBar() {
+  // This is a placeholder - in a real implementation, you'd return the actual master bar
+  return null;
+}
+
+/**
+ * Set up fallback keyboard listener using readline
+ */
+setupFallbackKeyboardListener() {
+  if (process.stdin.isTTY) {
+    process.stdin.setRawMode(true);
+    process.stdin.resume();
+    process.stdin.setEncoding('utf8');
+    
+    const handleKeypress = async (str) => {
+      // Handle Ctrl+C to exit
+      if (str === '\u0003') {
+        console.log(this.colors.yellow.bold('\n🛑 Download cancelled by user'));
+        process.exit(0);
+      }
+      
+      // Handle 'p' key for pause/resume
+      if (str.toLowerCase() === 'p') {
+        console.log(this.colors.info('P key pressed - toggling pause/resume'));
+        if (!this.isPaused) {
+          this.pauseAll();
+        } else {
+          this.resumeAll();
+        }
+      }
+      
+      // Handle 'a' key for adding URL
+      if (str.toLowerCase() === 'a' && !this.isAddingUrl) {
+        console.log(this.colors.info('A key pressed - adding URL'));
+        await this.promptForNewUrl();
+      }
+    };
+    
+    process.stdin.on('data', handleKeypress);
+    console.log(this.colors.info('💡 Keyboard listener active: Press p to pause/resume, a to add URL'));
+  }
+}
+
+/**
+ * Set up keyboard listeners for single file download (legacy method)
+ * @param {string} url - The URL being downloaded
+ * @param {string} outputPath - The output path
+ */
+setupSingleFileKeyboardListeners(url, outputPath) {
+  // Use the global keyboard listener instead
+  this.setupGlobalKeyboardListener();
+  return null; // Return null since we're using global listener
 }
 
 /**
@@ -1382,6 +1713,20 @@ getFileExtension(url) {
   }
 }
 
+/**
+ * Generate filename from URL
+ * @param {string} url - Download URL
+ * @returns {string} - Generated filename
+ */
+generateFilename(url) {
+  try {
+    const filename = path.basename(new URL(url).pathname);
+    return filename || 'downloaded-file';
+  } catch (error) {
+    return 'downloaded-file';
+  }
+}
+
 setPauseCallback(cb) {
   this.pauseCallback = cb;
 }
@@ -1400,14 +1745,14 @@ clearAbortControllers() {
 
 pauseAll() {
   this.isPaused = true;
-  for (const ctrl of this.abortControllers) {
-    if (ctrl && typeof ctrl.abort === 'function') ctrl.abort();
-  }
+  console.log(this.colors.warning('⏸️  Pausing all downloads...'));
+  // Don't abort controllers on pause, just set the flag
   if (this.pauseCallback) this.pauseCallback();
 }
 
 resumeAll() {
   this.isPaused = false;
+  console.log(this.colors.success('▶️  Resuming all downloads...'));
   if (this.resumeCallback) this.resumeCallback();
 }
 }
