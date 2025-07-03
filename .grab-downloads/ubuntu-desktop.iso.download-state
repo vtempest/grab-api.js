@@ -1,0 +1,9 @@
+{
+  "url": "https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-desktop-amd64.iso",
+  "outputPath": "/home/deck/Projects/grab-api.js/test-downloads/ubuntu-desktop.iso",
+  "totalSize": 6343219200,
+  "startByte": 0,
+  "lastModified": "Sat, 15 Feb 2025 09:16:38 GMT",
+  "etag": "\"17a15d800-62e2abf9a4af3\"",
+  "timestamp": "2025-07-03T10:27:54.037Z"
+}

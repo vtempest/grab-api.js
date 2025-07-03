@@ -1,53 +1,58 @@
 {
   "docusaurus-plugin-content-docs": {
     "default": {
-      "path": "/",
+      "path": "/docs/",
       "versions": [
         {
           "name": "current",
           "label": "Next",
           "isLast": true,
-          "path": "/",
+          "path": "/docs/",
           "mainDocId": "index",
           "docs": [
             {
               "id": "guide/Comparisons",
-              "path": "/guide/Comparisons",
+              "path": "/docs/guide/Comparisons",
+              "sidebar": "default"
+            },
+            {
+              "id": "guide/Docs Libraries",
+              "path": "/docs/guide/Docs Libraries",
               "sidebar": "default"
             },
             {
               "id": "guide/Examples",
-              "path": "/guide/Examples",
+              "path": "/docs/guide/Examples",
               "sidebar": "default"
             },
             {
               "id": "guide/Performance",
-              "path": "/guide/Performance",
+              "path": "/docs/guide/Performance",
               "sidebar": "default"
             },
             {
               "id": "index",
-              "path": "/",
+              "path": "/docs/",
               "sidebar": "lib"
             },
             {
               "id": "lib/grab-api",
-              "path": "/lib/grab-api",
+              "path": "/docs/lib/grab-api",
               "sidebar": "default"
             },
             {
               "id": "lib/log",
-              "path": "/lib/log",
+              "path": "/docs/lib/log",
               "sidebar": "default"
             },
             {
               "id": "lib/modules",
-              "path": "/lib/modules",
+              "path": "/docs/lib/modules",
               "sidebar": "default"
             },
             {
               "id": "lib/README",
-              "path": "/lib/",
+              "path": "/docs/lib/",
               "sidebar": "default"
             }
           ],
@@ -55,19 +60,19 @@
           "sidebars": {
             "lib": {
               "link": {
-                "path": "/guide/Examples",
+                "path": "/docs/guide/Examples",
                 "label": "guide/Examples"
               }
             },
             "guide": {
               "link": {
-                "path": "/guide/Examples",
+                "path": "/docs/guide/Examples",
                 "label": "guide/Examples"
               }
             },
             "default": {
               "link": {
-                "path": "/guide/Examples",
+                "path": "/docs/guide/Examples",
                 "label": "guide/Examples"
               }
             }
@@ -89,8 +94,8 @@
   "docusaurus-lunr-search": {
     "default": {
       "fileNames": {
-        "searchDoc": "search-doc-1749611025275.json",
-        "lunrIndex": "lunr-index-1749611025275.json"
+        "searchDoc": "search-doc-1751354810521.json",
+        "lunrIndex": "lunr-index-1751354810521.json"
       }
     }
   }

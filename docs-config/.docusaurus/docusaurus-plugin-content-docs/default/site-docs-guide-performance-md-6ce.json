@@ -5,7 +5,7 @@
   "source": "@site/docs/guide/Performance.md",
   "sourceDirName": "guide",
   "slug": "/guide/Performance",
-  "permalink": "/guide/Performance",
+  "permalink": "/docs/guide/Performance",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/vtempest/grab-api.js/blob/main/docs/guide/Performance.md",
@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "default",
   "previous": {
-    "title": "Comparisons",
-    "permalink": "/guide/Comparisons"
+    "title": "Documentation Frameworks Comparison: Features and Plugins Guide",
+    "permalink": "/docs/guide/Docs Libraries"
   },
   "next": {
     "title": "README",
-    "permalink": "/lib/"
+    "permalink": "/docs/lib/"
   }
 }

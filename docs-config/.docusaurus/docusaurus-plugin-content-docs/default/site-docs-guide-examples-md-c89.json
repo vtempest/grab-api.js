@@ -5,7 +5,7 @@
   "source": "@site/docs/guide/Examples.md",
   "sourceDirName": "guide",
   "slug": "/guide/Examples",
-  "permalink": "/guide/Examples",
+  "permalink": "/docs/guide/Examples",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/vtempest/grab-api.js/blob/main/docs/guide/Examples.md",
@@ -19,6 +19,6 @@
   "sidebar": "default",
   "next": {
     "title": "Comparisons",
-    "permalink": "/guide/Comparisons"
+    "permalink": "/docs/guide/Comparisons"
   }
 }

@@ -3,62 +3,68 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 
 export default [
   {
-    path: '/',
-    component: ComponentCreator('/', 'a07'),
+    path: '/docs/',
+    component: ComponentCreator('/docs/', 'ad1'),
     routes: [
       {
-        path: '/',
-        component: ComponentCreator('/', '3a2'),
+        path: '/docs/',
+        component: ComponentCreator('/docs/', '2e8'),
         routes: [
           {
-            path: '/',
-            component: ComponentCreator('/', '46e'),
+            path: '/docs/',
+            component: ComponentCreator('/docs/', '4a8'),
             routes: [
               {
-                path: '/guide/Comparisons',
-                component: ComponentCreator('/guide/Comparisons', '9f7'),
+                path: '/docs/guide/Comparisons',
+                component: ComponentCreator('/docs/guide/Comparisons', '79d'),
                 exact: true,
                 sidebar: "default"
               },
               {
-                path: '/guide/Examples',
-                component: ComponentCreator('/guide/Examples', '937'),
+                path: '/docs/guide/Docs Libraries',
+                component: ComponentCreator('/docs/guide/Docs Libraries', 'f66'),
                 exact: true,
                 sidebar: "default"
               },
               {
-                path: '/guide/Performance',
-                component: ComponentCreator('/guide/Performance', '0d2'),
+                path: '/docs/guide/Examples',
+                component: ComponentCreator('/docs/guide/Examples', '9de'),
                 exact: true,
                 sidebar: "default"
               },
               {
-                path: '/lib/',
-                component: ComponentCreator('/lib/', '6e8'),
+                path: '/docs/guide/Performance',
+                component: ComponentCreator('/docs/guide/Performance', 'a24'),
                 exact: true,
                 sidebar: "default"
               },
               {
-                path: '/lib/grab-api',
-                component: ComponentCreator('/lib/grab-api', 'b2d'),
+                path: '/docs/lib/',
+                component: ComponentCreator('/docs/lib/', '7f8'),
                 exact: true,
                 sidebar: "default"
               },
               {
-                path: '/lib/log',
-                component: ComponentCreator('/lib/log', 'e76'),
+                path: '/docs/lib/grab-api',
+                component: ComponentCreator('/docs/lib/grab-api', '8a7'),
                 exact: true,
                 sidebar: "default"
               },
               {
-                path: '/lib/modules',
-                component: ComponentCreator('/lib/modules', '6f1'),
+                path: '/docs/lib/log',
+                component: ComponentCreator('/docs/lib/log', 'afe'),
                 exact: true,
                 sidebar: "default"
               },
               {
-                path: '/',
-                component: ComponentCreator('/', '9bd'),
+                path: '/docs/lib/modules',
+                component: ComponentCreator('/docs/lib/modules', '9e6'),
+                exact: true,
+                sidebar: "default"
+              },
+              {
+                path: '/docs/',
+                component: ComponentCreator('/docs/', '83b'),
                 exact: true,
                 sidebar: "lib"
               }

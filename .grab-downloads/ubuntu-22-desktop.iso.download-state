@@ -1,0 +1,9 @@
+{
+  "url": "https://releases.ubuntu.com/22.04.5/ubuntu-22.04.5-desktop-amd64.iso",
+  "outputPath": "/home/deck/Projects/grab-api.js/test-downloads/ubuntu-22-desktop.iso",
+  "totalSize": 4762707968,
+  "startByte": 0,
+  "lastModified": "Wed, 11 Sep 2024 14:38:59 GMT",
+  "etag": "\"11be12800-621d8f35d301f\"",
+  "timestamp": "2025-07-03T10:27:54.343Z"
+}

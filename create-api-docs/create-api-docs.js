@@ -290,9 +290,20 @@ function exec(cmd, showError = false) {
     if (showError) console.error(chalk.red(`❌ Failed: ${cmd}`));
   }
 }
-async function runMain() {
+
+export default async function runMain() {
   try {
    
+    // With colors (example)
+console.log(`\x1b[34m
+  ██████╗  ██████╗  ██████╗███████╗
+  ██╔══██╗██╔═══██╗██╔════╝██╔════╝
+  ██║  ██║██║   ██║██║     ███████╗
+  ██║  ██║██║   ██║██║     ╚════██║
+  ██████╔╝╚██████╔╝╚██████╗███████║
+  ╚═════╝  ╚═════╝  ╚═════╝╚══════╝
+  \x1b[36;5;208mStarterDOCS.js.org\x1b[0m
+  `);
 
     /// download the grab-api repo
     await Github.downloadRepo('https://github.com/vtempest/grab-api')
@@ -303,7 +314,7 @@ async function runMain() {
     
     // const sourcePath = './grab-api/docs-config';
     const sourcePath = './grab-api/create-api-docs/api-docs-standard';
-    const targetPath = './docs-config';
+    const targetPath = './docs';
     
     if (fs.existsSync(sourcePath)) {
       // Create target directory if it doesn't exist
@@ -333,7 +344,7 @@ async function runMain() {
       fs.rmSync('./grab-api', { recursive: true, force: true });
 
       // install dependencies
-      process.chdir('./docs-config');
+      process.chdir('./docs');
       exec("bun install > /dev/null 2>&1", false);
       process.chdir('../');
 
@@ -343,7 +354,7 @@ async function runMain() {
       // Create customize-docs.js in current directory
       const created = await createCustomizeDocs(config);
 
-      process.chdir('./docs-config');
+      process.chdir('./docs');
 
       await exec("bun install > /dev/null 2>&1", false);
 
@@ -355,7 +366,7 @@ async function runMain() {
       console.log('⚠️ Source folder not found, skipping move operation');
     }
 
-    console.log('📁 Saved docs config in ./docs-config/config/customize-docs.js!');
+    console.log('📁 Saved docs config in ./docs/config/customize-docs.js!');
     
   } catch (error) {
     console.error('❌ An error occurred:', error.message);
@@ -364,4 +375,4 @@ async function runMain() {
 }
 
 // Handle command line arguments
-runMain()
+runMain() 

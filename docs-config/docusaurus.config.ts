@@ -59,6 +59,7 @@ export default async function createConfig(options: any = {}) {
     tsconfig = "./tsconfig.json",
     readme = "../readme.md",
     sanitizeComments = false,
+    enableFasterBuildV4 = true,
     appLogoURL = "/apple-touch-icon.png",
   } = options;
 
@@ -68,6 +69,12 @@ export default async function createConfig(options: any = {}) {
   // subdomain like docprojects.user.github.io
   // sanitizeComments helps avoid errors in markdown like <> {} etc
   return {
+    future: enableFasterBuildV4 ? {
+      v4: {
+        removeLegacyPostBuildHeadAttribute: true, // REQUIRED for ssgWorkerThreads
+      },
+      experimental_faster: true,
+    } : undefined,
     title: name + " API Routes Docs",
     url: domain,
     baseUrl: usePathSlashDocs ? "/docs" : "/",

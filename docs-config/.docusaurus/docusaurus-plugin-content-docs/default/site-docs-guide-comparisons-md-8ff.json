@@ -5,7 +5,7 @@
   "source": "@site/docs/guide/Comparisons.md",
   "sourceDirName": "guide",
   "slug": "/guide/Comparisons",
-  "permalink": "/guide/Comparisons",
+  "permalink": "/docs/guide/Comparisons",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/vtempest/grab-api.js/blob/main/docs/guide/Comparisons.md",
@@ -15,10 +15,10 @@
   "sidebar": "default",
   "previous": {
     "title": "Request Stategies",
-    "permalink": "/guide/Examples"
+    "permalink": "/docs/guide/Examples"
   },
   "next": {
-    "title": "Performance",
-    "permalink": "/guide/Performance"
+    "title": "Documentation Frameworks Comparison: Features and Plugins Guide",
+    "permalink": "/docs/guide/Docs Libraries"
   }
 }

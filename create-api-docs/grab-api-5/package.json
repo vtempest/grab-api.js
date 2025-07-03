@@ -1,0 +1,69 @@
+{
+  "name": "grab-api.js",
+  "description": "Generate Request to API from Browser",
+  "type": "module",
+  "version": "0.9.131",
+  "author": "vtempest",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vtempest/GRAB-API"
+  },
+  "main": "./dist/grab-api.cjs.js",
+  "types": "./dist/grab-api.d.ts",
+  "module": "./dist/grab-api.es.js",
+  "bin": {
+    "grab": "./src/grab-cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/grab-api.d.ts",
+      "import": "./dist/grab-api.es.js",
+      "require": "./dist/grab-api.cjs.js"
+    },
+    "./icons": {
+      "types": "./dist/icons.d.ts",
+      "import": "./dist/icons.es.js",
+      "require": "./dist/icons.cjs.js"
+    },
+    "./icons/*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js",
+      "require": "./dist/*.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "make": "npm run make:icons; npm run make:docs; npm run make:main",
+    "make:docs": "cd docs-config && npm run make:docs",
+    "make:icons": "npx export-svg-typescript@latest -i ./src/icons -o ./src/icons/index.ts",
+    "make:main": "vite build",
+    "ship": "npx standard-version --release-as patch; npm publish",
+    "check": "vitest --ui",
+    "docs": "cd docs-config && npm run docs",
+    "demo": "bun src/grab-cli.js https://raw.githubusercontent.com/vtempest/ai-research-agent/refs/heads/master/packages/ai-research-agent/src/wordlists/dictionary-index-152k.json"
+  },
+  "devDependencies": {
+    "@vitest/ui": "^3.1.4",
+    "export-svg-typescript": "^0.1.6",
+    "terser": "^5.40.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^3.1.4"
+  },
+  "keywords": [
+    "api",
+    "axios",
+    "request",
+    "browser",
+    "tanstack",
+    "query",
+    "post",
+    "mock-api",
+    "fetch",
+    "http"
+  ]
+}

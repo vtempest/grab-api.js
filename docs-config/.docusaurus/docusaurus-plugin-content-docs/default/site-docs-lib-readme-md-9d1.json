@@ -5,7 +5,7 @@
   "source": "@site/docs/lib/README.md",
   "sourceDirName": "lib",
   "slug": "/lib/",
-  "permalink": "/lib/",
+  "permalink": "/docs/lib/",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/vtempest/grab-api.js/blob/main/docs/lib/README.md",
@@ -15,10 +15,10 @@
   "sidebar": "default",
   "previous": {
     "title": "Performance",
-    "permalink": "/guide/Performance"
+    "permalink": "/docs/guide/Performance"
   },
   "next": {
     "title": "grab-api",
-    "permalink": "/lib/grab-api"
+    "permalink": "/docs/lib/grab-api"
   }
 }

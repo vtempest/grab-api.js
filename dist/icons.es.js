@@ -68,12 +68,14 @@ const loadingSquareBlocks = (options = {}) => customSVG(
 );
 function customSVG(options, svgString) {
   const { colors = [], width, height, size, raw = false } = options;
-  const widthMatch = svgString.match(/width="(d+)"/);
-  const heightMatch = svgString.match(/height="(d+)"/);
+  const widthMatch = svgString.match(/width="[^"]*"/);
+  const heightMatch = svgString.match(/height="[^"]*"/);
   const finalWidth = size || width || (widthMatch == null ? void 0 : widthMatch[1]) || "100";
   const finalHeight = size || height || (heightMatch == null ? void 0 : heightMatch[1]) || "100";
-  svgString = svgString.replace(/width="[^"]*"/g, `width="${finalWidth}"`);
-  svgString = svgString.replace(/height="[^"]*"/g, `height="${finalHeight}"`);
+  if (width || height || size) {
+    svgString = svgString.replace(/width="[^"]*"/, `width="${finalWidth}px"`);
+    svgString = svgString.replace(/height="[^"]*"/, `height="${finalHeight}px"`);
+  }
   if (colors && colors.length > 0) {
     const hexColorRegex = /#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}/g;
     let colorIndex = 0;
@@ -87,7 +89,7 @@ function customSVG(options, svgString) {
     });
   }
   if (!raw)
-    svgString = `<img alt="icon" src="data:image/svg+xml;utf8,${encodeURIComponent(svgString)}" />`;
+    svgString = (width || height || size ? `<img width="${finalWidth}" height="${finalHeight}"` : "<img") + ` alt="icon" src="data:image/svg+xml;utf8,${encodeURIComponent(svgString)}" />`;
   return svgString;
 }
 export {

@@ -1,3 +1,31 @@
+declare const colors: {
+    reset: string;
+    black: string;
+    red: string;
+    green: string;
+    yellow: string;
+    blue: string;
+    magenta: string;
+    cyan: string;
+    white: string;
+    gray: string;
+    brightRed: string;
+    brightGreen: string;
+    brightYellow: string;
+    brightBlue: string;
+    brightMagenta: string;
+    brightCyan: string;
+    brightWhite: string;
+    bgRed: string;
+    bgGreen: string;
+    bgYellow: string;
+    bgBlue: string;
+    bgMagenta: string;
+    bgCyan: string;
+    bgWhite: string;
+    bgGray: string;
+};
+
 /**
  * TODO
  *  - react tests
@@ -13,8 +41,8 @@
  * ### GRAB: Generate Request to API from Browser
  * ![GrabAPILogo](https://i.imgur.com/qrQWkeb.png)
  *
- * **GRAB is the FBEST Request Manager: Functionally Brilliant, Elegantly Simple Tool**
- * 1. **One Function**: 3Kb min, 0 dependencies, minimalist syntax, [more features than top alternatives](https://grab.js.org/guide/Comparisons)
+ * 1. **GRAB is the FBEST Request Manager: Functionally Brilliant, Elegantly Simple Tool**: One Function, no dependencies,
+ *    minimalist syntax, [more features than alternatives](https://grab.js.org/guide/Comparisons)
  * 2. **Auto-JSON Convert**: Pass parameters and get response or error in JSON, handling other data types as is.
  * 3. **isLoading Status**: Sets `.isLoading=true` on the pre-initialized response object so you can show a "Loading..." in any framework
  * 4. **Debug Logging**: Adds global `log()` and prints colored JSON structure, response, timing for requests in test.
@@ -237,22 +265,33 @@ export declare type GrabResponse<TResponse = any> = TResponse & {
  * prints JSON with description of structure layout,
  * and showing debug output in development only.
  * @param {string|object} message - The message to log. If an object is provided, it will be stringified.
- * @param {string|string[]} [options.style] default='color: blue; font-size: 12pt;' - CSS style string
+ * @param {string|string[]} [options.style] default='color: blue; font-size: 11pt;' - CSS style string
  * @param {boolean} [options.hideInProduction] -  default = auto-detects based on hostname.
  *  If true, uses `console.debug` (hidden in production). If false, uses `console.log`.
  *
  */
-declare function log_2(message?: string, options?: any): boolean;
+declare function log_2(message?: string, options?: LogOptions): boolean;
 export { log_2 as log }
 
 export declare interface LogFunction {
     /**
      * Log messages with custom styling
      * @param message - Message to log (string or object)
-     * @param style - CSS style string for console output
-     * @param hideInProduction - Whether to hide in production (auto-detected if undefined)
      */
-    (message: string | object, style?: string, hideInProduction?: boolean): void;
+    (message: string | object, options?: LogOptions): void;
+}
+
+declare interface LogOptions {
+    /** CSS style string or array of CSS strings for browser console styling */
+    style?: string | string[];
+    /** Optional color name or code for terminal environments */
+    color?: keyof typeof colors | null;
+    /** If true, hides log in production (auto-detects by hostname if undefined) */
+    hideInProduction?: boolean;
+    /** Start a spinner (for CLI tools, optional) */
+    startSpinner?: boolean;
+    /** Stop a spinner (for CLI tools, optional) */
+    stopSpinner?: boolean;
 }
 
 /**

@@ -1,0 +1,9 @@
+{
+  "url": "https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-live-server-amd64.iso",
+  "outputPath": "/home/deck/Projects/grab-api.js/test-downloads/ubuntu-server.iso",
+  "totalSize": 3213064192,
+  "startByte": 0,
+  "lastModified": "Sun, 16 Feb 2025 22:49:40 GMT",
+  "etag": "\"bf837800-62e4a391dc969\"",
+  "timestamp": "2025-07-03T10:27:54.048Z"
+}

@@ -14,7 +14,7 @@
      <a href="https://github.com/vtempest/grab-api/discussions">
      <img alt="GitHub Stars" src="https://img.shields.io/github/stars/vtempest/grab-api" /></a>
    <a href="https://npmjs.org/package/grab-api.js"><img alt="NPM Version" src="https://img.shields.io/npm/v/grab-api.js" /></a>
-    <a href="https://bundlephobia.com/package/grab-api.js"><img src="https://img.shields.io/bundlephobia/minzip/grab-api.js"></a>
+    <a href="https://bundlephobia.com/package/grab-api.js"><img src="https://img.shields.io/bundlephobia/minzip/grab-api.js" /></a>
     <a href="https://github.com/vtempest/grab-API/discussions"><img alt="GitHub Discussions"
         src="https://img.shields.io/github/discussions/vtempest/grab-API" /></a>
     <a href="https://github.blog/developer-skills/github/beginners-guide-to-github-creating-a-pull-request/"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/></a>

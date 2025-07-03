@@ -4,9 +4,30 @@
  * Modify the docusaurus.config.js file at your site's root instead.
  */
 export default {
+  "future": {
+    "v4": {
+      "removeLegacyPostBuildHeadAttribute": true,
+      "useCssCascadeLayers": false
+    },
+    "experimental_faster": {
+      "swcJsLoader": true,
+      "swcJsMinimizer": true,
+      "swcHtmlMinimizer": true,
+      "lightningCssMinimizer": true,
+      "mdxCrossCompilerCache": true,
+      "rspackBundler": true,
+      "rspackPersistentCache": true,
+      "ssgWorkerThreads": true
+    },
+    "experimental_storage": {
+      "type": "localStorage",
+      "namespace": false
+    },
+    "experimental_router": "browser"
+  },
   "title": "GRAB-API API Routes Docs",
   "url": "https://grab.js.org",
-  "baseUrl": "/",
+  "baseUrl": "/docs/",
   "onBrokenLinks": "ignore",
   "onBrokenMarkdownLinks": "ignore",
   "favicon": "/favicon.ico",
@@ -292,27 +313,6 @@ export default {
       "en"
     ],
     "localeConfigs": {}
-  },
-  "future": {
-    "v4": {
-      "removeLegacyPostBuildHeadAttribute": false,
-      "useCssCascadeLayers": false
-    },
-    "experimental_faster": {
-      "swcJsLoader": false,
-      "swcJsMinimizer": false,
-      "swcHtmlMinimizer": false,
-      "lightningCssMinimizer": false,
-      "mdxCrossCompilerCache": false,
-      "rspackBundler": false,
-      "rspackPersistentCache": false,
-      "ssgWorkerThreads": false
-    },
-    "experimental_storage": {
-      "type": "localStorage",
-      "namespace": false
-    },
-    "experimental_router": "browser"
   },
   "onBrokenAnchors": "warn",
   "onDuplicateRoutes": "warn",

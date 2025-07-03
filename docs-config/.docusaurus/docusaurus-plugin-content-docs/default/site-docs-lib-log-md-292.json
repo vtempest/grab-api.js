@@ -5,7 +5,7 @@
   "source": "@site/docs/lib/log.md",
   "sourceDirName": "lib",
   "slug": "/lib/log",
-  "permalink": "/lib/log",
+  "permalink": "/docs/lib/log",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/vtempest/grab-api.js/blob/main/docs/lib/log.md",
@@ -15,10 +15,10 @@
   "sidebar": "default",
   "previous": {
     "title": "grab-api",
-    "permalink": "/lib/grab-api"
+    "permalink": "/docs/lib/grab-api"
   },
   "next": {
     "title": "modules",
-    "permalink": "/lib/modules"
+    "permalink": "/docs/lib/modules"
   }
 }
