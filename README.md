@@ -1,11 +1,7 @@
 <p align="center">
         <img  src="https://i.imgur.com/xzFQmrD.jpeg" />
-<h3 align="center">
-   <a href="https://grab.js.org">📑 Docs</a>
-  <a href="https://grab.js.org/docs/examples">🎯 Examples</a>
-</h3>
-<p align="center">
-  <a href="https://grab.js.org"><img src="https://i.imgur.com/EWze7Ew.png" height="20" alt="grab.js.org" /></a>
+<br />
+        <a href="https://grab.js.org"><img src="https://i.imgur.com/EWze7Ew.png" height="20" alt="grab.js.org" /></a>
     <a href="https://deepwiki.com/vtempest/GRAB-URL"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
     <a href="https://grab.js.org"><img src="https://img.shields.io/badge/Docs-blue?logo=ReadTheDocs&logoColor=white" alt="Documentation" /></a>
     <a href="https://github.com/vtempest/GRAB-URL/discussions"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/vtempest/GRAB-URL" /></a>
