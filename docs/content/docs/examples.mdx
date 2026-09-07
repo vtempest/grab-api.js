@@ -40,6 +40,13 @@ await grab("users", {
 });
 ```
 
+<StackBlitzExample
+  title="Run the basic request example"
+  description="GET, query params, and POST in a minimal Vite + TypeScript project."
+  github="OpenSourceAGI/GRAB-URL/tree/master/examples/basic-request"
+  openFile="src/main.ts"
+/>
+
 ### Reactive Loading Status
 
 
@@ -76,6 +83,13 @@ function UserProfile() {
   );
 }
 ```
+
+<StackBlitzExample
+  title="Run the React example"
+  description="A UserProfile component populated with grab's reactive `response` option."
+  github="OpenSourceAGI/GRAB-URL/tree/master/examples/reactive-react"
+  openFile="src/App.tsx"
+/>
 
 </Tab>
 
@@ -124,6 +138,13 @@ function UserProfile() {
 {/if}
 ```
 
+<StackBlitzExample
+  title="Run the Svelte example"
+  description="Svelte 5 runes driving grab's reactive `response` option."
+  github="OpenSourceAGI/GRAB-URL/tree/master/examples/reactive-svelte"
+  openFile="src/App.svelte"
+/>
+
 </Tab>
 <Tab value="Vue" >
 ```javascript
@@ -171,6 +192,13 @@ const searchUsers = async () => {
 };
 </script>
 ```
+
+<StackBlitzExample
+  title="Run the Vue example"
+  description="A search-as-you-type list backed by grab's reactive `response` option."
+  github="OpenSourceAGI/GRAB-URL/tree/master/examples/reactive-vue"
+  openFile="src/App.vue"
+/>
 
 </Tab>
 </Tabs>
@@ -397,3 +425,14 @@ function fileToBase64(file) {
   });
 }
 ```
+
+### Run the full cookbook
+
+Debounced search, client-side caching, rate limiting, retry with error handling, request interceptors, and file upload, all wired up in one runnable project.
+
+<StackBlitzExample
+  title="Open the grab-url cookbook"
+  description="Every feature above, wired to real inputs against a public demo API."
+  github="OpenSourceAGI/GRAB-URL/tree/master/examples/cookbook"
+  openFile="src/main.ts"
+/>
