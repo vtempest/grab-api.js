@@ -1,7 +1,5 @@
 <p align="center">
-        <img  src="https://i.imgur.com/xzFQmrD.jpeg" />
-<br />
-        <a href="https://grab.js.org"><img src="https://i.imgur.com/m7UyxgV.png" height="20" alt="grab.js.org" /></a>
+        <a href="https://grab.js.org"><img src="https://i.imgur.com/WCQzM85.png" height="20" alt="grab.js.org" /></a>
     <a href="https://deepwiki.com/vtempest/GRAB-URL"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
     <a href="https://grab.js.org"><img src="https://img.shields.io/badge/Docs-blue?logo=ReadTheDocs&logoColor=white" alt="Documentation" /></a>
     <a href="https://github.com/vtempest/GRAB-URL/discussions"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/vtempest/GRAB-URL" /></a>
@@ -19,6 +17,8 @@
   <a href="https://npmjs.org/package/grab-url"><img alt="NPM Version" src="https://img.shields.io/npm/v/grab-url" /></a>
   <a href="https://github.com/vtempest/GRAB-URL/discussions"><img alt="GitHub Discussions" src="https://img.shields.io/github/discussions/vtempest/GRAB-URL" /></a>
   <a href="https://codespaces.new/vtempest/GRAB-URL"><img src="https://github.com/codespaces/badge.svg" width="150" height="20" alt="GitHub Codespaces" /></a>
+<br />
+   <img  src="https://i.imgur.com/xzFQmrD.jpeg" />
 </p>
 
 ```bash
