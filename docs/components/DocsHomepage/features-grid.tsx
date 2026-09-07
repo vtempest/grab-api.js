@@ -24,6 +24,9 @@ import {
   Network,
   Play,
   FlaskConical,
+  PackageOpen,
+  Braces,
+  Webhook,
 } from "lucide-react"
 
 const features = [
@@ -127,6 +130,21 @@ const features = [
     title: "Repeat & Poll",
     description: "Repeat request X times or poll every X seconds for live updates.",
   },
+  {
+    icon: PackageOpen,
+    title: "Auto-Unzip",
+    description: "Automatically extracts ZIP responses into { data: { filename: content } }. Set unzip: false to disable.",
+  },
+  {
+    icon: Braces,
+    title: "DOM Parsing",
+    description: "Automatically parses HTML responses. Pass dom: \"selector\" for CSS extraction or dom: false to disable.",
+  },
+  {
+    icon: Webhook,
+    title: "OpenAPI SDKs",
+    description: "Generate a typed client or MCP server from any OpenAPI spec — every endpoint gets caching, retries and mocks.",
+  },
 ]
 
 export function FeaturesGrid() {
@@ -150,7 +168,7 @@ export function FeaturesGrid() {
               GRAB is the FBEST Request Manager: Functionally Brilliant, Elegantly Simple Tool
             </h2>
             <p className="text-muted-foreground text-lg">
-              20+ features packed into 4KB. No bloat, no dependencies, just pure functionality.
+              23+ features packed into 4KB. No bloat, no dependencies, just pure functionality.
             </p>
           </div>
         </div>
