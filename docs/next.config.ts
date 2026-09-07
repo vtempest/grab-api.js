@@ -19,6 +19,9 @@ export const config = {
   // output: 'export',
   // distDir: './dist',
   outputFileTracingRoot: resolve(import.meta.dirname, '..'),
+  turbopack: {
+    root: resolve(import.meta.dirname, '.'),
+  },
   async rewrites() {
     return [
       {
