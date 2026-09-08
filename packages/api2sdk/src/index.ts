@@ -2,7 +2,7 @@
  * @file index.ts
  * @description Public entry point: a Hey API client powered by grab, plus the
  * serializers and helpers generated SDKs import alongside it.
- * @see https://grab.js.org/docs/openapi-services/heyapi-client-grab
+ * @see https://grab.js.org/docs/openapi-services/api2sdk
  */
 
 export { createClient } from "./client";

@@ -1,4 +1,4 @@
-# heyapi-client-grab
+# api2sdk
 
 Generate a fully typed SDK from an OpenAPI spec with [Hey API](https://heyapi.dev), then let [grab](https://grab.js.org) send the requests instead of axios or fetch.
 
@@ -17,14 +17,14 @@ const { data, error, response } = await getPet({
 ## Install
 
 ```bash
-npm i heyapi-client-grab
+npm i api2sdk
 npm i -D @hey-api/openapi-ts
 ```
 
 ## Generate
 
 ```bash
-npx heyapi-grab https://petstore3.swagger.io/api/v3/openapi.json ./src/client
+npx api2sdk https://petstore3.swagger.io/api/v3/openapi.json ./src/client
 ```
 
 That runs `@hey-api/openapi-ts` and rewires the output to this client. Options:
@@ -40,7 +40,7 @@ That runs `@hey-api/openapi-ts` and rewires the output to this client. Options:
 Anything else is forwarded to the `openapi-ts` CLI. The same thing from Node:
 
 ```ts
-import { generateFromOpenAPI } from "heyapi-client-grab";
+import { generateFromOpenAPI } from "api2sdk";
 
 await generateFromOpenAPI({ input: "./openapi.yaml", output: "./src/client" });
 ```
@@ -50,7 +50,7 @@ Already generating with your own `openapi-ts.config.ts`? Keep it, and rewire aft
 ```jsonc
 // package.json
 "scripts": {
-  "codegen": "openapi-ts && heyapi-grab --rewire-only ./src/client"
+  "codegen": "openapi-ts && api2sdk --rewire-only ./src/client"
 }
 ```
 
@@ -77,7 +77,7 @@ client.setConfig({
 Or build a client yourself:
 
 ```ts
-import { createClient, createConfig } from "heyapi-client-grab";
+import { createClient, createConfig } from "api2sdk";
 
 const client = createClient(createConfig({ baseUrl: "https://api.example.com" }));
 ```
@@ -142,6 +142,6 @@ Works with any `grab-url` ≥ 1.6.22. On 1.6.23 and later it also uses the `onRa
 | [src/utils.ts](src/utils.ts)                             | Config merging, URL building, auth, interceptors      |
 | [src/core/](src/core)                                    | OpenAPI path/query/body serializers                   |
 | [src/generate.ts](src/generate.ts)                       | Codegen and rewiring of generated output              |
-| [src/cli.ts](src/cli.ts)                                 | The `heyapi-grab` command                             |
+| [src/cli.ts](src/cli.ts)                                 | The `api2sdk` command                             |
 
 Serialization in `src/core/` is ported from Hey API's client core (MIT) so generated SDKs produce identical URLs and bodies on any client.

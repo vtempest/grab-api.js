@@ -10,7 +10,7 @@ import { InlineTOC } from 'fumadocs-ui/components/inline-toc';
 
 # Hey API: OpenAPI SDK powered by GRAB
 
-[Hey API](https://heyapi.dev) turns an OpenAPI spec into a fully typed SDK — one function and one set of types per endpoint. It ships clients built on fetch, axios, ky and others; [`heyapi-client-grab`](https://github.com/vtempest/GRAB-URL/tree/master/packages/heyapi-client-grab) adds one built on grab.
+[Hey API](https://heyapi.dev) turns an OpenAPI spec into a fully typed SDK — one function and one set of types per endpoint. It ships clients built on fetch, axios, ky and others; [`api2sdk`](https://github.com/vtempest/GRAB-URL/tree/master/packages/api2sdk) adds one built on grab.
 
 The generated code does not change. The same `getPet()` and `createPet()` functions, the same types — only the transport underneath is swapped, so every endpoint in the SDK inherits caching, retries, rate limiting, request deduplication, the mock server and the shared request log.
 
@@ -27,14 +27,14 @@ const { data, error, response } = await getPet({
 ## Quick Start
 
 ```bash
-npm i heyapi-client-grab
+npm i api2sdk
 npm i -D @hey-api/openapi-ts
 
 # generate the SDK and wire it to grab
-npx heyapi-grab https://petstore3.swagger.io/api/v3/openapi.json ./src/client
+npx api2sdk https://petstore3.swagger.io/api/v3/openapi.json ./src/client
 ```
 
-New to this? [Set Up Hey API with GRAB](/docs/openapi-services/heyapi-setup) walks the same thing through step by step, with framework wiring and troubleshooting. This page is the reference.
+New to this? [Set Up Hey API with GRAB](/docs/openapi-services/api2sdk-setup) walks the same thing through step by step, with framework wiring and troubleshooting. This page is the reference.
 
 <StackBlitzExample
   title="Run the generated SDK"
@@ -56,14 +56,14 @@ Any other option is forwarded to the `openapi-ts` CLI. Already have an `openapi-
 ```jsonc
 // package.json
 "scripts": {
-  "codegen": "openapi-ts && heyapi-grab --rewire-only ./src/client"
+  "codegen": "openapi-ts && api2sdk --rewire-only ./src/client"
 }
 ```
 
 From Node, the same thing:
 
 ```ts
-import { generateFromOpenAPI } from "heyapi-client-grab";
+import { generateFromOpenAPI } from "api2sdk";
 
 await generateFromOpenAPI({ input: "./openapi.yaml", output: "./src/client" });
 ```
@@ -91,7 +91,7 @@ client.setConfig({
 Or create a client directly:
 
 ```ts
-import { createClient, createConfig } from "heyapi-client-grab";
+import { createClient, createConfig } from "api2sdk";
 
 const client = createClient(createConfig({ baseUrl: "https://api.example.com" }));
 ```
@@ -144,7 +144,7 @@ if (error) console.log(response.status, error); // 404 { message: "Pet not found
 
 ## Comparison
 
-| Feature                | `heyapi-client-grab` | `@hey-api/client-fetch` | `@hey-api/client-axios` |
+| Feature                | `api2sdk` | `@hey-api/client-fetch` | `@hey-api/client-axios` |
 | ---------------------- | -------------------- | ----------------------- | ----------------------- |
 | Typed generated SDK    | ✅ Same codegen      | ✅ Yes                  | ✅ Yes                  |
 | Caching                | ✅ Built-in          | ❌ No                   | ❌ No                   |

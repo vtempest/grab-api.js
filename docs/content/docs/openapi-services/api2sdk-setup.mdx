@@ -1,6 +1,6 @@
 ---
 title: Set Up Hey API
-description: Install heyapi-client-grab, generate a typed SDK from your OpenAPI spec, configure it, and send every endpoint through grab — with runnable StackBlitz projects at each step.
+description: Install api2sdk, generate a typed SDK from your OpenAPI spec, configure it, and send every endpoint through grab — with runnable StackBlitz projects at each step.
 icon: Wrench
 ---
 
@@ -30,18 +30,18 @@ Five steps, roughly ten minutes: install, generate, configure, call, regenerate.
 ## 1. Install
 
 ```bash npm2yarn
-npm i grab-url heyapi-client-grab
+npm i grab-url api2sdk
 npm i -D @hey-api/openapi-ts
 ```
 
-`heyapi-client-grab` is both the runtime client the generated SDK imports and the `heyapi-grab` CLI that generates it. `@hey-api/openapi-ts` is Hey API's own generator — a dev dependency that never ships to production. It is optional: when it isn't installed locally the CLI falls back to `npx -y @hey-api/openapi-ts`, which refetches it on every run and leaves the generator version unpinned. Install it.
+`api2sdk` is both the runtime client the generated SDK imports and the `api2sdk` CLI that generates it. `@hey-api/openapi-ts` is Hey API's own generator — a dev dependency that never ships to production. It is optional: when it isn't installed locally the CLI falls back to `npx -y @hey-api/openapi-ts`, which refetches it on every run and leaves the generator version unpinned. Install it.
 
 ## 2. Generate the SDK
 
 Point the CLI at your spec and an output directory:
 
 ```bash
-npx heyapi-grab https://petstore3.swagger.io/api/v3/openapi.json ./src/client
+npx api2sdk https://petstore3.swagger.io/api/v3/openapi.json ./src/client
 ```
 
 That does two things: runs `openapi-ts` to generate the SDK, then rewires the generated code so its transport is grab.
@@ -82,17 +82,17 @@ Keep it. Generate with your own config, then rewire the output afterwards:
 ```json title="package.json"
 {
   "scripts": {
-    "codegen": "openapi-ts && heyapi-grab --rewire-only ./src/client"
+    "codegen": "openapi-ts && api2sdk --rewire-only ./src/client"
   }
 }
 ```
 
-Rewiring handles both output shapes Hey API produces. When the client is imported as a package, imports of `@hey-api/client-fetch` (or `-axios`, `-ky`, `-next`, `-nuxt`, `-ofetch`) are repointed at `heyapi-client-grab`. When the client is bundled into `<output>/client/`, that copied implementation is replaced with a shim that re-exports the grab client. Either way, `sdk.gen.ts` and `types.gen.ts` are untouched.
+Rewiring handles both output shapes Hey API produces. When the client is imported as a package, imports of `@hey-api/client-fetch` (or `-axios`, `-ky`, `-next`, `-nuxt`, `-ofetch`) are repointed at `api2sdk`. When the client is bundled into `<output>/client/`, that copied implementation is replaced with a shim that re-exports the grab client. Either way, `sdk.gen.ts` and `types.gen.ts` are untouched.
 
 ### From Node instead of the CLI
 
 ```ts
-import { generateFromOpenAPI } from "heyapi-client-grab";
+import { generateFromOpenAPI } from "api2sdk";
 
 await generateFromOpenAPI({
   input: "./openapi.yaml",
@@ -127,7 +127,7 @@ Import that module once at startup, before the first SDK call.
 Prefer building the client yourself — for a second API, or one client per tenant:
 
 ```ts
-import { createClient, createConfig } from "heyapi-client-grab";
+import { createClient, createConfig } from "api2sdk";
 
 const admin = createClient(createConfig({ baseUrl: "https://admin.example.com" }));
 
@@ -207,7 +207,7 @@ Commit the generated directory and regenerate it as a script, so a spec change s
 ```json title="package.json"
 {
   "scripts": {
-    "codegen": "heyapi-grab ./openapi.yaml ./src/client"
+    "codegen": "api2sdk ./openapi.yaml ./src/client"
   }
 }
 ```
@@ -298,7 +298,7 @@ const { data } = await findPetsByStatus({ query: { status: "available" } });
 
 **`No generated output found at …`** — `--rewire-only` was pointed at a directory that doesn't exist yet. Run the generation step first, or drop the flag.
 
-**The SDK still imports `@hey-api/client-fetch`** — generation ran with `--no-rewire`, or the output directory moved after generating. Re-run with `heyapi-grab --rewire-only ./src/client`.
+**The SDK still imports `@hey-api/client-fetch`** — generation ran with `--no-rewire`, or the output directory moved after generating. Re-run with `api2sdk --rewire-only ./src/client`.
 
 **A timeout or connection failure isn't throwing** — that's intentional. Transport failures come back as `{ error }`, matching grab's errors-are-data behavior. Set `throwOnError: true` if you want exceptions. HTTP error statuses behave the same as in the official clients.
 
@@ -308,7 +308,7 @@ const { data } = await findPetsByStatus({ query: { status: "available" } });
 
 ## Next steps
 
-- [Hey API: OpenAPI SDK powered by GRAB](/docs/openapi-services/heyapi-client-grab) — full reference, option-by-option comparison against the fetch and axios clients, and the exact behavioral differences.
+- [Hey API: OpenAPI SDK powered by GRAB](/docs/openapi-services/api2sdk) — full reference, option-by-option comparison against the fetch and axios clients, and the exact behavioral differences.
 - [API2AI: OpenAPI to MCP server](/docs/openapi-services/api2ai-mcp-server) — same spec, but generating tools for AI agents instead of an SDK.
 - [grab options](/docs/grab-options) — everything you can pass per request.
 - [Example requests](/docs/examples) — more runnable StackBlitz projects.

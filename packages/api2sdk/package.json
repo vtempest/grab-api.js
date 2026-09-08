@@ -1,5 +1,5 @@
 {
-  "name": "heyapi-client-grab",
+  "name": "api2sdk",
   "version": "1.0.0",
   "description": "Hey API client that sends generated OpenAPI SDK requests with grab instead of axios or fetch, adding caching, retries, rate limiting, deduplication and mocks.",
   "type": "module",
@@ -15,7 +15,7 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "heyapi-grab": "./dist/cli.es.js"
+    "api2sdk": "./dist/cli.es.js"
   },
   "files": [
     "dist",
@@ -30,6 +30,7 @@
     "swagger",
     "hey-api",
     "heyapi",
+    "api2sdk",
     "codegen",
     "client",
     "sdk",
@@ -60,10 +61,10 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vtempest/GRAB-URL.git",
-    "directory": "packages/heyapi-client-grab"
+    "directory": "packages/api2sdk"
   },
   "bugs": {
     "url": "https://github.com/vtempest/GRAB-URL/issues"
   },
-  "homepage": "https://github.com/vtempest/GRAB-URL/tree/master/packages/heyapi-client-grab#readme"
+  "homepage": "https://github.com/vtempest/GRAB-URL/tree/master/packages/api2sdk#readme"
 }

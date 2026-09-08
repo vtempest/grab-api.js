@@ -18,16 +18,16 @@ const cards = [
     icon: FileCode,
     eyebrow: "For your app",
     title: "Typed Client SDK",
-    pkg: "heyapi-client-grab",
+    pkg: "api2sdk",
     description:
       "Generate a fully typed TypeScript SDK from an OpenAPI spec with Hey API, wired to send every request through grab instead of axios or fetch.",
-    code: "npx heyapi-grab ./openapi.yaml ./src/client",
+    code: "npx api2sdk ./openapi.yaml ./src/client",
     bullets: [
       { icon: Database, label: "Caching & mocks" },
       { icon: RepeatIcon, label: "Automatic retries" },
       { icon: Gauge, label: "Rate limiting" },
     ],
-    href: "/docs/openapi-services/heyapi-client-grab",
+    href: "/docs/openapi-services/api2sdk",
     cta: "View SDK docs",
   },
   {

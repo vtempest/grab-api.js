@@ -1,7 +1,7 @@
 # grab-url · Hey API SDK
 
 A generated OpenAPI SDK for the [Swagger Petstore](https://petstore3.swagger.io), wired to
-[`heyapi-client-grab`](https://github.com/vtempest/GRAB-URL/tree/master/packages/heyapi-client-grab)
+[`api2sdk`](https://github.com/vtempest/GRAB-URL/tree/master/packages/api2sdk)
 so every endpoint is sent by [`grab-url`](https://github.com/vtempest/grab-url) instead of fetch or axios.
 
 ```bash
@@ -13,7 +13,7 @@ npm run dev
 three-operation slice of what the generator writes; regenerate the full SDK with:
 
 ```bash
-npm run codegen   # heyapi-grab https://petstore3.swagger.io/api/v3/openapi.json ./src/client
+npm run codegen   # api2sdk https://petstore3.swagger.io/api/v3/openapi.json ./src/client
 ```
 
 `src/main.ts` demonstrates what the grab transport adds on top of the generated code:
@@ -25,4 +25,4 @@ npm run codegen   # heyapi-grab https://petstore3.swagger.io/api/v3/openapi.json
 | `addPet` | `grab.mock["/pet"]` stubbing an endpoint with no network and no code change |
 | `grab.log` | Every SDK request in one shared log |
 
-Walkthrough: [Set Up Hey API with GRAB](https://grab.js.org/docs/openapi-services/heyapi-setup).
+Walkthrough: [Set Up Hey API with GRAB](https://grab.js.org/docs/openapi-services/api2sdk-setup).
