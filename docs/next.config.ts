@@ -1,8 +1,5 @@
 import { createMDX } from 'fumadocs-mdx/next';
 import { resolve } from 'path';
-import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
-
-initOpenNextCloudflareForDev();
 
 const withMDX = createMDX({
   // mdxOptions: {
@@ -16,11 +13,16 @@ type MDXNextConfig = NonNullable<Parameters<typeof withMDX>[0]>;
 
 export const config = {
   serverExternalPackages: ['typescript', 'fumadocs-typescript'],
+  // `loading-animations/svg/src` resolves to TypeScript source in the workspace,
+  // so Next has to compile it rather than treat it as a prebuilt dependency.
+  transpilePackages: ['loading-animations'],
   // output: 'export',
   // distDir: './dist',
   outputFileTracingRoot: resolve(import.meta.dirname, '..'),
   turbopack: {
-    root: resolve(import.meta.dirname, '.'),
+    // Must match outputFileTracingRoot: both point at the monorepo root so
+    // workspace packages are traced into the Vercel output bundle.
+    root: resolve(import.meta.dirname, '..'),
   },
   async rewrites() {
     return [

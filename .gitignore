@@ -40,6 +40,7 @@ test-downloads/
 test/test-downloads
 .source/
 .next/
+.vercel
 .grab-downloads/
 docs/dist/
 .claude

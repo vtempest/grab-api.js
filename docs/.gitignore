@@ -40,9 +40,7 @@ test-downloads/
 test/test-downloads
 .source/
 .next/
-.open-next/
-.wrangler/
-cloudflare-env.d.ts
+.vercel
 .grab-downloads/
 docs/dist/
 devtools/

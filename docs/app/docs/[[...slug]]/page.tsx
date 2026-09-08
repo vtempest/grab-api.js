@@ -31,11 +31,15 @@ export default async function Page(props: {
   const data = page.data as any;
   const MDX = data.body;
 
+  // Unauthenticated GitHub API calls are rate limited per build IP, which is
+  // shared on hosted CI. Send a token when one is configured and never let a
+  // failed lookup fail the build - the timestamp is decorative.
   const lastUpdate = await getGithubLastEdit({
     owner: 'vtempest',
     repo: 'grab-url',
     path: `docs/content/docs/${page.path}`,
-  });
+    token: process.env.GITHUB_TOKEN ? `Bearer ${process.env.GITHUB_TOKEN}` : undefined,
+  }).catch(() => null);
 
   return (
     <DocsPage toc={data.toc} full={data.full} lastUpdate={lastUpdate ?? undefined}>
