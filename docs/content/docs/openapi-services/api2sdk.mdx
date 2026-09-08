@@ -50,6 +50,8 @@ New to this? [Set Up Hey API with GRAB](/docs/openapi-services/api2sdk-setup) wa
 | `-c, --client <name>`     | Hey API client to generate against — default `@hey-api/client-fetch`  |
 | `--rewire-only`           | Skip generation, rewire an SDK you already generated                  |
 | `--no-rewire`             | Generate without swapping in the grab client                          |
+| `--docs [dir]`            | Also generate Fumadocs MDX pages from the spec — default `./content/docs/api` |
+| `--preview`               | Serve a local Scalar preview of the spec once generation is done      |
 
 Any other option is forwarded to the `openapi-ts` CLI. Already have an `openapi-ts.config.ts`? Keep it and rewire afterwards:
 
@@ -66,6 +68,20 @@ From Node, the same thing:
 import { generateFromOpenAPI } from "api2sdk";
 
 await generateFromOpenAPI({ input: "./openapi.yaml", output: "./src/client" });
+```
+
+## Docs and previews
+
+`--docs` runs [`fumadocs-openapi`](https://fumadocs.dev/docs/integrations/openapi) to turn the same spec into Fumadocs MDX pages, one per operation. It runs inside a project that already has a Fumadocs site set up — `fumadocs-openapi` and its peers (`fumadocs-core`, `fumadocs-ui`, `react`, `react-dom`) need to already be installed there:
+
+```bash
+npx api2sdk ./openapi.yaml ./src/client --docs ./content/docs/api
+```
+
+`--preview` skips the docs site entirely and serves the raw spec with [Scalar](https://scalar.com)'s API reference UI, via a local `@scalar/cli` or fetched on demand with `npx`:
+
+```bash
+npx api2sdk ./openapi.yaml ./src/client --preview
 ```
 
 ## Configuration

@@ -7,6 +7,7 @@
 import {
   CLIENT_PACKAGE,
   generateFromOpenAPI,
+  previewWithScalar,
   rewireGeneratedClient,
 } from "./generate";
 
@@ -23,6 +24,13 @@ Options
                                                 default @hey-api/client-fetch
   --rewire-only            Skip generation, only rewire an existing output dir
   --no-rewire              Generate without swapping in the grab client
+  --docs [dir]             Also generate Fumadocs MDX pages from the spec
+                                                default ./content/docs/api
+                            (run inside a Fumadocs site — needs
+                             fumadocs-openapi, fumadocs-core, fumadocs-ui,
+                             react and react-dom installed)
+  --preview                Serve a local Scalar preview of the spec when done
+                            (uses a local \`@scalar/cli\`, or fetches it via npx)
   -h, --help               Show this message
 
 Any other option is forwarded to the openapi-ts CLI.
@@ -31,6 +39,7 @@ Examples
   npx api2sdk https://petstore3.swagger.io/api/v3/openapi.json ./src/api
   npx api2sdk -i ./openapi.yaml -o ./src/client
   npx api2sdk --rewire-only ./src/client
+  npx api2sdk ./openapi.yaml ./src/client --docs --preview
 `;
 
 /**
@@ -47,6 +56,9 @@ const parseArgs = (argv: string[]) => {
   let rewire = true;
   let rewireOnly = false;
   let help = false;
+  let docs = false;
+  let docsOutput = "";
+  let preview = false;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -74,6 +86,13 @@ const parseArgs = (argv: string[]) => {
       case "--rewire-only":
         rewireOnly = true;
         break;
+      case "--docs":
+        docs = true;
+        if (argv[i + 1] && !argv[i + 1].startsWith("-")) docsOutput = argv[++i];
+        break;
+      case "--preview":
+        preview = true;
+        break;
       default:
         if (arg.startsWith("-")) {
           passthrough.push(arg);
@@ -87,10 +106,13 @@ const parseArgs = (argv: string[]) => {
 
   return {
     client,
+    docs,
+    docsOutput,
     help,
     input: input || positional[0] || "",
     output: output || (input ? positional[0] : positional[1]) || "",
     passthrough,
+    preview,
     rewire,
     rewireOnly,
   };
@@ -117,6 +139,8 @@ export const main = async (argv: string[] = process.argv.slice(2)) => {
   const result = await generateFromOpenAPI({
     args: options.passthrough,
     client: options.client || undefined,
+    docs: options.docs,
+    docsOutput: options.docsOutput || undefined,
     input: options.input,
     output: options.output || undefined,
     rewire: options.rewire,
@@ -127,6 +151,13 @@ export const main = async (argv: string[] = process.argv.slice(2)) => {
       ? `✓ Generated ${result.output} — requests are sent by grab (${result.rewired.length} file(s) rewired)`
       : `✓ Generated ${result.output}`,
   );
+
+  if (result.docs) console.log(`✓ Generated Fumadocs pages in ${result.docs}`);
+
+  if (options.preview) {
+    console.log(`→ Serving a Scalar preview of ${options.input} (Ctrl+C to stop)`);
+    await previewWithScalar(options.input);
+  }
 };
 
 main().catch((error) => {

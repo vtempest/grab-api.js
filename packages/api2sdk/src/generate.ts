@@ -38,6 +38,10 @@ export interface GenerateOptions {
   cwd?: string;
   /** default=true Point the generated SDK at this grab-powered client. */
   rewire?: boolean;
+  /** default=false Also generate Fumadocs MDX documentation pages from the spec. */
+  docs?: boolean;
+  /** default="./content/docs/api" Directory to write generated Fumadocs pages into, when `docs` is set. */
+  docsOutput?: string;
   /** Extra arguments forwarded to the `openapi-ts` CLI. */
   args?: string[];
 }
@@ -48,6 +52,8 @@ export interface GenerateResult {
   output: string;
   /** Files rewritten to use the grab client. */
   rewired: string[];
+  /** Absolute path of the generated Fumadocs pages, when `docs` was set. */
+  docs?: string;
 }
 
 /**
@@ -77,6 +83,84 @@ const resolveOpenApiTs = (cwd: string): { command: string; args: string[] } => {
     command: process.platform === "win32" ? "npx.cmd" : "npx",
     args: ["-y", "@hey-api/openapi-ts"],
   };
+};
+
+/**
+ * Locates a `@scalar/cli` binary installed next to the project.
+ *
+ * @param cwd - Directory to resolve from.
+ * @returns The command and leading arguments to spawn.
+ */
+const resolveScalarCli = (cwd: string): { command: string; args: string[] } => {
+  const localBin = join(
+    cwd,
+    "node_modules",
+    ".bin",
+    process.platform === "win32" ? "scalar.cmd" : "scalar",
+  );
+
+  if (existsSync(localBin)) return { command: localBin, args: [] };
+
+  return {
+    command: process.platform === "win32" ? "npx.cmd" : "npx",
+    args: ["-y", "@scalar/cli"],
+  };
+};
+
+/**
+ * Generates Fumadocs MDX documentation pages from an OpenAPI spec with
+ * `fumadocs-openapi`. Meant to be run inside a project that already has a
+ * Fumadocs site set up — `fumadocs-openapi` requires `fumadocs-core`,
+ * `fumadocs-ui`, `react` and `react-dom` as peers, all optional here since
+ * they're only needed when generating docs.
+ *
+ * @param input - Path or URL of the OpenAPI spec.
+ * @param output - Directory to write the generated MDX pages into.
+ */
+export const generateDocs = async (input: string, output: string): Promise<void> => {
+  let generateFiles: typeof import("fumadocs-openapi").generateFiles;
+  let createOpenAPI: typeof import("fumadocs-openapi/server").createOpenAPI;
+
+  try {
+    [{ generateFiles }, { createOpenAPI }] = await Promise.all([
+      import("fumadocs-openapi"),
+      import("fumadocs-openapi/server"),
+    ]);
+  } catch (error) {
+    throw new Error(
+      "Could not load fumadocs-openapi. It — and its peers fumadocs-core, " +
+        "fumadocs-ui, react and react-dom — must be installed in a project " +
+        "with a Fumadocs site set up. Run `npm i fumadocs-openapi fumadocs-core " +
+        "fumadocs-ui react react-dom` to generate docs.\n" +
+        (error as Error).message,
+    );
+  }
+
+  const server = createOpenAPI({ input: [input] });
+
+  await generateFiles({
+    input: server,
+    output,
+    includeDescription: true,
+  });
+};
+
+/**
+ * Serves a local Scalar preview of an OpenAPI spec via the `@scalar/cli`
+ * `document serve` command. Resolves once the server is stopped (Ctrl+C).
+ *
+ * @param input - Path or URL of the OpenAPI spec.
+ * @param cwd - default=process.cwd() Directory to resolve a locally installed `@scalar/cli` from.
+ * @param port - Port for the preview server, if not left to Scalar's default.
+ */
+export const previewWithScalar = (
+  input: string,
+  cwd: string = process.cwd(),
+  port?: number,
+): Promise<void> => {
+  const { command, args } = resolveScalarCli(cwd);
+  const portArgs = port ? ["-p", String(port)] : [];
+  return run(command, [...args, "document", "serve", ...portArgs, input], cwd);
 };
 
 /** Runs a command, inheriting stdio, and resolves when it exits cleanly. */
@@ -192,6 +276,8 @@ export const generateFromOpenAPI = async (
     client = "@hey-api/client-fetch",
     cwd = process.cwd(),
     rewire = true,
+    docs = false,
+    docsOutput = "./content/docs/api",
     args = [],
   } = options;
 
@@ -206,8 +292,15 @@ export const generateFromOpenAPI = async (
     cwd,
   );
 
-  return {
+  const result: GenerateResult = {
     output: outputDir,
     rewired: rewire ? rewireGeneratedClient(outputDir) : [],
   };
+
+  if (docs) {
+    result.docs = resolve(cwd, docsOutput);
+    await generateDocs(input, result.docs);
+  }
+
+  return result;
 };

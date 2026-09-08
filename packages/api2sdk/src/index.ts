@@ -19,7 +19,12 @@ export {
   serializeObjectParam,
   serializePrimitiveParam,
 } from "./core/path-serializer";
-export { generateFromOpenAPI, rewireGeneratedClient } from "./generate";
+export {
+  generateDocs,
+  generateFromOpenAPI,
+  previewWithScalar,
+  rewireGeneratedClient,
+} from "./generate";
 export type { GenerateOptions, GenerateResult } from "./generate";
 export type {
   ArrayStyle,

@@ -36,6 +36,8 @@ That runs `@hey-api/openapi-ts` and rewires the output to this client. Options:
 | `-c, --client <name>`    | Hey API client to generate against — default `@hey-api/client-fetch` |
 | `--rewire-only`          | Skip generation, rewire an SDK you already generated       |
 | `--no-rewire`            | Generate without swapping in the grab client               |
+| `--docs [dir]`           | Also generate Fumadocs MDX pages from the spec — default `./content/docs/api` |
+| `--preview`              | Serve a local Scalar preview of the spec once generation is done |
 
 Anything else is forwarded to the `openapi-ts` CLI. The same thing from Node:
 
@@ -53,6 +55,30 @@ Already generating with your own `openapi-ts.config.ts`? Keep it, and rewire aft
   "codegen": "openapi-ts && api2sdk --rewire-only ./src/client"
 }
 ```
+
+## Generate docs
+
+Add `--docs` to also turn the spec into [Fumadocs](https://fumadocs.dev) MDX pages — one per operation, written to `./content/docs/api` by default:
+
+```bash
+npx api2sdk ./openapi.yaml ./src/client --docs ./content/docs/api
+```
+
+This runs inside a project that already has a Fumadocs site set up: `fumadocs-openapi` generates the pages, but it and its peers — `fumadocs-core`, `fumadocs-ui`, `react` and `react-dom` — need to be installed there already. From Node:
+
+```ts
+import { generateDocs } from "api2sdk";
+
+await generateDocs("./openapi.yaml", "./content/docs/api");
+```
+
+Add `--preview` to serve the raw spec with [Scalar](https://scalar.com)'s API reference UI once generation finishes — useful for a quick look without wiring up the Fumadocs site at all:
+
+```bash
+npx api2sdk ./openapi.yaml ./src/client --preview
+```
+
+It uses a local `@scalar/cli` if you have one installed, otherwise fetches it on demand via `npx`.
 
 ## Configure
 
@@ -141,7 +167,7 @@ Works with any `grab-url` ≥ 1.6.22. On 1.6.23 and later it also uses the `onRa
 | [src/types.ts](src/types.ts)                             | The client contract generated SDKs type-check against |
 | [src/utils.ts](src/utils.ts)                             | Config merging, URL building, auth, interceptors      |
 | [src/core/](src/core)                                    | OpenAPI path/query/body serializers                   |
-| [src/generate.ts](src/generate.ts)                       | Codegen and rewiring of generated output              |
+| [src/generate.ts](src/generate.ts)                       | Codegen, rewiring, Fumadocs generation and Scalar preview |
 | [src/cli.ts](src/cli.ts)                                 | The `api2sdk` command                             |
 
 Serialization in `src/core/` is ported from Hey API's client core (MIT) so generated SDKs produce identical URLs and bodies on any client.
