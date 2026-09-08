@@ -55,9 +55,16 @@ const { data, error, response } = await getPet({
 });
 ```
 
+<StackBlitzExample
+  title="Run the Hey API SDK example"
+  description="A generated Petstore SDK sending every request with grab — caching, errors as data, and grab.mock stubbing an endpoint."
+  github="OpenSourceAGI/GRAB-URL/tree/master/examples/heyapi-petstore"
+  openFile="src/main.ts"
+/>
+
 The generated code is identical to what `@hey-api/openapi-ts` produces with any other client — same functions, same types. Only the transport is swapped for grab, so caching, retries, rate limiting, deduplication, mocks and the shared request log apply to every endpoint automatically.
 
-Full reference: [Hey API: OpenAPI SDK powered by GRAB](/docs/openapi-services/heyapi-client-grab).
+Step-by-step walkthrough: [Set Up Hey API with GRAB](/docs/openapi-services/heyapi-setup) — install, generate, configure, test and regenerate, with a runnable StackBlitz project at each step. Full reference: [Hey API: OpenAPI SDK powered by GRAB](/docs/openapi-services/heyapi-client-grab).
 
 ## MCP server
 
