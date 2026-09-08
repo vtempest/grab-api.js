@@ -19,6 +19,8 @@ export {
   serializeObjectParam,
   serializePrimitiveParam,
 } from "./core/path-serializer";
+export { createSseClient } from "./core/sse";
+export type { ServerSentEventsResult, StreamEvent } from "./core/sse";
 export { generateFromOpenAPI, rewireGeneratedClient } from "./generate";
 export type { GenerateOptions, GenerateResult } from "./generate";
 export type {

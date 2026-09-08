@@ -8,6 +8,13 @@
 
 import type { GrabFunction } from "grab-url";
 
+import type {
+  ServerSentEventsOptions,
+  ServerSentEventsResult,
+  StreamEvent,
+} from "./core/sse";
+export type { StreamEvent, ServerSentEventsResult } from "./core/sse";
+
 /** Return only `data`, or the full `{ data, error, request, response }` set. */
 export type ResponseStyle = "data" | "fields";
 
@@ -92,6 +99,13 @@ export interface GrabConfig {
   parseDOM?: string | boolean;
   /** default=false Unescape HTML entities in text responses */
   unescapeHTML?: boolean;
+  /**
+   * Fetch implementation used only by `client.sse.*()`. Plain requests still
+   * go through grab or `GrabConfig.grab` — SSE's long-lived connection
+   * doesn't fit grab's request model, so it calls fetch directly.
+   * default=globalThis.fetch
+   */
+  fetch?: typeof fetch;
 }
 
 /** Client-wide configuration, also accepted per request. */
@@ -159,9 +173,19 @@ export interface RequestOptions<
   ThrowOnError extends boolean = boolean,
   Url extends string = string,
 > extends Config<{
-    responseStyle: TResponseStyle;
-    throwOnError: ThrowOnError;
-  }> {
+      responseStyle: TResponseStyle;
+      throwOnError: ThrowOnError;
+    }>,
+    Pick<
+      ServerSentEventsOptions,
+      | "onRequest"
+      | "onSseError"
+      | "onSseEvent"
+      | "sseDefaultRetryDelay"
+      | "sseMaxRetryAttempts"
+      | "sseMaxRetryDelay"
+      | "sseSleepFn"
+    > {
   /** Request body, serialized with `bodySerializer`. */
   body?: unknown;
   /** Values for `{placeholders}` in the url. */
@@ -316,6 +340,16 @@ type RequestFn = <
     Pick<Required<RequestOptions<TResponseStyle, ThrowOnError>>, "method">,
 ) => RequestResult<TData, TError, ThrowOnError, TResponseStyle>;
 
+type SseFn = <
+  TData = unknown,
+  ThrowOnError extends boolean = false,
+  TResponseStyle extends ResponseStyle = "fields",
+>(
+  options: Omit<RequestOptions<TResponseStyle, ThrowOnError>, "method" | "onSseEvent"> & {
+    onSseEvent?: (event: StreamEvent<TData>) => void;
+  },
+) => Promise<ServerSentEventsResult<TData>>;
+
 type BuildUrlFn = <
   TData extends {
     body?: unknown;
@@ -343,6 +377,22 @@ export interface Client {
   put: MethodFn;
   request: RequestFn;
   setConfig: (config: Config) => Config;
+  /**
+   * Server-sent event endpoints — one method per HTTP verb, each returning
+   * `{ stream }`, an async generator of parsed event data. Connects with
+   * `fetch` directly rather than through grab; see `GrabConfig.fetch`.
+   */
+  sse: {
+    connect: SseFn;
+    delete: SseFn;
+    get: SseFn;
+    head: SseFn;
+    options: SseFn;
+    patch: SseFn;
+    post: SseFn;
+    put: SseFn;
+    trace: SseFn;
+  };
   trace: MethodFn;
 }
 

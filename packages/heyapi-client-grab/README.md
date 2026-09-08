@@ -121,13 +121,38 @@ if (error) console.log(response.status, error); // 404 { message: "Pet not found
 
 `buildUrl()`, `interceptors.request/response/error`, `security`/`auth`, `bodySerializer`, `querySerializer`, `parseAs`, `responseValidator` and `responseTransformer` all behave as they do in the official clients.
 
+## Server-sent events
+
+An operation whose response is `text/event-stream` generates an SDK function that calls `client.sse.<method>()` instead of `client.<method>()`, and returns `{ stream }` — an async generator of parsed event data:
+
+```ts
+import { streamJobEvents } from "./client";
+
+const { stream } = await streamJobEvents({ path: { jobId: "42" } });
+
+for await (const event of stream) console.log(event); // parsed `data:` payload
+```
+
+SSE is a long-lived connection, not a single request/response, so it connects with `fetch` directly instead of going through grab — grab's cache/retry/rate-limit model is built around a request that completes, not one that stays open and reconnects on its own. Pass these alongside the usual request options:
+
+| Option                    | Effect                                                             |
+| ------------------------- | ------------------------------------------------------------------- |
+| `onSseEvent`               | Called for every event, with its `data`, `event`, `id` and `retry`  |
+| `onSseError`               | Called when a connection attempt fails, before it retries           |
+| `sseDefaultRetryDelay`     | default=3000 Delay before the first retry, in ms                    |
+| `sseMaxRetryAttempts`      | Give up after this many retry attempts                              |
+| `sseMaxRetryDelay`         | default=30000 Cap on the exponential backoff delay, in ms           |
+| `fetch`                    | Fetch implementation to use — default=`globalThis.fetch`            |
+
+Reconnects honor the server's `retry:` field and send `Last-Event-ID` from the last event's `id:`, matching browser `EventSource` semantics. A stream that ends normally (the server closes the connection) does not reconnect — only a network or parse error does.
+
 ## Differences from `@hey-api/client-fetch`
 
 - **Transport failures are returned, not thrown.** A timeout or connection failure comes back as `{ error }` (or throws when `throwOnError` is set), matching grab's "errors are data" behavior. HTTP error statuses behave the same as in the official clients.
 - **Bodies are parsed by grab.** `parseAs: "stream"` hands you the raw stream, and an explicit `parseAs` still decides the empty-response shape, but otherwise grab's content-type detection reads the body.
 - **grab sets JSON `Content-Type`/`Accept` defaults** on requests that do not specify their own, including body-less ones.
 - **Response interceptors run before parsing**, on a response whose body grab has already read.
-- **No `sse` helpers.** Server-sent event endpoints need the fetch client.
+- **`sse` endpoints bypass grab** and connect with `fetch` directly — see [Server-sent events](#server-sent-events).
 
 ## Requirements
 
@@ -140,8 +165,8 @@ Works with any `grab-url` ≥ 1.6.22. On 1.6.23 and later it also uses the `onRa
 | [src/client.ts](src/client.ts)                           | `createClient()` — the Hey API interface over grab    |
 | [src/types.ts](src/types.ts)                             | The client contract generated SDKs type-check against |
 | [src/utils.ts](src/utils.ts)                             | Config merging, URL building, auth, interceptors      |
-| [src/core/](src/core)                                    | OpenAPI path/query/body serializers                   |
+| [src/core/](src/core)                                    | OpenAPI path/query/body serializers, SSE streaming     |
 | [src/generate.ts](src/generate.ts)                       | Codegen and rewiring of generated output              |
 | [src/cli.ts](src/cli.ts)                                 | The `heyapi-grab` command                             |
 
-Serialization in `src/core/` is ported from Hey API's client core (MIT) so generated SDKs produce identical URLs and bodies on any client.
+Serialization and SSE streaming in `src/core/` are ported from Hey API's client core (MIT) so generated SDKs produce identical URLs, bodies and event streams on any client.
