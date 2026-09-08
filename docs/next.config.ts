@@ -16,6 +16,9 @@ type MDXNextConfig = NonNullable<Parameters<typeof withMDX>[0]>;
 
 export const config = {
   serverExternalPackages: ['typescript', 'fumadocs-typescript'],
+  // `loading-animations/svg/src` resolves to TypeScript source in the workspace,
+  // so Next has to compile it rather than treat it as a prebuilt dependency.
+  transpilePackages: ['loading-animations'],
   // output: 'export',
   // distDir: './dist',
   outputFileTracingRoot: resolve(import.meta.dirname, '..'),

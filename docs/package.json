@@ -33,6 +33,7 @@
     "fumadocs-ui": "^16.1.0",
     "fuse.js": "^7.1.0",
     "highlight.js": "^11.11.1",
+    "loading-animations": "*",
     "lucide-react": "^0.555.0",
     "marked": "^17.0.4",
     "mermaid": "^11.12.3",
