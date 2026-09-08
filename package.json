@@ -84,7 +84,7 @@
     "loading-animations": "*",
     "lucide-react": "^0.555.0",
     "terser": "^5.46.0",
-    "turbo": "^1.13.4",
+    "turbo": "^2.10.12",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-dts": "^4.5.4",
@@ -94,7 +94,13 @@
     "fumadocs-mdx"
   ],
   "overrides": {
-    "fumadocs-core": "16.8.5"
+    "fumadocs-core": "16.8.5",
+    "tsup": {
+      "esbuild": "^0.28.2"
+    },
+    "vite": {
+      "esbuild": "^0.28.2"
+    }
   },
   "keywords": [
     "api",
