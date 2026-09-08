@@ -1,6 +1,6 @@
 /**
  * @file cli.ts
- * @description `heyapi-grab` command: generate a typed SDK from an OpenAPI
+ * @description `api2client` command: generate a typed SDK from an OpenAPI
  * spec and wire it to the grab-powered Hey API client.
  */
 
@@ -11,10 +11,10 @@ import {
 } from "./generate";
 
 const HELP = `
-heyapi-grab — generate an OpenAPI SDK that sends its requests with grab
+api2client — generate an OpenAPI SDK that sends its requests with grab
 
 Usage
-  npx heyapi-grab <spec> [output] [options]
+  npx api2client <spec> [output] [options]
 
 Options
   -i, --input <path|url>   OpenAPI spec to generate from
@@ -28,9 +28,9 @@ Options
 Any other option is forwarded to the openapi-ts CLI.
 
 Examples
-  npx heyapi-grab https://petstore3.swagger.io/api/v3/openapi.json ./src/api
-  npx heyapi-grab -i ./openapi.yaml -o ./src/client
-  npx heyapi-grab --rewire-only ./src/client
+  npx api2client https://petstore3.swagger.io/api/v3/openapi.json ./src/api
+  npx api2client -i ./openapi.yaml -o ./src/client
+  npx api2client --rewire-only ./src/client
 `;
 
 /**

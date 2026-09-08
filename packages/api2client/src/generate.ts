@@ -12,7 +12,7 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 /** npm package name of this client, as generated code should import it. */
-export const CLIENT_PACKAGE = "heyapi-client-grab";
+export const CLIENT_PACKAGE = "api2client";
 
 /** Hey API clients whose imports get pointed at this package instead. */
 const REPLACED_PACKAGES = [
@@ -132,7 +132,7 @@ export { createClient } from "${CLIENT_PACKAGE}";
  * output shapes: a bundled `client/` folder, and imports of a client package.
  *
  * @param output - Directory holding the generated SDK.
- * @param packageName - default="heyapi-client-grab" Client package to import.
+ * @param packageName - default="api2client" Client package to import.
  * @returns Paths of the files that were rewritten.
  */
 export const rewireGeneratedClient = (
