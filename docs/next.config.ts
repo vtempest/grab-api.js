@@ -1,8 +1,5 @@
 import { createMDX } from 'fumadocs-mdx/next';
 import { resolve } from 'path';
-import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
-
-initOpenNextCloudflareForDev();
 
 const withMDX = createMDX({
   // mdxOptions: {
@@ -23,7 +20,9 @@ export const config = {
   // distDir: './dist',
   outputFileTracingRoot: resolve(import.meta.dirname, '..'),
   turbopack: {
-    root: resolve(import.meta.dirname, '.'),
+    // Must match outputFileTracingRoot: both point at the monorepo root so
+    // workspace packages are traced into the Vercel output bundle.
+    root: resolve(import.meta.dirname, '..'),
   },
   async rewrites() {
     return [

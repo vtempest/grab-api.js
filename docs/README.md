@@ -323,3 +323,26 @@ docs/
 | `npm run build:api` | Generate API docs from OpenAPI spec |
 | `npm run check` | Type-check and validate MDX |
 | `npm run favicon` | Generate favicon variants from source image |
+| `npm run start` | Serve the production build |
+
+## Deployment (Vercel)
+
+This template is a standard Next.js app — no adapter, no worker bundle. Deploy
+it on Vercel with the defaults:
+
+| Setting | Value |
+|---------|-------|
+| Framework Preset | Next.js |
+| Root Directory | `docs` |
+| Build Command | `next build` (or `turbo run build --filter=grab-url-docs` from the repo root) |
+| Install Command | `npm install --prefix=..` (installs the whole workspace so `packages/*` resolve) |
+| Output Directory | *(leave empty — Next.js default)* |
+
+Optional environment variables:
+
+| Variable | Purpose |
+|----------|---------|
+| `GITHUB_TOKEN` | Raises the GitHub API rate limit used for "last updated" timestamps. Builds succeed without it; the timestamp is simply omitted when the lookup fails. |
+
+`next.config.ts` sets `outputFileTracingRoot` and `turbopack.root` to the
+monorepo root so workspace packages are traced into the deployment bundle.
