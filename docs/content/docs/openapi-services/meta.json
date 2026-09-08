@@ -1,5 +1,5 @@
 {
   "title": "OpenAPI SDKs",
   "icon": "FileCode",
-  "pages": ["index", "heyapi-setup", "heyapi-client-grab", "api2ai-mcp-server"]
+  "pages": ["index", "api2ai-mcp-server"]
 }

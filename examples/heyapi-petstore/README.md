@@ -25,4 +25,4 @@ npm run codegen   # heyapi-grab https://petstore3.swagger.io/api/v3/openapi.json
 | `addPet` | `grab.mock["/pet"]` stubbing an endpoint with no network and no code change |
 | `grab.log` | Every SDK request in one shared log |
 
-Walkthrough: [Set Up Hey API with GRAB](https://grab.js.org/docs/openapi-services/heyapi-setup).
+Walkthrough: [OpenAPI SDKs](https://grab.js.org/docs/openapi-services).

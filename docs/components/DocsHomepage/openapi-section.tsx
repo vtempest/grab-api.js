@@ -27,7 +27,7 @@ const cards = [
       { icon: RepeatIcon, label: "Automatic retries" },
       { icon: Gauge, label: "Rate limiting" },
     ],
-    href: "/docs/openapi-services/heyapi-client-grab",
+    href: "/docs/openapi-services",
     cta: "View SDK docs",
   },
   {
