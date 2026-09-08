@@ -10,6 +10,7 @@
 import { grab as defaultGrab } from "grab-url";
 import type { GrabOptions } from "grab-url";
 
+import { createSseClient } from "./core/sse";
 import type { Client, Config, RequestOptions, ResponseStyle } from "./types";
 import {
   buildUrl,
@@ -283,6 +284,53 @@ export const createClient = (config: Config = {}): Client => {
       : { error, request, response }) as any;
   };
 
+  // SSE opens a long-lived connection, so it goes straight through fetch
+  // rather than grab — grab's cache/retry/timeout model is built around a
+  // request that completes, not one that stays open and gets reconnected.
+  const makeSse =
+    (method: NonNullable<Config["method"]>): Client["sse"]["connect"] =>
+    async (options) => {
+      const opts = {
+        ..._config,
+        ...options,
+        headers: mergeHeaders(_config.headers, options.headers),
+      };
+
+      if (opts.security) await setAuthParams({ ...opts, security: opts.security });
+
+      let serializedBody: BodyInit | undefined;
+      if (opts.body !== undefined && opts.bodySerializer)
+        serializedBody = opts.bodySerializer(opts.body);
+      if (opts.body === undefined || serializedBody === "")
+        opts.headers.delete("Content-Type");
+
+      const requestOptions = { ...opts, method } as unknown as RequestOptions;
+      const url = buildUrl(requestOptions);
+
+      return createSseClient({
+        ...toRequestInit(opts),
+        fetch: opts.fetch,
+        headers: opts.headers,
+        method,
+        onRequest: async (reqUrl, init) => {
+          let sseRequest = new Request(reqUrl, init);
+          for (const fn of interceptors.request._fns)
+            if (fn) sseRequest = await fn(sseRequest, requestOptions);
+          return sseRequest;
+        },
+        onSseError: opts.onSseError,
+        onSseEvent: opts.onSseEvent,
+        responseTransformer: opts.responseTransformer,
+        responseValidator: opts.responseValidator,
+        serializedBody,
+        sseDefaultRetryDelay: opts.sseDefaultRetryDelay,
+        sseMaxRetryAttempts: opts.sseMaxRetryAttempts,
+        sseMaxRetryDelay: opts.sseMaxRetryDelay,
+        sseSleepFn: opts.sseSleepFn,
+        url,
+      });
+    };
+
   return {
     buildUrl: (options) => buildUrl({ ..._config, ...options } as any),
     connect: (options) => request({ ...options, method: "CONNECT" }),
@@ -297,6 +345,17 @@ export const createClient = (config: Config = {}): Client => {
     put: (options) => request({ ...options, method: "PUT" }),
     request,
     setConfig,
+    sse: {
+      connect: makeSse("CONNECT"),
+      delete: makeSse("DELETE"),
+      get: makeSse("GET"),
+      head: makeSse("HEAD"),
+      options: makeSse("OPTIONS"),
+      patch: makeSse("PATCH"),
+      post: makeSse("POST"),
+      put: makeSse("PUT"),
+      trace: makeSse("TRACE"),
+    },
     trace: (options) => request({ ...options, method: "TRACE" }),
   };
 };

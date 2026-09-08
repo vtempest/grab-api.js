@@ -44,7 +44,9 @@ const client = createClient(createConfig({ baseUrl: BASE, debug: false }));
 // ─── Setup ────────────────────────────────────────────────────────────────────
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  // mockReset (not just clearAllMocks) so a once-queue left over from a test
+  // that errors out mid-stream never leaks its remaining entries forward.
+  mockFetch.mockReset();
   grab.log = [];
   grab.mock = {};
   grab.defaults = {};
@@ -274,6 +276,169 @@ describe('auth and interceptors', () => {
       client.buildUrl({ path: { petId: '9' }, query: { full: true }, url: '/pets/{petId}' }),
     ).toBe(`${BASE}/pets/9?full=true`);
     expect(mockFetch).not.toHaveBeenCalled();
+  });
+});
+
+// ─── Server-sent events ───────────────────────────────────────────────────────
+
+/** Queues a `text/event-stream` response built from raw SSE frame text. */
+function mockSse(body: string, status = 200) {
+  mockFetch.mockResolvedValueOnce(
+    new Response(body, {
+      status,
+      headers: { 'Content-Type': 'text/event-stream' },
+    }),
+  );
+}
+
+describe('server-sent events', () => {
+  it('streams parsed data events in order', async () => {
+    mockSse(
+      'data: {"progress":1}\n\n' + 'event: done\ndata: {"progress":2}\n\n',
+    );
+
+    const { stream } = await client.sse.get({ url: '/jobs/1/events' });
+
+    const events: unknown[] = [];
+    for await (const event of stream) events.push(event);
+
+    expect(events).toEqual([{ progress: 1 }, { progress: 2 }]);
+    const sentRequest = mockFetch.mock.calls[0]?.[0] as Request;
+    expect(sentRequest.url).toBe(`${BASE}/jobs/1/events`);
+    expect(sentRequest.method).toBe('GET');
+  });
+
+  it('reports event, id and retry metadata through onSseEvent', async () => {
+    mockSse('event: progress\nid: 42\nretry: 5000\ndata: {"pct":50}\n\n');
+
+    const seen: unknown[] = [];
+    const { stream } = await client.sse.get({
+      onSseEvent: (event) => seen.push(event),
+      url: '/jobs/1/events',
+    });
+    for await (const _ of stream);
+
+    expect(seen).toEqual([
+      { data: { pct: 50 }, event: 'progress', id: '42', retry: 5000 },
+    ]);
+  });
+
+  it('sends the Last-Event-ID header on a reconnect', async () => {
+    // First connection delivers one event, then the stream itself breaks
+    // (a normal end-of-stream never triggers a reconnect, only an error does).
+    let pulls = 0;
+    const droppedBody = new ReadableStream({
+      pull(controller) {
+        pulls++;
+        if (pulls === 1) {
+          controller.enqueue(new TextEncoder().encode('id: 1\ndata: {"n":1}\n\n'));
+        } else {
+          controller.error(new Error('connection reset'));
+        }
+      },
+    });
+    mockFetch.mockResolvedValueOnce(
+      new Response(droppedBody, {
+        status: 200,
+        headers: { 'Content-Type': 'text/event-stream' },
+      }),
+    );
+    mockSse('data: {"n":2}\n\n');
+
+    const { stream } = await client.sse.get({
+      sseSleepFn: () => Promise.resolve(),
+      url: '/jobs/1/events',
+    });
+
+    const events: unknown[] = [];
+    for await (const event of stream) events.push(event);
+
+    expect(events).toEqual([{ n: 1 }, { n: 2 }]);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect((mockFetch.mock.calls[1]?.[0] as Request).headers.get('Last-Event-ID')).toBe('1');
+  });
+
+  it('gives up after sseMaxRetryAttempts and reports the error', async () => {
+    mockFetch.mockRejectedValue(new Error('down'));
+
+    const errors: unknown[] = [];
+    const { stream } = await client.sse.get({
+      onSseError: (error) => errors.push(error),
+      sseMaxRetryAttempts: 2,
+      sseSleepFn: () => Promise.resolve(),
+      url: '/jobs/1/events',
+    });
+
+    const events: unknown[] = [];
+    for await (const event of stream) events.push(event);
+
+    expect(events).toEqual([]);
+    expect(errors).toHaveLength(2);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not go through grab', async () => {
+    mockSse('data: {"ok":true}\n\n');
+
+    const { stream } = await client.sse.get({ url: '/jobs/1/events' });
+    for await (const _ of stream);
+
+    expect(grab.log).toHaveLength(0);
+  });
+
+  it('applies a bearer token from the security scheme', async () => {
+    mockSse('data: {"ok":true}\n\n');
+
+    const authed = createClient(
+      createConfig({ auth: () => 'secret', baseUrl: BASE, debug: false }),
+    );
+
+    const { stream } = await authed.sse.get({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/jobs/1/events',
+    });
+    for await (const _ of stream);
+
+    const sentRequest = mockFetch.mock.calls[0]?.[0] as Request;
+    expect(sentRequest.headers.get('Authorization')).toBe('Bearer secret');
+  });
+
+  it('runs request interceptors before connecting', async () => {
+    mockSse('data: {"ok":true}\n\n');
+
+    const scoped = createClient(createConfig({ baseUrl: BASE, debug: false }));
+    scoped.interceptors.request.use((request) => {
+      const next = new Request(request);
+      next.headers.set('X-Trace', 'on');
+      return next;
+    });
+
+    const { stream } = await scoped.sse.get({ url: '/jobs/1/events' });
+    for await (const _ of stream);
+
+    const sentRequest = mockFetch.mock.calls[0]?.[0] as Request;
+    expect(sentRequest.headers.get('X-Trace')).toBe('on');
+  });
+
+  it('reports a non-ok response as an SSE error', async () => {
+    mockFetch.mockResolvedValue(
+      new Response(null, { status: 503, statusText: 'Service Unavailable' }),
+    );
+
+    const errors: unknown[] = [];
+    const { stream } = await client.sse.get({
+      onSseError: (error) => errors.push(error),
+      sseMaxRetryAttempts: 1,
+      sseSleepFn: () => Promise.resolve(),
+      url: '/jobs/1/events',
+    });
+
+    const events: unknown[] = [];
+    for await (const event of stream) events.push(event);
+
+    expect(events).toEqual([]);
+    expect(errors).toHaveLength(1);
+    expect((errors[0] as Error).message).toBe('SSE failed: 503 Service Unavailable');
   });
 });
 
