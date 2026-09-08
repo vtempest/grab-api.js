@@ -436,3 +436,14 @@ Debounced search, client-side caching, rate limiting, retry with error handling,
   github="OpenSourceAGI/GRAB-URL/tree/master/examples/cookbook"
   openFile="src/main.ts"
 />
+
+### Call a generated OpenAPI SDK
+
+If the API you're calling has an OpenAPI spec, generate the client instead of hand-writing it — the generated functions still send their requests with grab, so everything above applies to every endpoint. See [Set Up Hey API with GRAB](/docs/openapi-services/heyapi-setup).
+
+<StackBlitzExample
+  title="Open the Hey API SDK example"
+  description="A generated Petstore SDK with per-request caching, errors returned as data, and grab.mock stubbing an endpoint."
+  github="OpenSourceAGI/GRAB-URL/tree/master/examples/heyapi-petstore"
+  openFile="src/main.ts"
+/>

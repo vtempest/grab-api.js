@@ -34,6 +34,15 @@ npm i -D @hey-api/openapi-ts
 npx heyapi-grab https://petstore3.swagger.io/api/v3/openapi.json ./src/client
 ```
 
+New to this? [Set Up Hey API with GRAB](/docs/openapi-services/heyapi-setup) walks the same thing through step by step, with framework wiring and troubleshooting. This page is the reference.
+
+<StackBlitzExample
+  title="Run the generated SDK"
+  description="The Petstore SDK from the command above, already generated and wired to grab."
+  github="OpenSourceAGI/GRAB-URL/tree/master/examples/heyapi-petstore"
+  openFile="src/main.ts"
+/>
+
 | Option                    | Purpose                                                              |
 | ------------------------- | -------------------------------------------------------------------- |
 | `-i, --input <path\|url>` | OpenAPI spec to generate from                                         |
@@ -113,6 +122,13 @@ grab.mock["/pets/42"] = { response: { id: "42", name: "Rex" } };
 
 const { data } = await getPet({ path: { petId: "42" } }); // { id: "42", name: "Rex" }
 ```
+
+<StackBlitzExample
+  title="Stub an endpoint with grab.mock"
+  description="addPet answered from grab.mock with no network call and no change to the calling code."
+  github="OpenSourceAGI/GRAB-URL/tree/master/examples/heyapi-petstore"
+  openFile="src/main.ts"
+/>
 
 ## Results
 
