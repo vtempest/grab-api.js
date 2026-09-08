@@ -385,6 +385,61 @@ describe('server-sent events', () => {
 
     expect(grab.log).toHaveLength(0);
   });
+
+  it('applies a bearer token from the security scheme', async () => {
+    mockSse('data: {"ok":true}\n\n');
+
+    const authed = createClient(
+      createConfig({ auth: () => 'secret', baseUrl: BASE, debug: false }),
+    );
+
+    const { stream } = await authed.sse.get({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/jobs/1/events',
+    });
+    for await (const _ of stream);
+
+    const sentRequest = mockFetch.mock.calls[0]?.[0] as Request;
+    expect(sentRequest.headers.get('Authorization')).toBe('Bearer secret');
+  });
+
+  it('runs request interceptors before connecting', async () => {
+    mockSse('data: {"ok":true}\n\n');
+
+    const scoped = createClient(createConfig({ baseUrl: BASE, debug: false }));
+    scoped.interceptors.request.use((request) => {
+      const next = new Request(request);
+      next.headers.set('X-Trace', 'on');
+      return next;
+    });
+
+    const { stream } = await scoped.sse.get({ url: '/jobs/1/events' });
+    for await (const _ of stream);
+
+    const sentRequest = mockFetch.mock.calls[0]?.[0] as Request;
+    expect(sentRequest.headers.get('X-Trace')).toBe('on');
+  });
+
+  it('reports a non-ok response as an SSE error', async () => {
+    mockFetch.mockResolvedValue(
+      new Response(null, { status: 503, statusText: 'Service Unavailable' }),
+    );
+
+    const errors: unknown[] = [];
+    const { stream } = await client.sse.get({
+      onSseError: (error) => errors.push(error),
+      sseMaxRetryAttempts: 1,
+      sseSleepFn: () => Promise.resolve(),
+      url: '/jobs/1/events',
+    });
+
+    const events: unknown[] = [];
+    for await (const event of stream) events.push(event);
+
+    expect(events).toEqual([]);
+    expect(errors).toHaveLength(1);
+    expect((errors[0] as Error).message).toBe('SSE failed: 503 Service Unavailable');
+  });
 });
 
 // ─── Codegen rewiring ─────────────────────────────────────────────────────────
