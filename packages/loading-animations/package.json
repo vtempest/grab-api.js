@@ -11,6 +11,7 @@
       "import": "./dist/svg/index.es.js",
       "require": "./dist/svg/index.cjs.js"
     },
+    "./svg/src": "./src/svg/index.ts",
     ".": {
       "import": "./src/cli/index.js",
       "require": "./src/cli/index.js"

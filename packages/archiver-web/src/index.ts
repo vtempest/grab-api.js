@@ -222,9 +222,7 @@ export async function extract(options: {
   const zip = await JSZip.loadAsync(archiveBuffer);
   const files: ExtractEvent[] = [];
 
-  const zipEntries = Object.entries(zip.files) as [string, any][];
-
-  for (const [relativePath, zipEntry] of zipEntries) {
+  for (const [relativePath, zipEntry] of Object.entries<any>(zip.files)) {
     if (zipEntry.dir) continue;
 
     if (folderPath && !relativePath.startsWith(folderPath)) continue;
