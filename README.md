@@ -56,6 +56,14 @@ npm i grab-url
 **CLI File Downloader**
 ```bash
 npx grab-url https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-live-server-amd64.iso
+
+# SFTP, torrents and magnet links (needs aria2c installed)
+npx grab-url sftp://user@host/srv/backup.tar.gz --password hunter2
+npx grab-url "magnet:?xt=urn:btih:HASH" -d ./downloads
+
+# Detach and keep going in the background; Ctrl+C on any transfer offers the same
+npx grab-url https://example.com/big.iso --background
+npx grab-url --jobs
 ```
 
 
