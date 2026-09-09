@@ -12,7 +12,7 @@
   },
   "workspaces": [
     "packages/*",
-    "docs"
+    "grab-help-docs"
   ],
   "main": "./dist/grab-api.cjs.js",
   "types": "./dist/grab-api.d.ts",
@@ -61,8 +61,9 @@
   ],
   "scripts": {
     "build": "vite build --config vite.config.ts",
-    "make": "npm run make:icons && npm run make:docs && npm run build",
-    "make:docs": "npx turbo run build --filter=grab-url-docs",
+    "make": "npm run make:icons && npm run make:skill && npm run make:docs && npm run build",
+    "make:docs": "npx turbo run build --filter=grab-help-docs",
+    "make:skill": "node ./scripts/sync-skill-docs.mjs",
     "make:icons": "npx export-svg-typescript@latest -i ./packages/loading-animations/src/svg -o ./packages/loading-animations/src/svg/index.ts",
     "ship": "bun x standard-version --release-as patch;rm CHANGELOG.md; npm publish",
     "test:ui": "vitest --ui",

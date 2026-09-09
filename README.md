@@ -48,7 +48,7 @@ npm i grab-url
 19. **Repeat**: Repeat request this many times, or repeat every X seconds to poll for updates.
 20. **Loading Icons**: Import from `grab-url/icons` to get enhanced animated loading icons.
 21. **Auto-Unzip**: Automatically extracts ZIP responses into `{ data: { filename: content } }` using archiver-web. Set `unzip: false` to disable.
-22. **DOM Parsing**: Automatically parses HTML responses. Pass `dom: "selector"` for CSS selector extraction or `dom: false` to disable. Uses linkedom.
+22. **DOM Parsing**: Automatically parses HTML responses. Pass `parseDOM: "selector"` for CSS selector extraction or `parseDOM: false` to disable. Uses linkedom.
 23. **[OpenAPI SDKs](https://grab.js.org/docs/openapi-services)**: Generate a typed client from any OpenAPI spec with [Hey API](https://heyapi.dev) and have it send requests with grab instead of axios: `npx api2client ./openapi.yaml ./src/client`. Every endpoint gets caching, retries, rate limiting, dedupe and mocks.
 
 ### Examples
@@ -92,7 +92,7 @@ const zipData = await grab('https://example.com/archive.zip', {
 
 // Parse HTML and extract elements
 const title = await grab('https://example.com', { 
-  dom: 'h1' 
+  parseDOM: 'h1' 
 })
 // { data: "Page Title" }
 
