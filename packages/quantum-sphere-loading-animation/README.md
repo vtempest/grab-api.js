@@ -23,7 +23,10 @@
 
 https://github.com/user-attachments/assets/903f2483-6fac-4592-be09-5fdc17196a84
 
-## [DEMO](https://v0-quantum-sphere-demo.vercel.app)
+## [DEMO](https://grab.js.org/loaders/quantum-sphere)
+
+Tune every setting live and copy the matching `config` at
+[grab.js.org/loaders/quantum-sphere](https://grab.js.org/loaders/quantum-sphere).
 
 A parabolic spherical orbital loading component, inspired by [quantum superposition of atomic orbitals](https://www.thoughtco.com/definition-of-molecular-orbital-605367) and the wave function collapse concept. Particles occupy multiple quantum states until interacting (hovering), creating a mesmerizing, high-performance UI element.
 
@@ -41,8 +44,10 @@ Available for both **React** and **Svelte 5**.
 
 ```
 bun i quantum-sphere-loading-icon
-
 ```
+
+It also ships inside [`grab-url`](https://grab.js.org), so a project that already
+depends on that can skip the install and import from `grab-url/icons/quantum-sphere`.
 
 ## Usage
 

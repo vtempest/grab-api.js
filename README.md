@@ -46,7 +46,7 @@ npm i grab-url
 17. **Request Stategies**: [🎯 Examples](https://grab.js.org/docs/examples) show common stategies like debounce, repeat, proxy, unit tests, interceptors, file upload, etc
 18. **Rate Limiting**: Built-in rate limiting to prevent multi-click cascading responses, require to wait seconds between requests.
 19. **Repeat**: Repeat request this many times, or repeat every X seconds to poll for updates.
-20. **Loading Icons**: Import from `grab-url/icons` to get enhanced animated loading icons.
+20. **Loading Icons**: Import from `grab-url/icons` to get enhanced animated loading icons, including the [quantum sphere](https://grab.js.org/loaders/quantum-sphere) — an interactive 3D orbital loader for React and Svelte that re-rolls its own colors and collapses each ring you hover: `import QuantumOrbital from 'grab-url/icons/quantum-sphere'`.
 21. **Auto-Unzip**: Automatically extracts ZIP responses into `{ data: { filename: content } }` using archiver-web. Set `unzip: false` to disable.
 22. **DOM Parsing**: Automatically parses HTML responses. Pass `dom: "selector"` for CSS selector extraction or `dom: false` to disable. Uses linkedom.
 23. **[OpenAPI SDKs](https://grab.js.org/docs/openapi-services)**: Generate a typed client from any OpenAPI spec with [Hey API](https://heyapi.dev) and have it send requests with grab instead of axios: `npx api2client ./openapi.yaml ./src/client`. Every endpoint gets caching, retries, rate limiting, dedupe and mocks.
@@ -132,6 +132,10 @@ const title = await grab('https://example.com', {
 **Animated SVG Loading Icons with Customizable Colors**
 
 ![icons](https://i.imgur.com/OqpWya1.gif)
+
+**Quantum Sphere Loader** — [live demo](https://grab.js.org/loaders/quantum-sphere)
+
+https://github.com/user-attachments/assets/903f2483-6fac-4592-be09-5fdc17196a84
 
 **Set Types for Tooltips on Request & Response**
 

@@ -1,19 +1,101 @@
 ---
 title: Loading Animations
-description: Every loading icon in the repo — eight React Spinner variants and 25 zero-dependency SVG animations — rendered live, with size and color controls.
+description: Every loading icon in the repo — the quantum sphere orbital, eight React Spinner variants and 25 zero-dependency SVG animations — rendered live, with size and color controls.
 icon: Loader
 ---
 
-The [`loading-animations`](https://github.com/vtempest/GRAB-URL/tree/master/packages/loading-animations)
-package ships two collections that cover both ends of a download UI:
+The repo ships three collections that cover both ends of a download UI:
 
-- **`<Spinner>`** — a shadcn/ui-style React component with eight variants. Draws with
-  `currentColor`, so a text color class is all it takes to restyle.
+- **Quantum sphere** — an interactive 3D orbital loader for React and Svelte, from
+  [`quantum-sphere-loading-icon`](https://github.com/vtempest/GRAB-URL/tree/master/packages/quantum-sphere-loading-animation).
+  The showpiece: it randomizes itself and reacts to the pointer.
+- **`<Spinner>`** — a shadcn/ui-style React component with eight variants, from
+  [`loading-animations`](https://github.com/vtempest/GRAB-URL/tree/master/packages/loading-animations).
+  Draws with `currentColor`, so a text color class is all it takes to restyle.
 - **SVG functions** — 25 animated SVGs returned as strings from a single function call.
   Zero dependencies, framework-free, and tree-shakable: bundlers drop anything you don't import.
 
 Every animation below is live. Drag the size slider or pick a color, then click any label
 to copy the exact call that produces what you see.
+
+## Quantum sphere
+
+A parabolic spherical orbital, inspired by the quantum superposition of atomic orbitals.
+Each ring spins in its own 3D plane and holds a superposed state until it is observed —
+hover a ring and it collapses onto a fresh hue, glow and rotation speed. Every few seconds
+the whole sphere re-rolls its color scheme from 24 presets (Neon, Galaxy, Cyberpunk, …).
+
+<QuantumSpherePreview />
+
+It is the one loader here that is a component rather than a string, so it is also the only
+one that responds to the pointer. Give the wrapper a height — the sphere centers itself in
+whatever box it is handed.
+
+**Full demo:** every setting is on a slider at
+[grab.js.org/loaders/quantum-sphere](/loaders/quantum-sphere), which prints the matching
+`config` ready to copy.
+
+### Install
+
+Already included if you have `grab-url` — it re-exports the sphere from
+`grab-url/icons/quantum-sphere`. Standalone, it is its own package:
+
+```sh
+npm install quantum-sphere-loading-icon
+```
+
+### Usage
+
+```tsx
+// Bundled with grab-url:
+import QuantumOrbital from 'grab-url/icons/quantum-sphere';
+// Or standalone:
+import QuantumOrbital from 'quantum-sphere-loading-icon/react';
+
+export function Loading() {
+  return (
+    <div style={{ height: 400 }}>
+      <QuantumOrbital autoRandomize />
+    </div>
+  );
+}
+```
+
+```svelte
+<script>
+  import QuantumOrbital from 'quantum-sphere-loading-icon/svelte';
+</script>
+
+<div style="height: 400px">
+  <QuantumOrbital autoRandomize={true} />
+</div>
+```
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `config` | `OrbitalSphereConfig` | preset | Min/max bounds for line count, sphere size, line width, glow, rotation speed, saturation and lightness |
+| `autoRandomize` | `boolean` | `true` | Re-rolls the color scheme and shifts hue every 5–12s |
+| `className` | `string` | `""` | Extra classes on the wrapper |
+| `onSphereClick` | `() => void` | `null` | Fired when the sphere is clicked |
+
+`config` is expressed as ranges, and the component draws each value from its range on every
+re-roll. Setting a `min` equal to its `max` pins that dimension instead — which is how the
+demo page turns a randomizer into a picker:
+
+```tsx
+import { DEFAULT_ORBITAL_SPHERE_CONFIG } from 'grab-url/icons/quantum-sphere';
+
+// A fixed 9-ring, 180px sphere that still re-rolls its colors.
+<QuantumOrbital
+  config={{
+    ...DEFAULT_ORBITAL_SPHERE_CONFIG,
+    minLines: 9,
+    maxLines: 9,
+    minSphereSize: 180,
+    maxSphereSize: 180,
+  }}
+/>
+```
 
 ## React `<Spinner>`
 
@@ -136,7 +218,7 @@ npm run make:icons
 
 ## Terminal spinners
 
-For CLI progress there is a third collection of Unicode frame data, used by
+For CLI progress there is one more collection, of Unicode frame data, used by
 [`grab-url-cli`](/docs/cli):
 
 ```js
