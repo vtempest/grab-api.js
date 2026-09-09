@@ -1,5 +1,5 @@
 /**
- * @file heyapi.test.ts
+ * @file api2client.test.ts
  * @description Unit tests for the Hey API client backed by grab().
  * Runs in Node (Vitest) with fetch stubbed out.
  */
@@ -14,7 +14,7 @@ import {
   createClient,
   createConfig,
   rewireGeneratedClient,
-} from '../packages/heyapi-client-grab/src/index.js';
+} from '../packages/api2client/src/index.js';
 
 // ─── Mock fetch ───────────────────────────────────────────────────────────────
 
@@ -448,7 +448,7 @@ describe('rewireGeneratedClient', () => {
   let dir: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'heyapi-grab-'));
+    dir = mkdtempSync(join(tmpdir(), 'api2client-'));
   });
 
   afterEach(() => {
@@ -464,7 +464,7 @@ describe('rewireGeneratedClient', () => {
 
     expect(rewired).toContain(join(dir, 'client', 'client.gen.ts'));
     expect(readFileSync(join(dir, 'client', 'client.gen.ts'), 'utf8')).toContain(
-      'from "heyapi-client-grab"',
+      'from "api2client"',
     );
   });
 
@@ -482,10 +482,10 @@ describe('rewireGeneratedClient', () => {
 
     expect(rewired).toHaveLength(2);
     expect(readFileSync(join(dir, 'client.gen.ts'), 'utf8')).toContain(
-      `from 'heyapi-client-grab'`,
+      `from 'api2client'`,
     );
     expect(readFileSync(join(dir, 'sdk.gen.ts'), 'utf8')).toContain(
-      `from "heyapi-client-grab"`,
+      `from "api2client"`,
     );
   });
 

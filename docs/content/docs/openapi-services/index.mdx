@@ -14,7 +14,7 @@ If your API has an OpenAPI (Swagger) spec, you don't need to hand-write a client
 
 ```bash
 # Typed TypeScript client, requests sent through grab
-npx heyapi-grab ./openapi.yaml ./src/client
+npx api2client ./openapi.yaml ./src/client
 
 # MCP server exposing every endpoint as a tool for AI agents
 npx api2ai ./openapi.yaml ./my-mcp-server
@@ -22,7 +22,7 @@ npx api2ai ./openapi.yaml ./my-mcp-server
 
 Every endpoint from either tool inherits grab's caching, retries, rate limiting, request deduplication and mock server — no extra wiring, and no axios or raw `fetch` calls to maintain.
 
-|                          | `heyapi-client-grab` | [`api2ai`](/docs/openapi-services/api2ai-mcp-server) |
+|                          | `api2client` | [`api2ai`](/docs/openapi-services/api2ai-mcp-server) |
 | ------------------------ | -------------------- | ---------------------------------------------------- |
 | Produces                 | A typed TypeScript SDK (`getPet()`, `createPet()`, …) | A standalone MCP server |
 | Consumed by              | Your app's code      | AI agents — Claude Desktop, ChatGPT Apps, any MCP client |
@@ -32,24 +32,24 @@ Every endpoint from either tool inherits grab's caching, retries, rate limiting,
 | Extra safety             | —                    | Risk classification, approval gates, host allowlist |
 | Built on                 | [Hey API](https://heyapi.dev) | [mcp-use](https://mcp-use.com) |
 
-Use `heyapi-client-grab` when you call the API from your own code, `api2ai` when you want an AI agent to call it as a tool. Nothing stops you from generating both from one spec.
+Use `api2client` when you call the API from your own code, `api2ai` when you want an AI agent to call it as a tool. Nothing stops you from generating both from one spec.
 
 ---
 
 # Hey API: typed SDK powered by GRAB
 
-[Hey API](https://heyapi.dev) turns an OpenAPI spec into a fully typed SDK — one function and one set of types per endpoint. It ships clients built on fetch, axios and ky; [`heyapi-client-grab`](https://github.com/vtempest/GRAB-URL/tree/master/packages/heyapi-client-grab) adds one built on grab. The generated code is unchanged — same functions, same types — only the transport is swapped.
+[Hey API](https://heyapi.dev) turns an OpenAPI spec into a fully typed SDK — one function and one set of types per endpoint. It ships clients built on fetch, axios and ky; [`api2client`](https://github.com/vtempest/GRAB-URL/tree/master/packages/api2client) adds one built on grab. The generated code is unchanged — same functions, same types — only the transport is swapped.
 
 ## Set up
 
 ```bash npm2yarn
-npm i grab-url heyapi-client-grab
+npm i grab-url api2client
 npm i -D @hey-api/openapi-ts
 
-npx heyapi-grab https://petstore3.swagger.io/api/v3/openapi.json ./src/client
+npx api2client https://petstore3.swagger.io/api/v3/openapi.json ./src/client
 ```
 
-`heyapi-client-grab` is both the runtime client and the `heyapi-grab` CLI. `@hey-api/openapi-ts` is Hey API's generator — install it as a dev dependency, or the CLI falls back to `npx -y @hey-api/openapi-ts` and refetches it on every run. Requires Node 18+ and `grab-url` ≥ 1.6.22.
+`api2client` is both the runtime client and the CLI command. `@hey-api/openapi-ts` is Hey API's generator — install it as a dev dependency, or the CLI falls back to `npx -y @hey-api/openapi-ts` and refetches it on every run. Requires Node 18+ and `grab-url` ≥ 1.6.22.
 
 The command generates the SDK, then rewires it to grab:
 
@@ -71,7 +71,7 @@ The command generates the SDK, then rewires it to grab:
 <StackBlitzExample
   title="Run the generated SDK"
   description="The Petstore SDK from the command above, already generated and wired to grab — cached reads, an error returned as data, and an endpoint stubbed with grab.mock."
-  github="OpenSourceAGI/GRAB-URL/tree/master/examples/heyapi-petstore"
+  github="OpenSourceAGI/GRAB-URL/tree/master/examples/api2client-petstore"
   openFile="src/main.ts"
 />
 
@@ -90,12 +90,12 @@ Anything else is forwarded to the `openapi-ts` CLI, so `--plugins`, `--dry-run` 
 ```json title="package.json"
 {
   "scripts": {
-    "codegen": "openapi-ts && heyapi-grab --rewire-only ./src/client"
+    "codegen": "openapi-ts && api2client --rewire-only ./src/client"
   }
 }
 ```
 
-Rewiring handles both output shapes Hey API produces: package imports of `@hey-api/client-fetch` (or `-axios`, `-ky`, `-next`, `-nuxt`, `-ofetch`) are repointed at `heyapi-client-grab`, and a client bundled into `<output>/client/` is replaced with a shim re-exporting the grab client. `sdk.gen.ts` and `types.gen.ts` are untouched either way. The same is available from Node as `generateFromOpenAPI({ input, output })` and `rewireGeneratedClient(output)`.
+Rewiring handles both output shapes Hey API produces: package imports of `@hey-api/client-fetch` (or `-axios`, `-ky`, `-next`, `-nuxt`, `-ofetch`) are repointed at `api2client`, and a client bundled into `<output>/client/` is replaced with a shim re-exporting the grab client. `sdk.gen.ts` and `types.gen.ts` are untouched either way. The same is available from Node as `generateFromOpenAPI({ input, output })` and `rewireGeneratedClient(output)`.
 
 Commit the generated directory and regenerate as a script, so a spec change shows up as a reviewable diff. In CI, fail the build when it drifts:
 
@@ -127,7 +127,7 @@ client.setConfig({
 Or build clients yourself — for a second API, or one per tenant. The SDK falls back to the shared client when you don't pass one:
 
 ```ts
-import { createClient, createConfig } from "heyapi-client-grab";
+import { createClient, createConfig } from "api2client";
 
 const admin = createClient(createConfig({ baseUrl: "https://admin.example.com" }));
 
@@ -233,7 +233,7 @@ client.setConfig({
 
 ## Compared to the official clients
 
-| Feature | `heyapi-client-grab` | `@hey-api/client-fetch` | `@hey-api/client-axios` |
+| Feature | `api2client` | `@hey-api/client-fetch` | `@hey-api/client-axios` |
 | --- | --- | --- | --- |
 | Typed generated SDK | ✅ Same codegen | ✅ Yes | ✅ Yes |
 | Caching | ✅ Built-in | ❌ No | ❌ No |
@@ -259,7 +259,7 @@ Behavioral differences:
 
 **`No generated output found at …`** — `--rewire-only` was pointed at a directory that doesn't exist yet. Run generation first, or drop the flag.
 
-**The SDK still imports `@hey-api/client-fetch`** — generation ran with `--no-rewire`, or the output directory moved. Re-run `heyapi-grab --rewire-only ./src/client`.
+**The SDK still imports `@hey-api/client-fetch`** — generation ran with `--no-rewire`, or the output directory moved. Re-run `api2client --rewire-only ./src/client`.
 
 **`response.status` is always 200 on failures** — the installed `grab-url` predates 1.6.23, so the client can't read the raw response through `onRawResponse`. Upgrade `grab-url`; the client detects support and never sends options an older grab would turn into query parameters.
 

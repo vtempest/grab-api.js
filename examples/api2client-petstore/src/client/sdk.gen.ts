@@ -5,7 +5,7 @@ import type {
   Client,
   Options as ClientOptions,
   TDataShape,
-} from "heyapi-client-grab";
+} from "api2client";
 
 import { client as _heyApiClient } from "./client.gen";
 import type {
