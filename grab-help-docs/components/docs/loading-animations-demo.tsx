@@ -10,7 +10,7 @@
  */
 
 import { useId, useState } from 'react';
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy, Plus, X } from 'lucide-react';
 import * as loadingSvgs from 'loading-animations/svg/src';
 import { SPINNER_VARIANTS, Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
@@ -53,6 +53,38 @@ const TEXT_COLORS = [
   { label: 'Emerald', className: 'text-emerald-500', swatch: '#10b981' },
   { label: 'Rose', className: 'text-rose-500', swatch: '#f43f5e' },
 ] as const;
+
+/**
+ * Ready-made palettes for the SVG gallery. `colors` is handed straight to the
+ * animation functions, which substitute entries into the SVG in source order —
+ * so a theme with three colors restyles the first three colors of every icon and
+ * leaves the rest of a busier icon (`loadingSquareBlocks` has 32) untouched.
+ */
+const COLOR_THEMES = [
+  { label: 'Zinc', colors: ['#71717a'] },
+  { label: 'Ocean', colors: ['#0099e5', '#38bdf8', '#a5f3fc'] },
+  { label: 'Sunset', colors: ['#f97316', '#f43f5e', '#facc15'] },
+  { label: 'Forest', colors: ['#059669', '#34d399', '#a3e635'] },
+  { label: 'Grape', colors: ['#7c3aed', '#a855f7', '#ec4899'] },
+  { label: 'Slate', colors: ['#334155', '#64748b', '#94a3b8'] },
+  { label: 'Candy', colors: ['#ff4c4c', '#ffb703', '#06d6a0'] },
+  { label: 'Neon', colors: ['#00f5d4', '#f15bb5', '#fee440'] },
+] as const;
+
+/** Cycled through when "Add color" appends a swatch, so each new one is visibly different. */
+const NEXT_COLOR_CYCLE = [
+  '#0099e5',
+  '#ff4c4c',
+  '#10b981',
+  '#f59e0b',
+  '#a855f7',
+  '#ec4899',
+  '#14b8a6',
+  '#eab308',
+];
+
+/** Ceiling on the swatch list — past this the row stops being readable. */
+const MAX_COLORS = 12;
 
 /** Click-to-copy label used under every animation in the gallery. */
 function CopyableCode({ code, label }: { code: string; label: string }) {
@@ -137,6 +169,61 @@ function SizeControl({
   );
 }
 
+/** Renders a theme's colors as a single strip, so the chip previews the palette. */
+function ThemeSwatch({ colors }: { colors: readonly string[] }) {
+  return (
+    <span className="flex size-4 shrink-0 overflow-hidden rounded-full border border-fd-border">
+      {colors.map((themeColor) => (
+        <span key={themeColor} className="flex-1" style={{ backgroundColor: themeColor }} />
+      ))}
+    </span>
+  );
+}
+
+/** One editable swatch in the color list: pick a hex, or drop it from the palette. */
+function ColorSwatch({
+  color,
+  index,
+  onChange,
+  onRemove,
+}: {
+  color: string;
+  index: number;
+  onChange: (next: string) => void;
+  onRemove?: () => void;
+}) {
+  const id = useId();
+
+  return (
+    <span className="flex items-center gap-1.5 rounded-full border border-fd-border bg-fd-card py-0.5 pr-1 pl-1.5">
+      <label htmlFor={id} className="sr-only">
+        {`Color ${index + 1}`}
+      </label>
+      <input
+        id={id}
+        type="color"
+        value={color}
+        onChange={(event) => onChange(event.target.value)}
+        className="size-5 cursor-pointer rounded border-0 bg-transparent p-0"
+      />
+      <span className="font-mono text-xs uppercase">{color}</span>
+      {onRemove ? (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Remove color ${index + 1}`}
+          className="rounded-full p-0.5 text-fd-muted-foreground transition-colors hover:bg-fd-muted hover:text-fd-foreground"
+        >
+          <X className="size-3" />
+        </button>
+      ) : (
+        // Keeps single-color and multi-color pills the same width so the row doesn't jump.
+        <span className="size-4" aria-hidden="true" />
+      )}
+    </span>
+  );
+}
+
 /** The eight `<Spinner variant>` values, colored with Tailwind text utilities. */
 export function SpinnerVariants() {
   const [size, setSize] = useState(32);
@@ -195,10 +282,42 @@ export function SpinnerVariants() {
 /** Every SVG-string animation exported by `loading-animations/svg`. */
 export function LoadingSvgGallery() {
   const [size, setSize] = useState(64);
-  const [color, setColor] = useState('#71717a');
+  const [colors, setColors] = useState<string[]>(['#71717a']);
   const [recolor, setRecolor] = useState(false);
-  const colorId = useId();
   const recolorId = useId();
+
+  /** The theme whose palette is currently loaded, so its chip can read as selected. */
+  const activeTheme = COLOR_THEMES.find(
+    (theme) =>
+      theme.colors.length === colors.length &&
+      theme.colors.every((themeColor, index) => themeColor === colors[index]),
+  );
+
+  const applyTheme = (themeColors: readonly string[]) => {
+    setColors([...themeColors]);
+    setRecolor(true);
+  };
+
+  const addColor = () => {
+    setColors((current) => {
+      if (current.length >= MAX_COLORS) return current;
+      const next =
+        NEXT_COLOR_CYCLE.find((candidate) => !current.includes(candidate)) ??
+        NEXT_COLOR_CYCLE[current.length % NEXT_COLOR_CYCLE.length]!;
+      return [...current, next];
+    });
+    setRecolor(true);
+  };
+
+  const setColorAt = (index: number, next: string) =>
+    setColors((current) => current.map((color, i) => (i === index ? next : color)));
+
+  const removeColorAt = (index: number) =>
+    setColors((current) =>
+      current.length > 1 ? current.filter((_, i) => i !== index) : current,
+    );
+
+  const colorList = colors.map((color) => `'${color}'`).join(', ');
 
   return (
     <div className="not-prose my-6 flex flex-col gap-4">
@@ -214,29 +333,71 @@ export function LoadingSvgGallery() {
           />
           Override colors
         </label>
-        <label
-          htmlFor={colorId}
-          className={cn(
-            'flex items-center gap-2 text-sm text-fd-muted-foreground',
-            !recolor && 'pointer-events-none opacity-40',
-          )}
-        >
-          <input
-            id={colorId}
-            type="color"
-            value={color}
-            onChange={(event) => setColor(event.target.value)}
-            className="size-6 cursor-pointer rounded border-0 bg-transparent p-0"
-          />
-          <span className="font-mono text-xs uppercase">{color}</span>
-        </label>
+      </div>
+
+      <div
+        className={cn(
+          'flex flex-col gap-3 rounded-lg border border-fd-border bg-fd-card/50 p-3 transition-opacity',
+          // Dimmed rather than disabled: the palette is still editable while
+          // "Override colors" is off, and touching it turns the override on.
+          !recolor && 'opacity-60',
+        )}
+      >
+        <div className="flex flex-wrap items-center gap-2 text-sm text-fd-muted-foreground">
+          <span className="shrink-0">Theme</span>
+          {COLOR_THEMES.map((theme) => (
+            <button
+              key={theme.label}
+              type="button"
+              aria-pressed={recolor && theme === activeTheme}
+              onClick={() => applyTheme(theme.colors)}
+              className={cn(
+                'flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs transition-colors',
+                recolor && theme === activeTheme
+                  ? 'border-fd-primary bg-fd-primary/10 text-fd-foreground'
+                  : 'border-fd-border hover:bg-fd-muted hover:text-fd-foreground',
+              )}
+            >
+              <ThemeSwatch colors={theme.colors} />
+              {theme.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 text-sm text-fd-muted-foreground">
+          <span className="shrink-0">Colors</span>
+          {colors.map((color, index) => (
+            <ColorSwatch
+              // Index is the identity here: two swatches may hold the same hex, and
+              // editing one must not re-key the other.
+              key={index}
+              color={color}
+              index={index}
+              onChange={(next) => setColorAt(index, next)}
+              onRemove={colors.length > 1 ? () => removeColorAt(index) : undefined}
+            />
+          ))}
+          <button
+            type="button"
+            onClick={addColor}
+            disabled={colors.length >= MAX_COLORS}
+            className="flex items-center gap-1 rounded-full border border-dashed border-fd-border px-2 py-1 text-xs transition-colors hover:bg-fd-muted hover:text-fd-foreground disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Plus className="size-3" />
+            Add color
+          </button>
+        </div>
+
+        <p className="text-xs text-fd-muted-foreground">
+          {recolor
+            ? 'Colors are substituted in source order, so extra entries only show on icons that use that many.'
+            : 'Icons are drawing their built-in colors. Pick a theme or edit a swatch to apply this palette.'}
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {SVG_ENTRIES.map(([name, render]) => {
-          const options = recolor
-            ? { size, colors: [color], raw: true }
-            : { size, raw: true };
+          const options = recolor ? { size, colors, raw: true } : { size, raw: true };
           const isMonochrome = (MONOCHROME_EXPORTS as readonly string[]).includes(name);
 
           return (
@@ -244,7 +405,7 @@ export function LoadingSvgGallery() {
               key={name}
               label={name}
               badge={isMonochrome ? 'new' : undefined}
-              code={`${name}({ size: ${size}${recolor ? `, colors: ['${color}']` : ''} })`}
+              code={`${name}({ size: ${size}${recolor ? `, colors: [${colorList}]` : ''} })`}
             >
               {/* `raw: true` returns the SVG markup itself (rather than an <img> data URI) so it
                   inlines into the page. The markup comes from this repo's own package, never user input. */}

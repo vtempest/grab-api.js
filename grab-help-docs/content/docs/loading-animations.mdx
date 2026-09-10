@@ -15,8 +15,9 @@ The repo ships three collections that cover both ends of a download UI:
 - **SVG functions** — 25 animated SVGs returned as strings from a single function call.
   Zero dependencies, framework-free, and tree-shakable: bundlers drop anything you don't import.
 
-Every animation below is live. Drag the size slider or pick a color, then click any label
-to copy the exact call that produces what you see.
+Every animation below is live. Drag the size slider, load a preset theme or build your own
+palette one color at a time, then click any label to copy the exact call that produces what
+you see.
 
 ## Quantum sphere
 
@@ -104,7 +105,7 @@ import { DEFAULT_ORBITAL_SPHERE_CONFIG } from 'grab-url/icons/quantum-sphere';
 ### Install
 
 The component is a single file with no runtime dependency beyond `lucide-react`. Copy
-[`components/ui/spinner.tsx`](https://github.com/vtempest/GRAB-URL/blob/master/docs/components/ui/spinner.tsx)
+[`components/ui/spinner.tsx`](https://github.com/vtempest/GRAB-URL/blob/master/grab-help-docs/components/ui/spinner.tsx)
 into your own `components/ui` folder — the folder shadcn/ui writes to, so the component
 sits alongside `button`, `badge` and the rest and stays overwritable by the shadcn CLI.
 
@@ -190,9 +191,29 @@ type LoadingOptions = {
 };
 ```
 
+### Colors
+
+`colors` is substituted into the SVG in source order: the first entry replaces the first
+color in the markup, the second the second, and so on. Anything the array doesn't reach
+keeps its original color, so the list only needs to be as long as the icon is colorful.
+
 The eight animations badged **new** above are the SVG twins of the `<Spinner>` variants.
-Each contains exactly one color, so a single entry in `colors` restyles the whole
-animation — the older multi-color spinners need one entry per color instead.
+Each contains exactly one color, so a single entry restyles the whole animation. The older
+spinners hold more — two in `loadingDoubleRing`, `loadingFloatingSearch`, `loadingOrbital`,
+`loadingReloadArrow` and `loadingRipple`, three in `loadingPulseBars` and
+`loadingRedBlueBall`, six in `loadingPacman`, eight in `loadingSpinner`, ten in
+`loadingEllipsis`, twelve in `loadingSpinnerOval` and thirty-two in
+`loadingSquareBlocks` — and take that many entries to recolor completely.
+
+Use the **Theme** row in the gallery to load a ready-made palette, then **Add color** to
+extend it. The copied call always matches whatever the swatch row holds:
+
+```ts
+loadingDoubleRing({ size: 64, colors: ['#7c3aed', '#ec4899'] });
+
+// Three entries against six colors: the first three are replaced, the rest stay as drawn.
+loadingPacman({ size: 64, colors: ['#0099e5', '#38bdf8', '#a5f3fc'] });
+```
 
 | SVG export | `<Spinner>` variant |
 | --- | --- |
