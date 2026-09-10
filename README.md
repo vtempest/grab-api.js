@@ -174,10 +174,6 @@ https://github.com/user-attachments/assets/903f2483-6fac-4592-be09-5fdc17196a84
 
 ![Autocomplete](https://i.imgur.com/XlxILJ0.png)
 
-**Hover over options for info**
-
-![Info Tooltip](https://i.imgur.com/vV5jbZo.png)
-
 ## Comparison of HTTP Request Libraries
 
 | Feature                  | [GRAB](https://github.com/vtempest/GRAB-URL) | [Axios](https://github.com/axios/axios) | [TanStack Query](https://github.com/TanStack/query) | [SWR](https://github.com/vercel/swr) | [Alova](https://github.com/alovajs/alova) | [SuperAgent](https://github.com/ladjs/superagent) | [Apisauce](https://github.com/infinitered/apisauce) | [Ky](https://github.com/sindresorhus/ky) |
