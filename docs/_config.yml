@@ -1,36 +1,10 @@
 # GitHub Pages builds this folder with Jekyll (Settings -> Pages -> "Deploy from
-# a branch", folder /docs). The real documentation site at https://grab.js.org
-# is the Next.js + Fumadocs app that lives here and is built with `next build`,
-# so Jekyll must not try to render its sources.
+# a branch", folder /docs), which is why this folder still exists after the
+# documentation app moved to ../grab-help-docs.
 #
-# Without this, Jekyll picks up every front-mattered `.mdx` file under content/
-# as a page and runs it through Liquid, which chokes on JSX expressions such as
-# `<TypeTable type={{ ... }} />` and on `{{ user.name }}` inside code samples:
-#
-#   Liquid Exception: Liquid syntax error (line 9): Variable '{{ headers: {
-#   ... }' was not properly terminated with regexp: /\}\}/
-#   in content/docs/grab-options.mdx
-#
-# README.md is excluded for the same reason (its `descriptions={{ ... }}` MDX
-# sample), and because jekyll-readme-index would otherwise publish it as the
-# index page in place of index.html below.
+# The real documentation site at https://grab.js.org is the Next.js + Fumadocs
+# app in `grab-help-docs/`, built with `next build`. All that lives here is the
+# index.html redirect below, so Jekyll has nothing it can choke on — no `.mdx`
+# sources with JSX expressions, no README with `{{ ... }}` in a code sample.
 exclude:
-  - .next
-  - .source
-  - README.md
-  - app
-  - cli.json
-  - components
-  - content
-  - dist
-  - lib
-  - mdx-components.tsx
-  - next-env.d.ts
-  - next.config.ts
   - node_modules
-  - out
-  - package.json
-  - postcss.config.mjs
-  - proxy.ts
-  - source.config.ts
-  - tsconfig.json
