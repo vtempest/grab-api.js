@@ -156,7 +156,7 @@ Reconnects honor the server's `retry:` field and send `Last-Event-ID` from the l
 
 ## Requirements
 
-Works with any `grab-url` ≥ 1.6.22. On 1.6.23 and later it also uses the `onRawResponse` hook to report the response status, headers and parsed error payloads; on older versions those degrade to grab's error message (`"HTTP error: 404 Not Found"`) and a synthesized 200 response. The client detects support and never sends options an older grab would turn into query parameters.
+Needs `grab-url` ≥ 1.6.23 for the `onRawResponse` hook, which is what reports the response status, headers and parsed error payloads. The client detects support and never sends options an older grab would turn into query parameters, so it still runs on 1.6.22 — but there a failed request comes back as grab's error message (`"HTTP error: 404 Not Found"`) with **no `response` at all**, so `result.response.status` throws. Anything that branches on the status needs 1.6.23.
 
 ## What's in this package
 
