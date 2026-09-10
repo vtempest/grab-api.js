@@ -5,7 +5,7 @@
 # this one never deploys -- docs/_config.yml keeps that build green in the meantime.
 #
 # The site is a full Next.js app, so it is exported statically here: see
-# docs/scripts/build-static-pages.mjs for the server-only pieces that are pruned and
+# grab-help-docs/scripts/build-static-pages.mjs for the server-only pieces that are pruned and
 # what each costs. https://grab.js.org builds from the same source without this flag
 # and keeps all of them.
 name: Deploy docs to Pages
@@ -14,7 +14,7 @@ on:
   push:
     branches: [master]
     paths:
-      - docs/**
+      - grab-help-docs/**
       - packages/**
       - package.json
       - package-lock.json
@@ -55,11 +55,11 @@ jobs:
       - name: Build static export
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
-        run: node docs/scripts/build-static-pages.mjs
+        run: node grab-help-docs/scripts/build-static-pages.mjs
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/out
+          path: grab-help-docs/out
 
   deploy:
     environment:
