@@ -37,7 +37,7 @@ export default async function Page(props: {
   const lastUpdate = await getGithubLastEdit({
     owner: 'vtempest',
     repo: 'grab-url',
-    path: `docs/content/docs/${page.path}`,
+    path: `grab-help-docs/content/docs/${page.path}`,
     token: process.env.GITHUB_TOKEN ? `Bearer ${process.env.GITHUB_TOKEN}` : undefined,
   }).catch(() => null);
 

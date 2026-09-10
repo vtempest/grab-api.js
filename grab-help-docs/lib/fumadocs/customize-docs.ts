@@ -8,7 +8,7 @@ export const docsConfig: DocsConfig = {
   github: "https://github.com/vtempest/grab-url",
   githubPackages: "https://github.com/vtempest/grab-url/tree/master/packages",
   githubDocs:
-    "https://github.com/vtempest/GRAB-URL/tree/master/docs/content/docs",
+    "https://github.com/vtempest/GRAB-URL/tree/master/grab-help-docs/content/docs",
   favicon: "/favicon.ico",
   topLinks: [
     {

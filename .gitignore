@@ -42,9 +42,9 @@ test/test-downloads
 .next/
 .vercel
 .grab-downloads/
-docs/dist/
+grab-help-docs/dist/
 .claude
 build.log
 pnpm-lock.yaml
 .turbo
-docs/.next_old
+grab-help-docs/.next_old
