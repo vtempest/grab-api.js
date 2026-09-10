@@ -29,7 +29,9 @@ export default function DefaultSearchDialog(props: SharedProps) {
   const { locale } = useI18n(); // (optional) for i18n
   const { search, setSearch, query } = useDocsSearch({
     type: 'static',
-    from: '/docs/api/docs-search',
+    // `basePath` rewrites links and assets but not fetch() URLs, so the GitHub Pages
+    // build (served under /<repo>) has to prefix the search index path itself.
+    from: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/docs/api/docs-search`,
     initOrama,
     locale,
   });

@@ -20,5 +20,20 @@ export async function GET(
 }
 
 export function generateStaticParams() {
-  return source.generateParams();
+  const params = source.generateParams();
+
+  if (process.env.DOCS_STATIC_EXPORT !== "1") return params;
+
+  // A static export writes this extensionless route handler to one plain file per
+  // slug. Any slug that is also the prefix of a deeper one -- the docs root, and
+  // section indexes such as `openapi-services` -- would have to be a file and the
+  // directory holding its children at the same time, and Next fails the export with
+  // "EISDIR: illegal operation on a directory". Drop those; server deployments keep
+  // them and still serve each index page as text.
+  const prefixes = new Set<string>();
+  for (const { slug = [] } of params) {
+    for (let i = 0; i < slug.length; i++) prefixes.add(slug.slice(0, i).join("/"));
+  }
+
+  return params.filter(({ slug = [] }) => !prefixes.has(slug.join("/")));
 }
