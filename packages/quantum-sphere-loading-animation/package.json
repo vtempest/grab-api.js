@@ -4,24 +4,24 @@
   "description": "Parabolic spherical orbital loading component for React and Svelte, inspired by quantum superposition of atomic orbitals.",
   "type": "module",
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "svelte": "./src/svelte/QuantumOrbital.svelte",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./react": {
-      "types": "./dist/react/QuantumOrbital.d.ts",
+      "types": "./src/react/index.ts",
       "import": "./src/react/index.ts",
       "require": "./src/react/index.ts"
     },
     "./icons": {
       "types": "./dist/icons.d.ts",
-      "import": "./dist/icons.mjs",
-      "require": "./dist/icons.js"
+      "import": "./dist/icons.js",
+      "require": "./dist/icons.cjs"
     },
     "./svelte": {
       "types": "./src/types/QuantumOrbital.d.ts",

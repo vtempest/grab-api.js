@@ -71,6 +71,18 @@
     "test:coverage": "vitest run --coverage",
     "test:cli": "bun src/grab-url-cli/index.ts https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-live-server-amd64.iso"
   },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "chalk": "^5.3.0",
     "cli-progress": "^3.12.0",

@@ -8,6 +8,7 @@ import {
   LoadingSvgGallery,
   SpinnerVariants,
 } from '@/components/docs/loading-animations-demo';
+import { QuantumSpherePreview } from '@/components/docs/quantum-sphere-demo';
 import type { MDXComponents } from 'mdx/types';
 // make sure you can use it in MDX files
 
@@ -24,6 +25,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     StackBlitzExample,
     LoadingAnimationsDemo,
     LoadingSvgGallery,
+    QuantumSpherePreview,
     SpinnerVariants,
     ...components,
   };
