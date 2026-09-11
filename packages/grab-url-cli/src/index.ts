@@ -35,6 +35,7 @@ import {
   reportDetached,
 } from "./background.js";
 import { colors } from "./display/progress-format.js";
+import { archivePage, reportArchive } from "./page/archive-page.js";
 import { getStateDirectory } from "./transfer/resume-state.js";
 import { isCancelInProgress, setCancelInProgress } from "./cancel-state.js";
 import grab, { log } from "../../grab-api/src/index.js";
@@ -69,6 +70,34 @@ export {
 } from "./background.js";
 export type { JobRecord } from "./background.js";
 export { isCancelInProgress, setCancelInProgress } from "./cancel-state.js";
+export { archivePage, reportArchive, ARCHIVE_FILES } from "./page/archive-page.js";
+export type { ArchivePageOptions, ArchivePageResult } from "./page/archive-page.js";
+export {
+  titleToFolderName,
+  urlToFolderName,
+  resolveFolderName,
+  MAX_FOLDER_NAME,
+} from "./page/folder-name.js";
+export {
+  escapeHTML,
+  wrapDocument,
+  buildApaCite,
+  buildCiteDocument,
+  buildContentDocument,
+  buildTranscriptDocument,
+} from "./page/archive-html.js";
+export {
+  findYtDlp,
+  ytDlpInstallHint,
+  parseYtDlpSize,
+  parseYtDlpEta,
+  parseYtDlpProgress,
+  buildYtDlpArgs,
+  describeYtDlpExit,
+  probeYtDlp,
+  runYtDlpDownload,
+} from "./transfer/ytdlp-transfer.js";
+export type { YtDlpMetadata, YtDlpOptions, YtDlpProgress } from "./transfer/ytdlp-transfer.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -112,6 +141,29 @@ if (__isMain) {
           throw new Error(`Invalid JSON in params: ${arg}`);
         }
       },
+    })
+    .option("page", {
+      alias: "P",
+      type: "boolean",
+      default: false,
+      describe:
+        "Archive each URL into a folder named after its title: page, content, cite, transcript, video",
+    })
+    .option("no-video", {
+      type: "boolean",
+      default: false,
+      describe: "With --page, skip the yt-dlp video download",
+    })
+    .option("video-format", {
+      type: "string",
+      default: null,
+      describe: "With --page, format selector passed to yt-dlp -f (e.g. bestvideo+bestaudio)",
+    })
+    .option("lang", {
+      type: "string",
+      default: null,
+      describe:
+        "With --page, comma-separated transcript languages, most preferred first (default: en)",
     })
     .option("background", {
       alias: "b",
@@ -204,6 +256,14 @@ if (__isMain) {
     .example(
       "grab-url https://example.com/big.iso --background",
       "Detach immediately and keep downloading in the background",
+    )
+    .example(
+      "grab-url https://example.com/article --page",
+      "Archive the page into ./<Page Title>/ with its content, cite and any video",
+    )
+    .example(
+      "grab-url https://youtu.be/dQw4w9WgXcQ --page -d ./archive",
+      "Archive a video: transcript, cite and the video file under ./archive/<Title>/",
     )
     .example("grab-url --jobs", "List background transfers that are still running")
     .version("1.2.0")
@@ -330,6 +390,44 @@ if (__isMain) {
   if (!process.stdin.isTTY) process.on("SIGINT", () => void handleCancel());
 
   (async () => {
+    // --- Page Archive Mode: one folder per URL, named after its title ---
+    if (argv.page) {
+      const languages: string[] = (argv.lang || "")
+        .split(",")
+        .map((code: string) => code.trim())
+        .filter(Boolean);
+
+      let failures = 0;
+      for (const url of webUrls) {
+        try {
+          reportArchive(
+            await archivePage(url, {
+              dir: argv.dir,
+              folderName: webUrls.length === 1 ? outputFile : null,
+              skipVideo: argv["no-video"],
+              videoFormat: argv["video-format"],
+              languages,
+            }),
+          );
+        } catch (error: any) {
+          failures++;
+          console.error(
+            colors.error.bold("💥 Could not archive ") +
+              colors.warning(`${url}: ${error.message}`),
+          );
+        }
+      }
+      if (aria2Targets.length) {
+        console.log(
+          colors.warning(
+            `⚠ --page only archives web pages; ignored ${aria2Targets.length} sftp/torrent/magnet target(s)`,
+          ),
+        );
+      }
+      // Nothing archivable at all is a failure, not a silent success.
+      process.exit(failures > 0 || !webUrls.length ? 1 : 0);
+    }
+
     // --- aria2c Mode: sftp / torrent / magnet ---
     let aria2Failures = 0;
     for (const target of aria2Targets) {

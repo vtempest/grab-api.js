@@ -30,6 +30,7 @@ from [`grab-url`](https://grab.js.org):
 | A one-off call, a third-party API with no spec, a scrape, a download, a quick script | `grab()` directly                                                     |
 | An AI agent needs to call the API as a tool                                          | `npx api2ai <spec> ./mcp-server` — an MCP server over the same spec  |
 | A file to download, or an SFTP / torrent / magnet transfer, from a terminal          | `npx grab-url <url>` — the [CLI](#cli)                                |
+| A web page to keep — its article, citation, transcript and video — from a terminal   | `npx grab-url <url> --page` — [page archives](#page-archives)          |
 
 The first two send their requests through the same `grab` transport, so caching, retries,
 rate limiting, deduplication, mocks and the request log apply either way.
@@ -872,6 +873,7 @@ npm i -g grab-url          # then `grab`, `g`, or `grab-url`; or just `npx grab-
 Mode is auto-detected from the arguments: **API mode** for a single non-file URL (the response
 is parsed as JSON and written to `output.json`), **download mode** when several URLs are passed
 or any of them looks like a file, and **aria2 mode** for SFTP, torrent and magnet targets.
+`--page` opts into **page-archive mode** instead, which saves a whole page as a folder.
 
 ```bash
 # API mode — fetch JSON and save it to output.json
@@ -889,6 +891,10 @@ npx grab-url sftp://user@host/srv/backup.tar.gz --password hunter2
 npx grab-url ./ubuntu.torrent -d ./downloads
 npx grab-url "magnet:?xt=urn:btih:HASH" -d ./downloads --seed
 
+# Page-archive mode — one folder per URL, named after the page title
+npx grab-url https://example.com/article --page
+npx grab-url https://youtu.be/dQw4w9WgXcQ --page -d ./archive --lang es,en
+
 # Background transfers
 npx grab-url https://example.com/big.iso --background    # detach at once
 npx grab-url --jobs                                      # list what is still running
@@ -902,6 +908,10 @@ npx grab-url --jobs                                      # list what is still ru
 | `--params <json>`    | `-p`  | JSON string of query parameters, e.g. `'{"key":"value"}'`                   |
 | `--no-save`          |       | Print to the console instead of writing a file                              |
 | `--dir <path>`       | `-d`  | Destination directory for downloads and sftp / torrent / magnet transfers   |
+| `--page`             | `-P`  | Archive each URL into a folder named after its page title                   |
+| `--no-video`         |       | With `--page`, skip the yt-dlp video download                               |
+| `--video-format <f>` |       | With `--page`, format selector passed to `yt-dlp -f`                        |
+| `--lang <codes>`     |       | With `--page`, comma-separated transcript languages — default `en`          |
 | `--background`       | `-b`  | Detach at once and keep transferring in the background, logging to a file   |
 | `--jobs`             |       | List background transfers still running, then exit                          |
 | `--log <file>`       |       | Log file for background transfers — default `<state-dir>/logs/`             |
@@ -914,6 +924,44 @@ npx grab-url --jobs                                      # list what is still ru
 | `--aria2-args <s>`   |       | Extra space-separated flags passed straight to `aria2c`                     |
 | `--help`             | `-h`  | Show help                                                                   |
 | `--version`          |       | Show version                                                                |
+
+### Page archives
+
+`--page` saves a page as a folder you can read with no network, named after the page title:
+
+```text
+Rockets A Primer/
+  page.html              the full page exactly as fetched
+  content.html           reading-mode article body
+  cite.html              APA citation + extracted metadata
+  transcript.html        YouTube transcript, when the URL is a video
+  Rockets [abc123].mp4   whatever yt-dlp caught, when it recognised the URL
+```
+
+```bash
+npx grab-url https://example.com/article --page              # ./<Page Title>/
+npx grab-url https://youtu.be/dQw4w9WgXcQ --page -d ./archive
+npx grab-url https://example.com/article --page --no-video   # text only
+npx grab-url https://example.com/talk --page --video-format bestaudio
+npx grab-url https://youtu.be/x --page --lang es,en          # transcript language order
+```
+
+Content, citation and transcript come from
+[`extract-webpage`](https://www.npmjs.com/package/extract-webpage), qwksearch's extractor —
+the same Readability + Mercury content detection, 100+ site adapters and author/date citation
+parsing. It is an **optional peer dependency**, because it pulls in jsdom and linkedom and only
+`--page` needs it, so install it alongside the CLI: `npm i -g extract-webpage`.
+
+The video step is handed to [`yt-dlp`](https://github.com/yt-dlp/yt-dlp), which is offered every
+archived URL and keeps whatever it recognises — it supports well over a thousand sites, including
+videos embedded in an ordinary article. It is optional too: without it the HTML files are still
+written and the CLI notes the miss. `GRAB_YTDLP_PATH` points at a binary that is not on `PATH`,
+and playlists and channels are never expanded.
+
+The page is fetched once and feeds both `page.html` and the extractor, so the archived page and
+the archived article are always the same revision. `-d` chooses the parent directory; with a
+single URL `-o` overrides the folder name. Re-running the same command refreshes an existing
+folder rather than creating a second copy.
 
 ### SFTP, torrents and magnet links
 

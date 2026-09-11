@@ -1,6 +1,6 @@
 # @grab-url/cli
 
-CLI front end for [`grab-url`](https://grab.js.org). Fetches API responses, downloads files over HTTP(S), and transfers over **SFTP**, **BitTorrent** and **magnet** links — auto-detecting which mode to use from the URL — with colored multi-file progress bars, resumable transfers, keyboard controls, and detachable background jobs.
+CLI front end for [`grab-url`](https://grab.js.org). Fetches API responses, downloads files over HTTP(S), archives whole web pages into readable folders, and transfers over **SFTP**, **BitTorrent** and **magnet** links — auto-detecting which mode to use from the URL — with colored multi-file progress bars, resumable transfers, keyboard controls, and detachable background jobs.
 
 ```bash
 npx grab-url <url> [options]
@@ -39,6 +39,9 @@ npx grab-url https://example.com/big.iso --background
 
 # See what is still running in the background
 npx grab-url --jobs
+
+# Archive a page into ./<Page Title>/ - full page, article, cite, transcript, video
+npx grab-url https://example.com/article --page
 ```
 
 ## Options
@@ -48,6 +51,10 @@ npx grab-url --jobs
 | `--output <file>`   | `-o`  | string  | Output filename (default: `output.json` for APIs, derived from URL for files) |
 | `--params <json>`   | `-p`  | string  | JSON string of query parameters, e.g. `'{"key":"value"}'`                 |
 | `--no-save`         |       | boolean | Don't save output to a file — just print to console                       |
+| `--page`             | `-P`  | Archive each URL into a folder named after its page title                   |
+| `--no-video`         |       | With `--page`, skip the yt-dlp video download                             |
+| `--video-format <f>` |       | With `--page`, format selector passed to `yt-dlp -f`                       |
+| `--lang <codes>`     |       | With `--page`, comma-separated transcript languages (default `en`)         |
 | `--background`      | `-b`  | boolean | Detach at once and keep transferring in the background, logging to a file  |
 | `--jobs`            |       | boolean | List background transfers that are still running, then exit                |
 | `--log <file>`      |       | string  | Log file for background transfers (default: `<state-dir>/logs/`)          |
@@ -63,6 +70,50 @@ npx grab-url --jobs
 | `--version`         |       |         | Show version                                                               |
 
 The CLI auto-detects **download mode** when more than one URL is passed or any URL looks like a file. Otherwise it runs in **API mode** and tries to parse JSON.
+
+## Page archives
+
+`--page` saves a page as a folder you can read with no network, named after the page title:
+
+```text
+Rockets A Primer/
+  page.html              the full page exactly as fetched
+  content.html           reading-mode article body
+  cite.html              APA citation + extracted metadata
+  transcript.html        YouTube transcript, when the URL is a video
+  Rockets [abc123].mp4   whatever yt-dlp caught, when it recognised the URL
+```
+
+```bash
+npx grab-url https://example.com/article --page
+npx grab-url https://youtu.be/dQw4w9WgXcQ --page -d ./archive --lang es,en
+npx grab-url https://example.com/article --page --no-video
+npx grab-url https://example.com/talk --page --video-format bestaudio
+```
+
+Content, citation and transcript come from
+[`extract-webpage`](https://www.npmjs.com/package/extract-webpage), qwksearch's extractor:
+the same Readability + Mercury content detection, 100+ site adapters and author/date citation
+parsing. It is an **optional peer dependency** - it pulls in jsdom and linkedom, and only
+`--page` needs it, so install it alongside the CLI when you want page archives:
+
+```bash
+npm i -g extract-webpage
+```
+
+The video step is handed to [`yt-dlp`](https://github.com/yt-dlp/yt-dlp), which is offered
+every archived URL and keeps whatever it recognises - it supports well over a thousand sites,
+including videos embedded in an ordinary article. It is optional too: without it the HTML
+files are still written and the CLI says so. `GRAB_YTDLP_PATH` points at a binary that is not
+on `PATH`. Playlists and channels are never expanded.
+
+The page is fetched once and feeds both `page.html` and the extractor, so the archived page
+and the archived article are always the same revision. Re-running the same command refreshes
+an existing folder rather than creating a second copy.
+
+`-d` chooses the parent directory; with a single URL, `-o` overrides the folder name
+instead of deriving it from the page title. Several URLs can be archived in one command -
+each gets its own folder, and one failure does not stop the rest.
 
 ## SFTP, torrents and magnet links
 
