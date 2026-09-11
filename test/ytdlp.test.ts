@@ -42,6 +42,8 @@ import {
 import {
     parseArgs,
     releaseAssetName,
+    assetForTriple,
+    tripleFromSidecarPath,
     targetTriple,
     executableName,
 } from '../scripts/install-yt-dlp.mjs';
@@ -404,6 +406,10 @@ describe('install-yt-dlp — parseArgs()', () => {
     it('reads --name=value values', () => {
         expect(parseArgs(['--out-dir=src-tauri/binaries']).outDir).toBe('src-tauri/binaries');
     });
+    it('reads the exact --out path a wrapper substitutes', () => {
+        expect(parseArgs(['--out', '/b/yt-dlp-x86_64-unknown-linux-gnu']).out)
+            .toBe('/b/yt-dlp-x86_64-unknown-linux-gnu');
+    });
     it('does not swallow the next flag as a value', () => {
         expect(parseArgs(['--dir', '--force']).dir).toBeNull();
     });
@@ -421,6 +427,37 @@ describe('install-yt-dlp — releaseAssetName()', () => {
     it('falls back to the python build elsewhere', () => {
         expect(releaseAssetName('linux', 'ppc64')).toBe('yt-dlp');
         expect(releaseAssetName('freebsd', 'x64')).toBe('yt-dlp');
+    });
+});
+
+describe('install-yt-dlp — tripleFromSidecarPath()', () => {
+    it('reads the triple back out of a Tauri sidecar path', () => {
+        expect(tripleFromSidecarPath('/b/binaries/yt-dlp-x86_64-unknown-linux-gnu'))
+            .toBe('x86_64-unknown-linux-gnu');
+        expect(tripleFromSidecarPath('C:\\b\\yt-dlp-x86_64-pc-windows-msvc.exe'))
+            .toBe('x86_64-pc-windows-msvc');
+    });
+    it('returns null when the name carries no triple', () => {
+        expect(tripleFromSidecarPath('/b/yt-dlp')).toBeNull();
+        expect(tripleFromSidecarPath('/b/something-else')).toBeNull();
+    });
+});
+
+describe('install-yt-dlp — assetForTriple()', () => {
+    it('maps the triples a Tauri build targets', () => {
+        expect(assetForTriple('x86_64-unknown-linux-gnu')).toBe('yt-dlp_linux');
+        expect(assetForTriple('aarch64-unknown-linux-gnu')).toBe('yt-dlp_linux_aarch64');
+        expect(assetForTriple('aarch64-apple-darwin')).toBe('yt-dlp_macos');
+        expect(assetForTriple('x86_64-apple-darwin')).toBe('yt-dlp_macos');
+        expect(assetForTriple('x86_64-pc-windows-msvc')).toBe('yt-dlp.exe');
+        expect(assetForTriple('i686-pc-windows-msvc')).toBe('yt-dlp_x86.exe');
+    });
+    it('handles the non-glibc and 32-bit ARM Linux triples', () => {
+        // These are exactly the hosts a process.arch mapping gets wrong, which
+        // is why the triple is read back from the path rather than re-derived.
+        expect(assetForTriple('x86_64-unknown-linux-musl')).toBe('yt-dlp_linux');
+        expect(assetForTriple('aarch64-unknown-linux-musl')).toBe('yt-dlp_linux_aarch64');
+        expect(assetForTriple('armv7-unknown-linux-gnueabihf')).toBe('yt-dlp_linux_armv7l');
     });
 });
 

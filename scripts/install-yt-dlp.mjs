@@ -31,6 +31,7 @@
  *   node scripts/install-yt-dlp.mjs --dir ./vendor      # somewhere else
  *   node scripts/install-yt-dlp.mjs --sidecar           # Tauri externalBin name
  *   node scripts/install-yt-dlp.mjs --sidecar --target aarch64-apple-darwin
+ *   node scripts/install-yt-dlp.mjs --sidecar --out path/to/yt-dlp-<triple>
  */
 
 import { spawnSync } from 'node:child_process';
@@ -62,6 +63,7 @@ export function parseArgs(argv) {
         postinstall: flag('postinstall'),
         quiet: flag('quiet'),
         dir: value('dir'),
+        out: value('out'),
         outDir: value('out-dir'),
         target: value('target'),
     };
@@ -102,6 +104,44 @@ export function targetTriple(platform = process.platform, arch = process.arch) {
     if (platform === 'win32') return `${cpu}-pc-windows-msvc`;
     if (platform === 'linux') return `${cpu}-unknown-linux-gnu`;
     return null;
+}
+
+/**
+ * Read the Rust target triple back out of a sidecar path such as
+ * `.../yt-dlp-x86_64-unknown-linux-gnu.exe`.
+ *
+ * A wrapper that substitutes `{out}` has already resolved the triple from the
+ * installed toolchain, and that is the name Tauri will search for at bundle
+ * time. Taking it from the path rather than re-deriving it from
+ * process.platform is what keeps the two from disagreeing on hosts the Node
+ * mapping gets wrong — a musl Linux, or a 32-bit Node on a 64-bit machine.
+ *
+ * Both separators are handled rather than deferring to path.basename(), which
+ * only understands the host's own — a Windows path cross-built from Linux would
+ * otherwise parse to nothing.
+ *
+ * @param {string} outPath - Path the binary must be written to
+ */
+export function tripleFromSidecarPath(outPath) {
+    const name = outPath.split(/[\\/]/).pop() ?? '';
+    const match = /^yt-dlp-(.+)$/.exec(name.replace(/\.exe$/i, ''));
+    return match ? match[1] : null;
+}
+
+/**
+ * Release asset that runs on a given Rust target triple.
+ *
+ * @param {string} triple - e.g. `aarch64-apple-darwin`
+ */
+export function assetForTriple(triple) {
+    const platform = triple.includes('windows') ? 'win32'
+        : triple.includes('darwin') ? 'darwin'
+            : 'linux';
+    const cpu = /^(aarch64|arm64)/.test(triple) ? 'arm64'
+        : /^i[356]86/.test(triple) ? 'ia32'
+            : /^(armv7|arm-|thumbv7)/.test(triple) ? 'arm'
+                : 'x64';
+    return releaseAssetName(platform, cpu);
 }
 
 /** Executable file name for a platform. */
@@ -199,23 +239,26 @@ export async function main() {
     }
 
     if (options.sidecar) {
-        const triple = options.target || targetTriple();
+        // `--out` is the exact path a wrapper's {out} substitution asks for, so
+        // the triple comes from that name rather than being derived again.
+        const triple = options.target
+            || (options.out && tripleFromSidecarPath(options.out))
+            || targetTriple();
         if (!triple) throw new Error(`no Tauri target triple for ${process.platform}/${process.arch}`);
-        const outDir = resolve(options.outDir || 'src-tauri/binaries');
+
         const suffix = triple.includes('windows') ? '.exe' : '';
-        const destination = join(outDir, `yt-dlp-${triple}${suffix}`);
+        const destination = options.out
+            ? resolve(options.out)
+            : join(resolve(options.outDir || 'src-tauri/binaries'), `yt-dlp-${triple}${suffix}`);
 
         if (existsSync(destination) && !options.force) {
             say(`grab-url: sidecar already present at ${destination} (use --force to refresh).`);
             return;
         }
-        const asset = releaseAssetName(
-            triple.includes('windows') ? 'win32' : triple.includes('darwin') ? 'darwin' : 'linux',
-            triple.startsWith('aarch64') ? 'arm64' : triple.startsWith('i686') ? 'ia32' : 'x64',
-        );
+        const asset = assetForTriple(triple);
         say(`grab-url: downloading ${asset} as Tauri sidecar ${destination}`);
         await install(asset, destination);
-        say(`grab-url: sidecar ready. Add "binaries/yt-dlp" to tauri.conf.json → bundle.externalBin.`);
+        say('grab-url: sidecar ready. Add "binaries/yt-dlp" to tauri.conf.json → bundle.externalBin.');
         return;
     }
 

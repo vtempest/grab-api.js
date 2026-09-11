@@ -12,6 +12,7 @@
   },
   "workspaces": [
     "packages/*",
+    "!packages/native-app-wrapper",
     "grab-help-docs"
   ],
   "main": "./dist/grab-api.cjs.js",
