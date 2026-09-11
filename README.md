@@ -82,6 +82,10 @@ _Drop it into any stack, any runtime, or generate a whole client from a spec._
 ```bash
 npx grab-url https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-live-server-amd64.iso
 
+# 700+ media sites are detected by domain and pulled with yt-dlp, installed on npm install
+npx grab-url "https://www.youtube.com/watch?v=VIDEO_ID"
+npx grab-url https://soundcloud.com/artist/track -a mp3
+
 # SFTP, torrents and magnet links (needs aria2c installed)
 npx grab-url sftp://user@host/srv/backup.tar.gz --password hunter2
 npx grab-url "magnet:?xt=urn:btih:HASH" -d ./downloads

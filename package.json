@@ -12,6 +12,7 @@
   },
   "workspaces": [
     "packages/*",
+    "!packages/native-app-wrapper",
     "grab-help-docs"
   ],
   "main": "./dist/grab-api.cjs.js",
@@ -57,6 +58,7 @@
   "files": [
     "dist",
     "src",
+    "scripts/install-yt-dlp.mjs",
     "src/loading-animations/cli/loading-animations-emojis.js"
   ],
   "scripts": {
@@ -65,6 +67,9 @@
     "make:docs": "npx turbo run build --filter=grab-help-docs",
     "make:skill": "node ./scripts/sync-skill-docs.mjs",
     "make:icons": "npx export-svg-typescript@latest -i ./packages/loading-animations/src/svg -o ./packages/loading-animations/src/svg/index.ts",
+    "postinstall": "node ./scripts/install-yt-dlp.mjs --postinstall",
+    "ytdlp": "node ./scripts/install-yt-dlp.mjs --force",
+    "ytdlp:sidecar": "node ./scripts/install-yt-dlp.mjs --sidecar",
     "prepublishOnly": "npm run build",
     "ship": "bun x standard-version --release-as patch;rm CHANGELOG.md; npm publish",
     "test:ui": "vitest --ui",

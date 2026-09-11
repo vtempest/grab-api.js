@@ -1,253 +1,278 @@
 /**
  * @file ytdlp-transfer.ts
- * @description Video downloads delegated to the external
- * [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) binary, wrapped in the same
- * cli-progress UI the HTTP and aria2c transfers use.
+ * @description Media-site downloads delegated to the external `yt-dlp` binary,
+ * wrapped in the same cli-progress UI the HTTP downloader uses.
  *
- * Used by the `--page` archiver: yt-dlp recognises well over a thousand sites,
- * including videos embedded in an ordinary article, so the archiver simply
- * offers it every URL it saves and keeps whatever it catches. Everything here
- * is pure except {@link probeYtDlp} and {@link runYtDlpDownload}, which spawn
- * the binary.
+ * A URL on a site in `MEDIA_DOMAINS` points at a player page, not at the media,
+ * so fetching it directly saves a page of HTML. Those targets are handed to
+ * yt-dlp, which resolves the real stream, and its machine-readable progress
+ * readout is mirrored into a progress bar. Everything here is pure except
+ * {@link runYtDlpTransfer}, which spawns the child process.
  */
 
 import fs from 'fs';
 import path from 'path';
-import { spawn, spawnSync } from 'child_process';
+import { spawn, type ChildProcess } from 'child_process';
 
 import cliProgress from 'cli-progress';
 
 import {
     COL_BAR, COL_FILENAME,
     colors,
-    formatBytesCompact, formatETA, formatProgress,
+    formatBytes, formatBytesCompact, formatETA, formatProgress,
     formatSpeed, formatSpeedDisplay, formatTotalDisplay, truncateFilename,
 } from '../display/progress-format.js';
+
 import {
+    getSpinnerFrames, getRandomSpinner, getSpinnerWidth,
     calculateBarSize, getRandomBarColor, getRandomBarGlueColor,
-    getRandomSpinner, getSpinnerFrames, getSpinnerWidth,
 } from '../display/spinner-config.js';
+
 import { isCancelInProgress } from '../cancel-state.js';
+import { findYtDlp, ytDlpInstallHint } from './ytdlp-binary.js';
+import { hostnameOf, matchMediaDomain } from './media-domains.js';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-/** The handful of `yt-dlp -J` fields the archiver reads. */
-export interface YtDlpMetadata {
-    id?: string;
-    title?: string;
-    ext?: string;
-    extractor?: string;
-    duration?: number;
-    webpage_url?: string;
-    /** Present on playlist/channel URLs, which the archiver declines to expand. */
-    _type?: string;
-}
-
-/** One parsed `[download] ... ` progress line. */
-export interface YtDlpProgress {
-    percent: number;
-    downloaded: number;
-    total: number;
-    speedBps: number;
-    etaSeconds: number;
-}
-
 export interface YtDlpOptions {
-    /** Destination directory. Defaults to cwd. */
+    /** Destination directory (yt-dlp `--paths`). Defaults to cwd. */
     dir?: string;
-    /** Base filename without extension — yt-dlp appends the container's own. */
-    filename?: string;
-    /** Format selector passed to `yt-dlp -f`. */
+    /** Explicit output name — used verbatim as yt-dlp's output template. */
+    output?: string | null;
+    /** Format selector passed to `-f`, e.g. `bestvideo+bestaudio`. */
     format?: string | null;
-    /** Raw extra flags appended verbatim to the invocation. */
+    /** Extract audio only; the value is the target container (`best` by default). */
+    audioFormat?: string | null;
+    /** Download every entry of a playlist instead of only the linked item. */
+    playlist?: boolean;
+    /** Browser to read cookies from, for members-only or age-gated media. */
+    cookiesFromBrowser?: string | null;
+    /** Raw extra flags appended verbatim to the yt-dlp invocation. */
     extraArgs?: string[];
 }
 
-// ─── Binary discovery ─────────────────────────────────────────────────────────
+export interface YtDlpContext {
+    /** Live pause state — polled so `p` suspends/resumes the child. */
+    isPaused: () => boolean;
+    /** Receives the spawned child so callers can cancel it. */
+    onChild?: (child: ChildProcess | null) => void;
+}
+
+export interface YtDlpProgress {
+    /** yt-dlp's own status word: `downloading`, `finished`, `error`. */
+    status: string;
+    downloaded: number;
+    /** Exact size when known, otherwise yt-dlp's estimate, otherwise 0. */
+    total: number;
+    /** True when {@link YtDlpProgress.total} came from `total_bytes_estimate`. */
+    estimated: boolean;
+    speedBps: number;
+    etaSeconds: number;
+    /** Fragment counters for HLS/DASH streams, null for plain files. */
+    fragmentIndex: number | null;
+    fragmentCount: number | null;
+}
+
+// ─── Target detection ─────────────────────────────────────────────────────────
 
 /**
- * Locate a working `yt-dlp`, honouring `GRAB_YTDLP_PATH`.
+ * True when a target should go through yt-dlp instead of fetch().
  *
- * @returns Its path and version, or null when it is missing or not runnable
+ * @param target - URL to classify
  */
-export function findYtDlp(): { path: string; version: string } | null {
-    const candidate = process.env.GRAB_YTDLP_PATH || 'yt-dlp';
+export function isYtDlpTarget(target: string): boolean {
+    return matchMediaDomain(target) !== null;
+}
+
+/**
+ * Short label for the progress bar before yt-dlp reports a real filename —
+ * the matched site plus the video id or last meaningful path segment.
+ *
+ * @param target - URL being downloaded
+ */
+export function describeYtDlpTarget(target: string): string {
+    const site = matchMediaDomain(target);
     try {
-        const probe = spawnSync(candidate, ['--version'], { encoding: 'utf8' });
-        if (probe.error || probe.status !== 0) return null;
-        return { path: candidate, version: (probe.stdout || '').trim() || 'unknown' };
+        const url = new URL(target);
+        const id = url.searchParams.get('v')
+            || url.pathname.split('/').filter(Boolean).pop()
+            || url.hostname;
+        return site ? `${site}/${id}` : id;
     } catch {
-        return null;
+        return site ?? target;
     }
 }
 
-/** Platform-appropriate install hint shown when yt-dlp is missing. */
-export function ytDlpInstallHint(): string {
-    const hints: Record<string, string> = {
-        darwin: 'brew install yt-dlp',
-        linux: 'pipx install yt-dlp   (or: sudo apt install yt-dlp)',
-        win32: 'winget install yt-dlp.yt-dlp   (or: scoop install yt-dlp)',
-    };
-    return hints[process.platform] ?? 'see https://github.com/yt-dlp/yt-dlp#installation';
-}
-
-// ─── Progress parsing ─────────────────────────────────────────────────────────
-
-const UNIT_FACTORS: Record<string, number> = {
-    B: 1, KIB: 1024, MIB: 1024 ** 2, GIB: 1024 ** 3, TIB: 1024 ** 4,
-    K: 1024, M: 1024 ** 2, G: 1024 ** 3, T: 1024 ** 4,
-    KB: 1024, MB: 1024 ** 2, GB: 1024 ** 3, TB: 1024 ** 4,
-};
-
 /**
- * Convert a yt-dlp size token (`1.44MiB`, `958.00KiB`, `~2.1GiB`) into bytes.
- * yt-dlp prefixes an estimated total with `~`, which carries no extra meaning
- * for a progress bar and is dropped.
+ * Resolve the site label a transfer reports under, or throw when yt-dlp cannot
+ * speak the target's scheme at all.
  *
- * @param token - Size token, possibly undefined
+ * The domain list decides what gets *routed* here by default; it does not gate
+ * what runs. `--ytdlp` deliberately sends off-list URLs, so an unlisted host is
+ * labelled by hostname rather than refused — only magnet URIs, sftp:// and
+ * local paths, which belong to aria2c, are rejected.
+ *
+ * @param target - URL to run through yt-dlp
  */
-export function parseYtDlpSize(token: string | undefined | null): number {
-    if (!token) return 0;
-    const match = /^~?([\d.]+)\s*([KMGT]i?B|B)$/i.exec(token.trim());
-    if (!match) return 0;
-    const factor = UNIT_FACTORS[match[2].toUpperCase()] ?? 1;
-    return Math.round(parseFloat(match[1]) * factor);
+export function resolveYtDlpSite(target: string): string {
+    const host = hostnameOf(target);
+    if (!host) throw new Error(`yt-dlp needs an http(s) URL, got: ${target}`);
+    return matchMediaDomain(target) ?? host;
 }
 
+// ─── Argument building ────────────────────────────────────────────────────────
+
 /**
- * Convert a yt-dlp ETA token (`00:42`, `01:02:03`, `Unknown`) into seconds.
- *
- * @param token - ETA token, possibly undefined
+ * Sentinel-prefixed progress line yt-dlp is asked to emit. Its own readout is a
+ * redrawn, human-formatted bar; this template is stable enough to parse.
  */
-export function parseYtDlpEta(token: string | undefined | null): number {
-    if (!token) return 0;
-    const parts = token.trim().split(':');
-    if (parts.some((p) => !/^\d+$/.test(p))) return 0;
-    return parts.reduce((total, part) => total * 60 + parseInt(part, 10), 0);
+export const YTDLP_PROGRESS_TEMPLATE =
+    'download:@GRAB@%(progress.status)s|%(progress.downloaded_bytes)s'
+    + '|%(progress.total_bytes)s|%(progress.total_bytes_estimate)s'
+    + '|%(progress.speed)s|%(progress.eta)s'
+    + '|%(progress.fragment_index)s|%(progress.fragment_count)s';
+
+/**
+ * Build the full yt-dlp argument list for a target. Pure — no side effects — so
+ * the flag matrix stays unit-testable.
+ *
+ * @param target - Media page URL
+ * @param opts   - User-supplied transfer options
+ */
+export function buildYtDlpArgs(target: string, opts: YtDlpOptions = {}): string[] {
+    const args = [
+        '--newline',
+        '--color', 'never',
+        '--progress',
+        '--progress-template', YTDLP_PROGRESS_TEMPLATE,
+        '--continue',
+        '--no-warnings',
+        '--paths', opts.dir || process.cwd(),
+    ];
+
+    // A media URL often carries a playlist id as well; without this, opening one
+    // track from an album would pull the whole album.
+    args.push(opts.playlist ? '--yes-playlist' : '--no-playlist');
+
+    args.push('--output', opts.output || '%(title)s [%(id)s].%(ext)s');
+
+    if (opts.format) args.push('--format', opts.format);
+    if (opts.audioFormat) args.push('--extract-audio', '--audio-format', opts.audioFormat);
+    if (opts.cookiesFromBrowser) args.push('--cookies-from-browser', opts.cookiesFromBrowser);
+
+    if (opts.extraArgs?.length) args.push(...opts.extraArgs);
+    args.push(target);
+    return args;
+}
+
+// ─── Console-readout parsing ──────────────────────────────────────────────────
+
+/** Convert a progress-template field into a number, treating `NA` as unknown. */
+function parseField(token: string | undefined): number {
+    if (!token || token === 'NA' || token === 'None') return 0;
+    const value = parseFloat(token);
+    return Number.isFinite(value) ? value : 0;
 }
 
 /**
- * Parse one `--newline` progress line into structured progress.
- * Returns null for every other line yt-dlp prints (format selection, merging,
- * warnings), so callers can keep those as diagnostics.
- *
- * Recognises the standard readout:
- * `[download]  23.4% of ~12.34MiB at  1.23MiB/s ETA 00:42`
+ * Parse one sentinel-prefixed progress line into structured progress.
+ * Returns null for every other line yt-dlp writes.
  *
  * @param line - A single line of yt-dlp output
  */
 export function parseYtDlpProgress(line: string): YtDlpProgress | null {
-    if (!line.includes('[download]')) return null;
-    const percentMatch = /\[download\]\s+([\d.]+)%\s+of/.exec(line);
-    if (!percentMatch) return null;
+    const index = line.indexOf('@GRAB@');
+    if (index === -1) return null;
+    const fields = line.slice(index + '@GRAB@'.length).trim().split('|');
+    if (fields.length < 6) return null;
 
-    const percent = parseFloat(percentMatch[1]);
-    const total = parseYtDlpSize(/of\s+(~?[\d.]+\s*[KMGT]?i?B)/i.exec(line)?.[1]);
-    const speedBps = parseYtDlpSize(/at\s+([\d.]+\s*[KMGT]?i?B)\/s/i.exec(line)?.[1]);
+    const [status, downloaded, total, estimate, speed, eta, fragIndex, fragCount] = fields;
+    const exact = parseField(total);
+    const guess = parseField(estimate);
+    const fragmentIndex = parseField(fragIndex);
+    const fragmentCount = parseField(fragCount);
 
     return {
-        percent,
-        downloaded: Math.round((total * percent) / 100),
-        total,
-        speedBps,
-        etaSeconds: parseYtDlpEta(/ETA\s+([\d:]+)/i.exec(line)?.[1]),
+        status: status || 'downloading',
+        downloaded: parseField(downloaded),
+        total: exact || guess,
+        estimated: !exact && guess > 0,
+        speedBps: parseField(speed),
+        etaSeconds: Math.round(parseField(eta)),
+        fragmentIndex: fragmentIndex || null,
+        fragmentCount: fragmentCount || null,
     };
 }
 
 /**
- * Build the `yt-dlp` argument list for a download. Pure, so the flag matrix
- * stays unit-testable.
+ * Pull the output path out of the lines yt-dlp prints when it opens, merges or
+ * skips a file. Returns null for lines that name no destination.
  *
- * @param url - Page or video URL to hand to yt-dlp
- * @param opts - Destination and format options
+ * @param line - A single line of yt-dlp output
  */
-export function buildYtDlpArgs(url: string, opts: YtDlpOptions = {}): string[] {
-    // `%(ext)s` is left to yt-dlp: the container depends on the format it picks.
-    const template = opts.filename
-        ? `${opts.filename}.%(ext)s`
-        : '%(title).150B [%(id)s].%(ext)s';
+export function parseYtDlpDestination(line: string): string | null {
+    const text = line.trim();
+    const destination = /^\[(?:download|ExtractAudio|VideoConvertor|FixupM3u8)\]\s+Destination:\s+(.+)$/.exec(text);
+    if (destination) return destination[1].trim();
 
-    const args = [
-        '--newline',
-        '--no-playlist',
-        '--no-warnings',
-        '--no-color',
-        '--progress',
-        '--restrict-filenames',
-        '--no-part',
-        '--paths', opts.dir || process.cwd(),
-        '--output', template,
-    ];
+    const merged = /^\[Merger\]\s+Merging formats into\s+"(.+)"$/.exec(text);
+    if (merged) return merged[1];
 
-    if (opts.format) args.push('--format', opts.format);
-    if (opts.extraArgs?.length) args.push(...opts.extraArgs);
-    args.push(url);
-    return args;
+    const already = /^\[download\]\s+(.+?)\s+has already been downloaded$/.exec(text);
+    if (already) return already[1];
+
+    return null;
+}
+
+/**
+ * True for yt-dlp's routine chatter (extractor banners, format selection).
+ * Everything else is kept as a candidate explanation for a failure.
+ */
+export function isYtDlpNoise(line: string): boolean {
+    const text = line.trim();
+    if (!text) return true;
+    if (text.startsWith('@GRAB@')) return true;
+    return /^\[(?:youtube|info|download|debug|generic|hlsnative|Merger|ExtractAudio|VideoConvertor|Metadata|dashsegments|MoveFiles|FixupM3u8)[^\]]*\]/i
+        .test(text);
 }
 
 /** Map a yt-dlp exit code to a readable reason. */
 export function describeYtDlpExit(code: number | null): string {
     if (code === null) return 'terminated by signal';
-    if (code === 0) return 'completed';
-    if (code === 1) return 'download failed';
-    if (code === 2) return 'bad command-line option';
-    if (code === 100) return 'yt-dlp needs a newer Python';
-    return `exit code ${code}`;
+    const reasons: Record<number, string> = {
+        0: 'completed',
+        1: 'download failed — the media may be private, region-locked or removed',
+        2: 'bad command-line option',
+        100: 'yt-dlp needs a newer Python than this system has',
+        101: 'stopped early by a --max-downloads or --break-on filter',
+    };
+    return reasons[code] ?? `exit code ${code}`;
 }
 
-// ─── Probe ────────────────────────────────────────────────────────────────────
+// ─── Transfer ─────────────────────────────────────────────────────────────────
 
 /**
- * Ask yt-dlp whether it recognises a URL, without downloading anything.
+ * Run one yt-dlp download with a live progress bar.
  *
- * This is how the archiver decides if a page "has a video": most URLs it is
- * given are ordinary articles and yt-dlp exits non-zero on those, which is a
- * normal, silent outcome rather than an error.
+ * Pause (`p`) suspends the child with SIGSTOP/SIGCONT on POSIX; cancellation is
+ * delivered as SIGINT so yt-dlp leaves its `.part` file in place and the next
+ * run resumes where this one stopped.
  *
- * @param url - The URL being archived
- * @param timeoutMs - Give up after this long (default 30s)
- * @returns Video metadata, or null when yt-dlp does not support the URL
+ * @param target - Media page URL
+ * @param opts   - Transfer options
+ * @param ctx    - Pause state plus child-process handle callback
  */
-export function probeYtDlp(url: string, timeoutMs = 30_000): YtDlpMetadata | null {
-    const binary = findYtDlp();
-    if (!binary) return null;
-    try {
-        const probe = spawnSync(
-            binary.path,
-            ['--dump-single-json', '--no-playlist', '--no-warnings', '--skip-download', url],
-            { encoding: 'utf8', timeout: timeoutMs, maxBuffer: 64 * 1024 * 1024 },
-        );
-        if (probe.error || probe.status !== 0 || !probe.stdout) return null;
-        const meta = JSON.parse(probe.stdout) as YtDlpMetadata;
-        // Playlist and channel URLs would expand into an unbounded download.
-        if (meta._type && meta._type !== 'video') return null;
-        return meta;
-    } catch {
-        return null;
-    }
-}
-
-// ─── Download ─────────────────────────────────────────────────────────────────
-
-/**
- * Download a video with a live progress bar.
- *
- * @param url - Page or video URL
- * @param opts - Destination and format options
- * @param ctx - Receives the spawned child so callers can cancel it
- * @returns Absolute paths of the files yt-dlp reported writing
- * @throws When yt-dlp is missing or exits non-zero
- */
-export async function runYtDlpDownload(
-    url: string,
+export async function runYtDlpTransfer(
+    target: string,
     opts: YtDlpOptions = {},
-    ctx: { onChild?: (child: ReturnType<typeof spawn> | null) => void } = {},
-): Promise<string[]> {
-    const binary = findYtDlp();
-    if (!binary) {
+    ctx: YtDlpContext = { isPaused: () => false },
+): Promise<void> {
+    const site = resolveYtDlpSite(target);
+
+    const ytdlp = findYtDlp();
+    if (!ytdlp) {
         throw new Error(
-            `yt-dlp is required for video downloads but was not found. ` +
-                `Install it with: ${ytDlpInstallHint()}`,
+            `yt-dlp is required for ${site} links but was not found. Install it with:\n${ytDlpInstallHint()}`,
         );
     }
 
@@ -258,7 +283,10 @@ export async function runYtDlpDownload(
         throw new Error(`Could not create output directory ${dir}: ${e.message}`);
     }
 
-    const args = buildYtDlpArgs(url, { ...opts, dir });
+    const label = describeYtDlpTarget(target);
+    console.log(colors.info(`🎬 ${site} via yt-dlp ${ytdlp.version}: ${label}`));
+
+    const args = buildYtDlpArgs(target, { ...opts, dir });
     const frames = getSpinnerFrames(getRandomSpinner());
     const barColor = getRandomBarColor();
     const barGlue = getRandomBarGlueColor();
@@ -272,7 +300,8 @@ export async function runYtDlpDownload(
             colors.cyan('{spinner}') + ' ' +
             barColor + '{bar}' + RESET + ' ' +
             colors.info('{downloadedDisplay}') + ' ' + colors.info('{totalDisplay}') + ' ' +
-            colors.purple('{speed}') + ' ' + colors.pink('{etaFormatted}'),
+            colors.purple('{speed}') + ' ' + colors.pink('{etaFormatted}') + ' ' +
+            colors.primary('{stage}'),
         barCompleteChar: '█',
         barIncompleteChar: '░',
         barGlue,
@@ -282,23 +311,41 @@ export async function runYtDlpDownload(
         stopOnComplete: false,
     });
 
+    let barLabel = label;
     bar.start(100, 0, {
-        filename: truncateFilename(opts.filename || 'video', COL_FILENAME - spinnerWidth),
+        filename: truncateFilename(barLabel, COL_FILENAME - spinnerWidth),
         spinner: frames[0],
         speed: formatSpeed('0B'),
         etaFormatted: formatETA(0),
         progress: formatProgress(0, 0),
         downloadedDisplay: formatBytesCompact(0),
         totalDisplay: formatTotalDisplay(0),
+        stage: '',
     });
 
-    const child = spawn(binary.path, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(ytdlp.path, args, { stdio: ['ignore', 'pipe', 'pipe'] });
     ctx.onChild?.(child);
 
     let frameIndex = 0;
     let lastFrame = Date.now();
-    const written = new Set<string>();
+    let knownTotal = 0;
+    let lastDownloaded = 0;
+    let grandTotal = 0;
+    let part = 0;
+    let merging = false;
+    let suspended = false;
     const messages: string[] = [];
+    const destinations: string[] = [];
+
+    const pausePoll = setInterval(() => {
+        if (process.platform === 'win32' || child.killed) return;
+        const wantPaused = ctx.isPaused();
+        if (wantPaused && !suspended) {
+            try { child.kill('SIGSTOP'); suspended = true; } catch { /* already gone */ }
+        } else if (!wantPaused && suspended) {
+            try { child.kill('SIGCONT'); suspended = false; } catch { /* already gone */ }
+        }
+    }, 200);
 
     const handleLine = (line: string) => {
         const text = line.trim();
@@ -306,35 +353,54 @@ export async function runYtDlpDownload(
 
         const progress = parseYtDlpProgress(text);
         if (progress) {
+            // A video+audio download runs as two sequential streams, each
+            // restarting at zero — count them so the readout says which is live.
+            if (progress.downloaded < lastDownloaded) {
+                grandTotal += lastDownloaded;
+                part++;
+            }
+            lastDownloaded = progress.downloaded;
+
+            if (progress.total > 0 && progress.total !== knownTotal) {
+                knownTotal = progress.total;
+                bar.setTotal(knownTotal);
+            }
+
             const now = Date.now();
             if (now - lastFrame >= 120) {
                 frameIndex = (frameIndex + 1) % frames.length;
                 lastFrame = now;
                 bar.options.barsize = calculateBarSize(frames[frameIndex], COL_BAR);
             }
-            bar.update(progress.percent, {
+
+            const fragments = progress.fragmentCount
+                ? `frag ${progress.fragmentIndex ?? 0}/${progress.fragmentCount}`
+                : '';
+            bar.update(knownTotal > 0 ? progress.downloaded : 0, {
+                filename: truncateFilename(barLabel, COL_FILENAME - spinnerWidth),
                 spinner: frames[frameIndex],
                 speed: formatSpeed(formatSpeedDisplay(progress.speedBps)),
                 etaFormatted: formatETA(progress.etaSeconds),
-                progress: formatProgress(progress.downloaded, progress.total),
+                progress: formatProgress(progress.downloaded, knownTotal),
                 downloadedDisplay: formatBytesCompact(progress.downloaded),
-                totalDisplay: formatTotalDisplay(progress.total),
+                totalDisplay: formatTotalDisplay(knownTotal) + (progress.estimated ? '~' : ''),
+                stage: part > 0 ? `part ${part + 1} ${fragments}`.trim() : fragments,
             });
             return;
         }
 
-        // `[download] Destination: ...` and `[Merger] Merging formats into "..."`
-        // are the two lines that name the file that ends up on disk.
-        const destination =
-            /^\[download\] Destination:\s*(.+)$/.exec(text)?.[1] ??
-            /Merging formats into "(.+)"$/.exec(text)?.[1] ??
-            /^\[download\]\s+(.+?)\s+has already been downloaded$/.exec(text)?.[1];
+        const destination = parseYtDlpDestination(text);
         if (destination) {
-            written.add(path.resolve(dir, destination));
+            if (!destinations.includes(destination)) destinations.push(destination);
+            barLabel = path.basename(destination);
+            if (/Merging formats/.test(text)) {
+                merging = true;
+                bar.update({ spinner: '🧩', stage: 'merging' });
+            }
             return;
         }
 
-        if (/^\[/.test(text)) return; // routine stage chatter
+        if (isYtDlpNoise(text)) return;
         messages.push(text);
         if (messages.length > 10) messages.shift();
     };
@@ -345,6 +411,8 @@ export async function runYtDlpDownload(
         stream.setEncoding('utf8');
         stream.on('data', (chunk: string) => {
             buffer += chunk;
+            // --newline keeps progress on its own line, but yt-dlp's
+            // postprocessors still redraw with a carriage return.
             const parts = buffer.split(/\r|\n/);
             buffer = parts.pop() ?? '';
             parts.forEach(handleLine);
@@ -359,12 +427,31 @@ export async function runYtDlpDownload(
         child.on('close', (code) => resolve(code));
     });
 
+    clearInterval(pausePoll);
     bar.stop();
     ctx.onChild?.(null);
 
-    if (exitCode === 0) return [...written];
+    if (exitCode === 0) {
+        const transferred = grandTotal + lastDownloaded;
+        console.log(colors.success(merging ? '✅ Download merged and completed!' : '✅ Download completed!'));
+        // The merged file is the last destination announced; the raw streams
+        // that fed it are deleted by yt-dlp.
+        const saved = merging ? destinations.slice(-1) : destinations;
+        if (saved.length) console.log(colors.primary('📁 Saved to: ') + saved.join(', '));
+        if (transferred > 0) console.log(colors.purple('📊 Total: ') + formatBytes(transferred));
+        return;
+    }
 
+    // The user asked to stop — the CLI reports the outcome, not yt-dlp's teardown.
     if (isCancelInProgress()) throw new Error(`yt-dlp ${describeYtDlpExit(exitCode)}`);
-    messages.slice(-5).forEach((m) => console.log(colors.warning(`   ${m}`)));
+
+    const causes = messages.filter(
+        (m) => /^(ERROR|WARNING)/i.test(m) || /unable|unavailable|forbidden|sign in/i.test(m),
+    );
+    (causes.length ? causes : messages).slice(-5)
+        .forEach((m) => console.log(colors.warning(`   ${m}`)));
+    if (exitCode === 1) {
+        console.log(colors.info('💾 Partial data kept in .part files. Run the same command to resume.'));
+    }
     throw new Error(`yt-dlp ${describeYtDlpExit(exitCode)}`);
 }

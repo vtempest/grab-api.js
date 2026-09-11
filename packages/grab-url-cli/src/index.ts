@@ -15,7 +15,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
-import type { ChildProcess } from "child_process";
+import { spawnSync, type ChildProcess } from "child_process";
 
 import chalk from "chalk";
 import Table from "cli-table3";
@@ -27,6 +27,7 @@ import {
   isAria2Target,
   runAria2Transfer,
 } from "./transfer/aria2-transfer.js";
+import { isYtDlpTarget, runYtDlpTransfer } from "./transfer/ytdlp-transfer.js";
 import {
   detachToBackground,
   isBackgroundChild,
@@ -60,6 +61,39 @@ export {
   runAria2Transfer,
 } from "./transfer/aria2-transfer.js";
 export type { Aria2Kind, Aria2Options } from "./transfer/aria2-transfer.js";
+export {
+  MEDIA_DOMAINS,
+  matchMediaDomain,
+  isMediaDomain,
+  hostnameOf,
+} from "./transfer/media-domains.js";
+export {
+  isYtDlpTarget,
+  describeYtDlpTarget,
+  resolveYtDlpSite,
+  buildYtDlpArgs,
+  parseYtDlpProgress,
+  parseYtDlpDestination,
+  isYtDlpNoise,
+  describeYtDlpExit,
+  runYtDlpTransfer,
+  YTDLP_PROGRESS_TEMPLATE,
+} from "./transfer/ytdlp-transfer.js";
+export type {
+  YtDlpOptions,
+  YtDlpProgress,
+} from "./transfer/ytdlp-transfer.js";
+export {
+  findYtDlp,
+  probeYtDlp,
+  ytDlpInstallHint,
+  ytDlpExecutableName,
+  ytDlpBinaryNames,
+  hostTargetTriple,
+  managedBinDirectory,
+  bundledSearchDirectories,
+} from "./transfer/ytdlp-binary.js";
+export type { YtDlpBinary } from "./transfer/ytdlp-binary.js";
 export {
   detachToBackground,
   buildChildArgv,
@@ -225,6 +259,50 @@ if (__isMain) {
       greedy: true,
       describe: "Extra space-separated flags passed straight to aria2c",
     })
+    .option("no-ytdlp", {
+      type: "boolean",
+      default: false,
+      describe: "Never use yt-dlp — fetch media-site URLs as plain pages",
+    })
+    .option("ytdlp", {
+      type: "boolean",
+      default: false,
+      describe: "Force every URL through yt-dlp, even off the known-site list",
+    })
+    .option("install-ytdlp", {
+      type: "boolean",
+      default: false,
+      standalone: true,
+      describe: "Download the yt-dlp binary for this machine, then exit",
+    })
+    .option("format", {
+      alias: "f",
+      type: "string",
+      default: null,
+      describe: "yt-dlp format selector, e.g. bestvideo+bestaudio or 137",
+    })
+    .option("audio", {
+      alias: "a",
+      type: "string",
+      default: null,
+      describe: "Extract audio only, in this container (mp3, m4a, opus, best)",
+    })
+    .option("playlist", {
+      type: "boolean",
+      default: false,
+      describe: "Download the whole playlist, not just the linked item",
+    })
+    .option("cookies-from-browser", {
+      type: "string",
+      default: null,
+      describe: "Read cookies from a browser (chrome, firefox, …) for gated media",
+    })
+    .option("ytdlp-args", {
+      type: "string",
+      default: null,
+      greedy: true,
+      describe: "Extra space-separated flags passed straight to yt-dlp",
+    })
     .option("grab-background-child", {
       type: "boolean",
       default: false,
@@ -258,12 +336,12 @@ if (__isMain) {
       "Detach immediately and keep downloading in the background",
     )
     .example(
-      "grab-url https://example.com/article --page",
-      "Archive the page into ./<Page Title>/ with its content, cite and any video",
+      "grab-url https://www.youtube.com/watch?v=VIDEO_ID",
+      "Media sites are detected by domain and downloaded with yt-dlp",
     )
     .example(
-      "grab-url https://youtu.be/dQw4w9WgXcQ --page -d ./archive",
-      "Archive a video: transcript, cite and the video file under ./archive/<Title>/",
+      "grab-url https://soundcloud.com/artist/track -a mp3",
+      "Extract audio only from any supported media site",
     )
     .example("grab-url --jobs", "List background transfers that are still running")
     .version("1.2.0")
@@ -289,6 +367,27 @@ if (__isMain) {
     return downloaderInstance;
   };
 
+  // --- yt-dlp installation (no URL needed) ---
+  if (argv["install-ytdlp"]) {
+    // dist/grab-url-cli.es.js and packages/grab-url-cli/src/index.ts sit at
+    // different depths, so look for the script from both.
+    const installer = [
+      path.resolve(__dirname, "..", "scripts", "install-yt-dlp.mjs"),
+      path.resolve(__dirname, "..", "..", "..", "scripts", "install-yt-dlp.mjs"),
+    ].find((candidate) => fs.existsSync(candidate));
+
+    if (!installer) {
+      console.error(
+        colors.error.bold("❌ install-yt-dlp.mjs is missing from this install."),
+      );
+      process.exit(1);
+    }
+    const result = spawnSync(process.execPath, [installer, "--force"], {
+      stdio: "inherit",
+    });
+    process.exit(result.status ?? 1);
+  }
+
   // --- Background job listing (no URL needed) ---
   if (argv.jobs) {
     printJobs(stateDir);
@@ -308,9 +407,19 @@ if (__isMain) {
     process.exit(0);
   }
 
-  // Split targets: aria2c handles sftp / torrent / magnet, fetch() handles the rest
+  // Split targets three ways: aria2c handles sftp / torrent / magnet, yt-dlp
+  // handles pages on known media sites, and fetch() handles everything else.
   const aria2Targets = urls.filter(isAria2Target);
-  const webUrls = urls.filter((url) => !isAria2Target(url));
+  const httpTargets = urls.filter((url) => !isAria2Target(url));
+
+  // --no-ytdlp is the explicit opt-out, so it wins over --ytdlp.
+  const ytdlpDisabled: boolean = argv["no-ytdlp"];
+  const ytdlpForced: boolean = argv.ytdlp && !ytdlpDisabled;
+  const mediaTargets = ytdlpDisabled
+    ? []
+    : httpTargets.filter((url) => ytdlpForced || isYtDlpTarget(url));
+  const webUrls = httpTargets.filter((url) => !mediaTargets.includes(url));
+
   const anyFileUrl = webUrls.some(isFileUrl);
   const isDownloadMode = webUrls.length > 1 || anyFileUrl;
 
@@ -328,15 +437,30 @@ if (__isMain) {
         : [],
   };
 
+  const ytdlpOptions = {
+    dir: argv.dir ? path.resolve(argv.dir) : process.cwd(),
+    output: outputFile,
+    format: argv.format,
+    audioFormat: argv.audio,
+    playlist: !!argv.playlist,
+    cookiesFromBrowser: argv["cookies-from-browser"],
+    extraArgs:
+      typeof argv["ytdlp-args"] === "string"
+        ? argv["ytdlp-args"].split(" ").filter(Boolean)
+        : [],
+  };
+
   // ── Cancellation: offer to keep the transfer running in the background ──────
-  let aria2Child: ChildProcess | null = null;
+  // aria2c and yt-dlp never run at the same time, so one handle covers both.
+  let transferChild: ChildProcess | null = null;
   let cancelling = false;
 
   /** Stop in-flight transfers so a background handoff can take over the files. */
   const stopTransfers = async () => {
-    if (aria2Child && !aria2Child.killed) {
-      const child = aria2Child;
-      // SIGINT lets aria2c flush its .aria2 control file so the next run resumes.
+    if (transferChild && !transferChild.killed) {
+      const child = transferChild;
+      // SIGINT lets the engine flush its resume state — aria2c's .aria2 control
+      // file, yt-dlp's .part file — so the next run picks up where this stopped.
       const exited = new Promise<void>((resolve) => {
         child.once("close", () => resolve());
         setTimeout(resolve, 5000);
@@ -438,7 +562,7 @@ if (__isMain) {
         await runAria2Transfer(target, aria2Options, {
           isPaused: () => downloader.isPaused,
           onChild: (child) => {
-            aria2Child = child;
+            transferChild = child;
           },
         });
       } catch (error: any) {
@@ -450,9 +574,32 @@ if (__isMain) {
         );
       }
     }
-    if (aria2Targets.length && !webUrls.length) {
+    // --- yt-dlp Mode: pages on known media sites ---
+    let ytdlpFailures = 0;
+    for (const target of mediaTargets) {
+      const downloader = getDownloader();
+      downloader.setupGlobalKeyboardListener();
+      try {
+        await runYtDlpTransfer(target, ytdlpOptions, {
+          isPaused: () => downloader.isPaused,
+          onChild: (child) => {
+            transferChild = child;
+          },
+        });
+      } catch (error: any) {
+        if (isCancelInProgress()) return;
+        ytdlpFailures++;
+        console.error(
+          colors.error.bold("💥 media download failed: ") +
+            colors.warning(error.message),
+        );
+      }
+    }
+
+    const externalTargets = aria2Targets.length + mediaTargets.length;
+    if (externalTargets && !webUrls.length) {
       downloaderInstance?.cleanup();
-      process.exit(aria2Failures > 0 ? 1 : 0);
+      process.exit(aria2Failures + ytdlpFailures > 0 ? 1 : 0);
     }
 
     if (isDownloadMode) {

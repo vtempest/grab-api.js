@@ -56,60 +56,6 @@ platform when it is missing, and `GRAB_ARIA2_PATH` points at a binary that is no
 Passwords are redacted everywhere a URI is echoed, and interrupted transfers resume from
 aria2c's `.aria2` control file.
 
-### Archive a page into a folder
-
-`--page` saves a whole page as a folder you can read offline, named after the page title:
-
-```text
-Rockets A Primer/
-  page.html         the full page exactly as fetched
-  content.html      reading-mode article body
-  cite.html         APA citation + extracted metadata
-  transcript.html   YouTube transcript, when the URL is a video
-  Rockets [abc123].mp4   whatever yt-dlp caught, when it recognised the URL
-```
-
-```bash
-# Archive an article into ./<Page Title>/
-npx grab-url https://example.com/article --page
-
-# Archive a video: transcript, cite and the video file, under ./archive/<Title>/
-npx grab-url https://youtu.be/dQw4w9WgXcQ --page -d ./archive
-
-# Prefer a Spanish transcript, fall back to English
-npx grab-url https://youtu.be/dQw4w9WgXcQ --page --lang es,en
-
-# Text only, no video
-npx grab-url https://example.com/article --page --no-video
-
-# Audio only, or any other yt-dlp format selector
-npx grab-url https://example.com/talk --page --video-format bestaudio
-```
-
-Content, citation and transcript come from
-[`extract-webpage`](https://www.npmjs.com/package/extract-webpage), qwksearch's extractor —
-the same Readability + Mercury pipeline, 100+ site adapters and author/date citation parsing
-that powers qwksearch. It is an **optional peer dependency**, because it pulls in jsdom and
-linkedom and only `--page` needs it:
-
-```bash
-npm i -g extract-webpage    # alongside a global grab-url
-```
-
-The video step is handed to [`yt-dlp`](https://github.com/yt-dlp/yt-dlp), which is offered
-every archived URL and keeps whatever it recognises — it knows well over a thousand sites,
-including videos embedded in an ordinary article. It is optional too: without it the HTML
-files are still written and the CLI notes the miss. `GRAB_YTDLP_PATH` points at a binary
-that is not on `PATH`, and playlists and channels are never expanded.
-
-The page is fetched once and feeds both `page.html` and the extractor, so the archived page
-and the archived article are always the same revision. Re-running the same command refreshes
-an existing folder instead of creating a second copy.
-
-`-d` chooses the parent directory; with a single URL, `-o` overrides the folder name instead
-of deriving it from the page title. Several URLs can be archived in one command — each gets
-its own folder, and one failure does not stop the rest.
-
 ### Background transfers
 
 ```bash
@@ -134,10 +80,6 @@ under `.grab-downloads/`, or `GRAB_DOWNLOAD_STATE_DIR`.
 | `--params <json>`    | `-p`  | JSON string of query parameters                                             |
 | `--no-save`          |       | Print to the console instead of writing a file                              |
 | `--dir <path>`       | `-d`  | Destination directory for downloads and sftp / torrent / magnet transfers   |
-| `--page`            | `-P`  | Archive each URL into a folder named after its title                        |
-| `--no-video`        |       | With `--page`, skip the yt-dlp video download                              |
-| `--video-format <f>`|       | With `--page`, format selector passed to `yt-dlp -f`                        |
-| `--lang <codes>`    |       | With `--page`, comma-separated transcript languages — default `en`          |
 | `--background`       | `-b`  | Detach at once and keep transferring in the background, logging to a file   |
 | `--jobs`             |       | List background transfers still running, then exit                          |
 | `--log <file>`       |       | Log file for background transfers                                           |
