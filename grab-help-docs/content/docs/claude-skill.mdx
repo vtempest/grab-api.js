@@ -1033,6 +1033,11 @@ One npm package with several entry points, plus the siblings the codegen and arc
 | `api2client`                      | OpenAPI → typed SDK that sends through grab                           |
 | `api2ai`                          | OpenAPI → MCP server for agents                                       |
 
+URLs on ~720 known media sites are detected by domain and downloaded with `yt-dlp`, which
+`npm install` fetches automatically (`--no-ytdlp` opts out per-command, `--ytdlp` forces any URL
+through it). Use `-f` for a format selector, `-a` for audio-only, `--playlist` for a whole
+playlist, and `--cookies-from-browser` for gated media.
+
 ---
 
 ## When not to use this skill
