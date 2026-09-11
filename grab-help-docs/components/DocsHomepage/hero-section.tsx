@@ -11,6 +11,83 @@ import { Copy, Github, BookOpen, Check } from "lucide-react"
 import { useState } from "react"
 import Image from "next/image"
 
+/** Every badge from the repo README, shown under the hero tagline. */
+const BADGES: { alt: string; src: string; href?: string }[] = [
+  {
+    alt: "Ask DeepWiki",
+    src: "https://deepwiki.com/badge.svg",
+    href: "https://deepwiki.com/vtempest/GRAB-URL",
+  },
+  {
+    alt: "Documentation",
+    src: "https://img.shields.io/badge/Docs-blue?logo=ReadTheDocs&logoColor=white",
+    href: "https://grab.js.org",
+  },
+  {
+    alt: "GitHub Stars",
+    src: "https://img.shields.io/github/stars/vtempest/GRAB-URL",
+    href: "https://github.com/vtempest/GRAB-URL",
+  },
+  {
+    alt: "Activity",
+    src: "https://img.shields.io/github/commit-activity/m/vtempest/GRAB-URL",
+    href: "https://github.com/vtempest/GRAB-URL/pulse",
+  },
+  {
+    alt: "GitHub last commit",
+    src: "https://img.shields.io/github/last-commit/vtempest/GRAB-URL.svg",
+    href: "https://github.com/vtempest/GRAB-URL/commits/master/",
+  },
+  {
+    alt: "Test grab-url status for master",
+    src: "https://github.com/OpenSourceAGI/GRAB-URL/actions/workflows/tests.yml/badge.svg",
+    href: "https://github.com/OpenSourceAGI/GRAB-URL/actions/workflows/tests.yml",
+  },
+  {
+    alt: "Coverage",
+    src: "https://codecov.io/gh/OpenSourceAGI/GRAB-URL/branch/master/graph/badge.svg",
+    href: "https://app.codecov.io/gh/OpenSourceAGI/GRAB-URL",
+  },
+  {
+    alt: "Join Discord",
+    src: "https://img.shields.io/discord/1110227955554209923.svg?label=Chat&logo=Discord&colorB=7289da&style=flat",
+    href: "https://discord.gg/SJdBqBz3tV",
+  },
+  {
+    alt: "PRs Welcome",
+    src: "https://img.shields.io/badge/PRs-welcome-brightgreen.svg",
+    href: "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request",
+  },
+  {
+    alt: "Claude AI",
+    src: "https://img.shields.io/badge/Claude-D97757?logo=claude&logoColor=fff",
+  },
+  {
+    alt: "TypeScript",
+    src: "https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white",
+  },
+  {
+    alt: "NPM Downloads",
+    src: "https://img.shields.io/npm/dm/grab-url",
+    href: "https://npmjs.org/package/grab-url",
+  },
+  {
+    alt: "NPM Version",
+    src: "https://img.shields.io/npm/v/grab-url",
+    href: "https://npmjs.org/package/grab-url",
+  },
+  {
+    alt: "GitHub Discussions",
+    src: "https://img.shields.io/github/discussions/vtempest/GRAB-URL",
+    href: "https://github.com/vtempest/GRAB-URL/discussions",
+  },
+  {
+    alt: "GitHub Codespaces",
+    src: "https://github.com/codespaces/badge.svg",
+    href: "https://codespaces.new/vtempest/GRAB-URL",
+  },
+]
+
 export function HeroSection() {
   const [copied, setCopied] = useState(false)
 
@@ -67,16 +144,16 @@ export function HeroSection() {
               features than alternatives.
             </p>
 
-            <div className="flex flex-wrap justify-center gap-2 mb-8">
-              <a href="https://npmjs.org/package/grab-url" target="_blank" rel="noreferrer">
-                <img alt="NPM Version" src="https://img.shields.io/npm/v/grab-url" />
-              </a>
-              <a href="https://github.com/vtempest/GRAB-URL/discussions" target="_blank" rel="noreferrer">
-                <img alt="GitHub Discussions" src="https://img.shields.io/github/discussions/vtempest/GRAB-URL" />
-              </a>
-              <a href="https://github.blog/developer-skills/github/beginners-guide-to-github-creating-a-pull-request/" target="_blank" rel="noreferrer">
-                <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" />
-              </a>
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
+              {BADGES.map(({ alt, src, href }) =>
+                href ? (
+                  <a key={alt} href={href} target="_blank" rel="noreferrer">
+                    <img alt={alt} src={src} className="h-5 w-auto" />
+                  </a>
+                ) : (
+                  <img key={alt} alt={alt} src={src} className="h-5 w-auto" />
+                ),
+              )}
             </div>
 
 
