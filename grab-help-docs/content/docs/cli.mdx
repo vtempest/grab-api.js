@@ -7,88 +7,91 @@ icon: Terminal
 ### Command Line Usage Examples
 
 ```bash
-## install for CLi testing of your APIs
+## install for CLI testing of your APIs
 npm i -g grab-url
 
-# use "grab" if installed or "npx grab-url" if not
-g https://api.example.com/download
+# use "grab" (or "g") if installed, or "npx grab-url" if not
+g https://api.example.com/data
 
-# Basic request, no flag
-npx grab-url https://api.example.com/download
+# Basic request — parses JSON and writes output.json
+npx grab-url https://api.example.com/data
 
-# Request with params
-npx grab-url https://api.example.com/download id=123 name=John
+# Request with query params as JSON
+npx grab-url https://api.example.com/search -p '{"q":"hello","limit":10}'
 
-# Request with JSON payload
-npx grab-url https://api.example.com/download '{"id":123,"name":"John"}'
+# Print the response instead of saving it
+npx grab-url https://api.example.com/data --no-save
 
-# Request with --x flag (just executes once, no watching)
-# - **`--x` or `-x` flag**: Simply executes the request/download once and exits—no file watching.
-npx grab-url https://api.example.com/download --x
-
-# Request with params and --x flag
-npx grab-url https://api.example.com/download id=123 name=John --x
+# Download a file, or several concurrently
+npx grab-url https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-live-server-amd64.iso
+npx grab-url https://example.com/a.zip https://example.com/b.zip -d ./downloads
 ```
 
----
+### SFTP, torrents and magnet links
 
-### Media Sites (yt-dlp)
-
-A URL copied from YouTube, Twitch, Vimeo, SoundCloud or any of ~720 other sites points at a
-player *page*, not at the media. Those hosts are recognised by domain and handed to
-[`yt-dlp`](https://github.com/yt-dlp/yt-dlp), which resolves the real stream and reports
-progress into the same bar as every other transfer.
+`fetch()` speaks neither SFTP nor BitTorrent, so those targets are handed to
+[`aria2c`](https://aria2.github.io/) and its progress is parsed into the same progress bar as
+every other transfer. Anything `sftp://`, `magnet:?xt=urn:btih:…`, or ending in `.torrent`
+takes that route; everything else keeps the built-in downloader, and one command can mix both.
 
 ```bash
-# Detected automatically — no flag needed
-npx grab-url "https://www.youtube.com/watch?v=VIDEO_ID"
+# Pull a file over SFTP (credentials inline, or as flags to keep them out of shell history)
+npx grab-url sftp://user@host/srv/backup.tar.gz --password hunter2
+npx grab-url sftp://host:2222/srv/db.tar.zst --user alice --password hunter2 -o backup.tar.zst
 
-# Audio only, in a container of your choosing
-npx grab-url https://soundcloud.com/artist/track -a mp3
+# Pin the host key — the transfer aborts if the server presents a different one
+npx grab-url sftp://host/srv/db.tar.zst --user alice --password hunter2 \
+  --ssh-host-key sha-1=b030503bb45f9f0e0a1e9c4a1e0b8f4c3d2e1f00
 
-# Cap the resolution with any yt-dlp format selector
-npx grab-url https://vimeo.com/76979871 -f "bestvideo[height<=720]+bestaudio"
+# Torrent file or magnet link, with optional seeding after it completes
+npx grab-url ./ubuntu.torrent -d ./downloads
+npx grab-url "magnet:?xt=urn:btih:HASH" -d ./downloads --seed
 
-# A link carrying a playlist id grabs one item unless you ask for all of it
-npx grab-url "https://www.youtube.com/watch?v=ID&list=PL123" --playlist
-
-# Members-only or age-gated media, using a logged-in browser's cookies
-npx grab-url https://www.youtube.com/watch?v=ID --cookies-from-browser firefox
+# Throttle, or pass any other aria2c flag straight through
+npx grab-url ./ubuntu.torrent --aria2-args "--max-overall-download-limit=2M --enable-dht=false"
 ```
 
-Matching is by registrable suffix, so an entry covers the host and all of its subdomains
-(`youtube.com` also matches `music.youtube.com`).
+`aria2c` must be installed for these three kinds — the CLI prints the install command for your
+platform when it is missing, and `GRAB_ARIA2_PATH` points at a binary that is not on `PATH`.
+Passwords are redacted everywhere a URI is echoed, and interrupted transfers resume from
+aria2c's `.aria2` control file.
 
-Detection is a default, not a rule: `--ytdlp` forces **every** URL through yt-dlp including
-unlisted hosts, and `--no-ytdlp` fetches a media page as the plain HTML it is. `--no-ytdlp`
-wins when both are passed.
-
-#### Getting the binary
-
-`npm install grab-url` downloads the official standalone yt-dlp build for your platform into
-`~/.grab-url/bin`. It is a single self-contained executable — no Python, no package manager,
-no elevation — and the step is best-effort, so an offline machine still installs grab-url fine.
+### Background transfers
 
 ```bash
-npx grab-url --install-ytdlp   # fetch or refresh it by hand
+# Detach at once — prints the PID and log path, then returns
+npx grab-url https://example.com/big.iso --background
+
+# List background transfers still running (dead jobs are pruned automatically)
+npx grab-url --jobs
 ```
 
-At run time the binary is looked for in `GRAB_YTDLP_PATH`, then beside the host application
-(a Tauri `externalBin` sidecar, a macOS `.app` bundle, an AppImage), then in
-`~/.grab-url/bin`, then on `PATH`. Set `GRAB_SKIP_YTDLP_INSTALL=1` to skip the install step.
+Press **Ctrl+C** during any transfer and the CLI offers the same handoff
+(`🛑 Cancel — keep transferring in the background? [Y/n]`), auto-accepting after 15 seconds so a
+disconnected terminal does not strand a download. Answer `n`, or pass `--no-bg-prompt`, to stop
+instead — the partial file and its resume state stay on disk either way. Jobs and logs live
+under `.grab-downloads/`, or `GRAB_DOWNLOAD_STATE_DIR`.
 
-Desktop apps can bundle their own copy so they never depend on the user's `PATH`:
+### Options
 
-```bash
-node scripts/install-yt-dlp.mjs --sidecar --out-dir src-tauri/binaries
-```
-
-```json
-{
-  "build": { "beforeBuildCommand": "node ../scripts/install-yt-dlp.mjs --sidecar" },
-  "bundle": { "externalBin": ["binaries/yt-dlp"] }
-}
-```
+| Flag                 | Alias | Description                                                                 |
+| -------------------- | ----- | --------------------------------------------------------------------------- |
+| `--output <file>`    | `-o`  | Output filename — default `output.json` for APIs, derived from the URL for files |
+| `--params <json>`    | `-p`  | JSON string of query parameters                                             |
+| `--no-save`          |       | Print to the console instead of writing a file                              |
+| `--dir <path>`       | `-d`  | Destination directory for downloads and sftp / torrent / magnet transfers   |
+| `--background`       | `-b`  | Detach at once and keep transferring in the background, logging to a file   |
+| `--jobs`             |       | List background transfers still running, then exit                          |
+| `--log <file>`       |       | Log file for background transfers                                           |
+| `--no-bg-prompt`     |       | On Ctrl+C, cancel right away instead of offering the background handoff     |
+| `--seed`             |       | Keep seeding a torrent after it completes                                   |
+| `--connections <n>`  | `-c`  | Connections per server for SFTP transfers, 1–16 — default 8                 |
+| `--user <name>`      |       | Username for SFTP transfers                                                 |
+| `--password <pw>`    |       | Password for SFTP transfers                                                 |
+| `--ssh-host-key <d>` |       | Expected SFTP host key digest — aborts on mismatch                          |
+| `--aria2-args <s>`   |       | Extra space-separated flags passed straight to `aria2c`                     |
+| `--help`             | `-h`  | Show help                                                                   |
+| `--version`          |       | Show version                                                                |
 
 ---
 
@@ -187,11 +190,11 @@ downloader.cleanup();
 | **Pause / resume mid-download**       | ✅ (`p` key)     | ❌               | ❌                     |
 | **Add URLs mid-session**              | ✅ (`a` key)     | ❌               | ❌                     |
 | **Keyboard controls**                 | ✅               | ❌               | ❌                     |
-| **File-watch mode**                   | ✅ (default)     | ❌               | ❌                     |
-| **JSON payload shorthand**            | ✅               | ❌               | ✅ (`-d`)              |
-| **Query param shorthand** (`key=val`) | ✅               | ❌               | ❌                     |
+| **Detachable background jobs**        | ✅ (`--background`) | ❌            | ❌                     |
+| **JSON params shorthand**             | ✅ (`-p`)        | ❌               | ✅ (`-d`)              |
 | **Programmatic Node.js API**          | ✅               | ❌               | ❌                     |
-| **FTP / SFTP support**                | ❌               | ✅               | ✅                     |
+| **SFTP support**                      | ✅ (via aria2c)  | ✅               | ✅                     |
+| **Torrent / magnet support**          | ✅ (via aria2c)  | ❌               | ❌                     |
 | **Custom headers**                    | ✅       | ✅               | ✅                     |
 | **Cookie handling**                   | ✅       | ✅               | ✅                     |
 | **Proxy support**                     | ✅  Via env       | ✅               | ✅                     |
