@@ -49,6 +49,9 @@ npx grab-url https://example.com/big.iso --background
 
 # See what is still running in the background
 npx grab-url --jobs
+
+# Archive a page into ./<Page Title>/ - full page, article, cite, transcript, video
+npx grab-url https://example.com/article --page
 ```
 
 ## Options
@@ -58,6 +61,10 @@ npx grab-url --jobs
 | `--output <file>`   | `-o`  | string  | Output filename (default: `output.json` for APIs, derived from URL for files) |
 | `--params <json>`   | `-p`  | string  | JSON string of query parameters, e.g. `'{"key":"value"}'`                 |
 | `--no-save`         |       | boolean | Don't save output to a file — just print to console                       |
+| `--page`             | `-P`  | Archive each URL into a folder named after its page title                   |
+| `--no-video`         |       | With `--page`, skip the yt-dlp video download                             |
+| `--video-format <f>` |       | With `--page`, format selector passed to `yt-dlp -f`                       |
+| `--lang <codes>`     |       | With `--page`, comma-separated transcript languages (default `en`)         |
 | `--background`      | `-b`  | boolean | Detach at once and keep transferring in the background, logging to a file  |
 | `--jobs`            |       | boolean | List background transfers that are still running, then exit                |
 | `--log <file>`      |       | string  | Log file for background transfers (default: `<state-dir>/logs/`)          |

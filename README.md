@@ -90,6 +90,10 @@ npx grab-url https://soundcloud.com/artist/track -a mp3
 npx grab-url sftp://user@host/srv/backup.tar.gz --password hunter2
 npx grab-url "magnet:?xt=urn:btih:HASH" -d ./downloads
 
+# Archive a page into ./<Page Title>/ - article, cite, transcript and any video
+# (needs `npm i -g extract-webpage`; the video step needs yt-dlp)
+npx grab-url https://example.com/article --page
+
 # Detach and keep going in the background; Ctrl+C on any transfer offers the same
 npx grab-url https://example.com/big.iso --background
 npx grab-url --jobs

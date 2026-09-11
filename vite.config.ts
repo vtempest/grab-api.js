@@ -29,7 +29,10 @@ const nodeBuiltins = [
   "worker_threads",
 ];
 
-const externalPkgs = ["chalk", "cli-table3", "cli-progress", "cli-spinners"];
+// `extract-webpage` is the qwksearch content extractor behind `grab-url --page`.
+// It is an optional peer dependency loaded through a runtime `import()`, and it
+// drags in jsdom/linkedom, so it must never be pulled into the CLI bundle.
+const externalPkgs = ["chalk", "cli-table3", "cli-progress", "cli-spinners", "extract-webpage"];
 // React must never be bundled into `dist/quantum-sphere.*`: the host app already
 // has its own copy, and a second one makes every hook in QuantumOrbital throw
 // "Invalid hook call". No other entry imports React, so this is a no-op for them.
