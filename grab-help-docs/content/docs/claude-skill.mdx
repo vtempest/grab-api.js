@@ -744,6 +744,8 @@ npx grab-url https://api.example.com/items id=123 name=John --x   # --x runs onc
 npx grab-url https://api.example.com/items '{"id":123}'           # JSON payload
 
 npx grab-url https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-live-server-amd64.iso
+npx grab-url "https://www.youtube.com/watch?v=ID"                 # 720+ media sites, via yt-dlp
+npx grab-url https://soundcloud.com/artist/track -a mp3           # audio only
 npx grab-url sftp://user@host/srv/backup.tar.gz --password hunter2
 npx grab-url "magnet:?xt=urn:btih:HASH" -d ./downloads            # needs aria2c
 npx grab-url https://example.com/big.iso --background             # detach
@@ -753,6 +755,11 @@ npx grab-url --jobs                                               # list backgro
 Resumes interrupted downloads from `.download-state` sidecars, downloads concurrently with a
 multi-progress bar, and takes keyboard controls (`p` pause/resume, `a` add a URL mid-session).
 `MultiColorFileDownloaderCLI` is importable for programmatic use.
+
+URLs on ~720 known media sites are detected by domain and downloaded with `yt-dlp`, which
+`npm install` fetches automatically (`--no-ytdlp` opts out per-command, `--ytdlp` forces any URL
+through it). Use `-f` for a format selector, `-a` for audio-only, `--playlist` for a whole
+playlist, and `--cookies-from-browser` for gated media.
 
 ---
 

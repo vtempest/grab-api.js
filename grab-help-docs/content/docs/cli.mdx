@@ -32,6 +32,66 @@ npx grab-url https://api.example.com/download id=123 name=John --x
 
 ---
 
+### Media Sites (yt-dlp)
+
+A URL copied from YouTube, Twitch, Vimeo, SoundCloud or any of ~720 other sites points at a
+player *page*, not at the media. Those hosts are recognised by domain and handed to
+[`yt-dlp`](https://github.com/yt-dlp/yt-dlp), which resolves the real stream and reports
+progress into the same bar as every other transfer.
+
+```bash
+# Detected automatically — no flag needed
+npx grab-url "https://www.youtube.com/watch?v=VIDEO_ID"
+
+# Audio only, in a container of your choosing
+npx grab-url https://soundcloud.com/artist/track -a mp3
+
+# Cap the resolution with any yt-dlp format selector
+npx grab-url https://vimeo.com/76979871 -f "bestvideo[height<=720]+bestaudio"
+
+# A link carrying a playlist id grabs one item unless you ask for all of it
+npx grab-url "https://www.youtube.com/watch?v=ID&list=PL123" --playlist
+
+# Members-only or age-gated media, using a logged-in browser's cookies
+npx grab-url https://www.youtube.com/watch?v=ID --cookies-from-browser firefox
+```
+
+Matching is by registrable suffix, so an entry covers the host and all of its subdomains
+(`youtube.com` also matches `music.youtube.com`).
+
+Detection is a default, not a rule: `--ytdlp` forces **every** URL through yt-dlp including
+unlisted hosts, and `--no-ytdlp` fetches a media page as the plain HTML it is. `--no-ytdlp`
+wins when both are passed.
+
+#### Getting the binary
+
+`npm install grab-url` downloads the official standalone yt-dlp build for your platform into
+`~/.grab-url/bin`. It is a single self-contained executable — no Python, no package manager,
+no elevation — and the step is best-effort, so an offline machine still installs grab-url fine.
+
+```bash
+npx grab-url --install-ytdlp   # fetch or refresh it by hand
+```
+
+At run time the binary is looked for in `GRAB_YTDLP_PATH`, then beside the host application
+(a Tauri `externalBin` sidecar, a macOS `.app` bundle, an AppImage), then in
+`~/.grab-url/bin`, then on `PATH`. Set `GRAB_SKIP_YTDLP_INSTALL=1` to skip the install step.
+
+Desktop apps can bundle their own copy so they never depend on the user's `PATH`:
+
+```bash
+node scripts/install-yt-dlp.mjs --sidecar --out-dir src-tauri/binaries
+```
+
+```json
+{
+  "build": { "beforeBuildCommand": "node ../scripts/install-yt-dlp.mjs --sidecar" },
+  "bundle": { "externalBin": ["binaries/yt-dlp"] }
+}
+```
+
+---
+
 ### Programmatic Usage
 
 The file downloader can be imported directly into your own Node.js projects,

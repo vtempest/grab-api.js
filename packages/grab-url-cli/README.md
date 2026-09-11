@@ -1,6 +1,6 @@
 # @grab-url/cli
 
-CLI front end for [`grab-url`](https://grab.js.org). Fetches API responses, downloads files over HTTP(S), and transfers over **SFTP**, **BitTorrent** and **magnet** links — auto-detecting which mode to use from the URL — with colored multi-file progress bars, resumable transfers, keyboard controls, and detachable background jobs.
+CLI front end for [`grab-url`](https://grab.js.org). Fetches API responses, downloads files over HTTP(S), pulls video and audio from **700+ media sites** with `yt-dlp`, and transfers over **SFTP**, **BitTorrent** and **magnet** links — auto-detecting which mode to use from the URL — with colored multi-file progress bars, resumable transfers, keyboard controls, and detachable background jobs.
 
 ```bash
 npx grab-url <url> [options]
@@ -26,6 +26,16 @@ npx grab-url https://api.example.com/search -p '{"q":"hello","limit":10}'
 
 # Print to stdout instead of writing a file
 npx grab-url https://api.example.com/data --no-save
+
+# Media sites are detected by domain and downloaded with yt-dlp
+npx grab-url "https://www.youtube.com/watch?v=VIDEO_ID"
+
+# Grab just the audio, in a container of your choosing
+npx grab-url https://soundcloud.com/artist/track -a mp3
+
+# Pick a format, or pass any yt-dlp flag straight through
+npx grab-url https://vimeo.com/76979871 -f "bestvideo[height<=720]+bestaudio"
+npx grab-url https://www.twitch.tv/videos/123 --ytdlp-args "--limit-rate 2M"
 
 # Pull a file over SFTP (aria2c)
 npx grab-url sftp://user@host/srv/backup.tar.gz --password hunter2
@@ -59,10 +69,127 @@ npx grab-url --jobs
 | `--password <pw>`   |       | string  | Password for SFTP transfers                                                |
 | `--ssh-host-key <d>`|       | string  | Expected SFTP host key digest, e.g. `sha-1=b030503…` — aborts on mismatch  |
 | `--aria2-args <s>`  |       | string  | Extra space-separated flags passed straight to `aria2c`                    |
+| `--format <sel>`    | `-f`  | string  | yt-dlp format selector, e.g. `bestvideo+bestaudio` or `137`                |
+| `--audio <fmt>`     | `-a`  | string  | Extract audio only, in this container (`mp3`, `m4a`, `opus`, `best`)       |
+| `--playlist`        |       | boolean | Download the whole playlist, not just the linked item                      |
+| `--cookies-from-browser <b>` | | string | Read cookies from a browser (`chrome`, `firefox`, …) for gated media |
+| `--ytdlp`           |       | boolean | Force every URL through yt-dlp, even off the known-site list               |
+| `--no-ytdlp`        |       | boolean | Never use yt-dlp — fetch media-site URLs as plain pages                    |
+| `--ytdlp-args <s>`  |       | string  | Extra space-separated flags passed straight to `yt-dlp`                    |
+| `--install-ytdlp`   |       | boolean | Download the `yt-dlp` binary for this machine, then exit                    |
 | `--help`            | `-h`  |         | Show help                                                                  |
 | `--version`         |       |         | Show version                                                               |
 
 The CLI auto-detects **download mode** when more than one URL is passed or any URL looks like a file. Otherwise it runs in **API mode** and tries to parse JSON.
+
+## Media sites
+
+A URL you copy from YouTube, Twitch, Vimeo, SoundCloud or any of ~720 other sites points at a
+player *page*, not at the media — fetching it directly saves a page of HTML. Those hosts are
+recognised by domain and handed to [`yt-dlp`](https://github.com/yt-dlp/yt-dlp), which resolves
+the real stream; its progress readout is parsed and shown in the same progress bar as every
+other transfer.
+
+```bash
+grab-url "https://www.youtube.com/watch?v=VIDEO_ID"
+# 🎬 youtube.com via yt-dlp 2026.08.19: youtube.com/VIDEO_ID
+# 74% Big Buck Bunny [aqz-K…  ⠹ ████████░░░  38.2MB 51.4MB  6.1MB/s 0:00:02
+```
+
+Matching is by registrable suffix, so an entry covers the host and all its subdomains
+(`youtube.com` also matches `music.youtube.com`). The list lives in
+[`transfer/media-domains.ts`](src/transfer/media-domains.ts) and is sorted, so adding a site is a
+one-line diff.
+
+Detection is a default, not a rule:
+
+| Flag          | Effect                                                                     |
+| ------------- | -------------------------------------------------------------------------- |
+| *(none)*      | URLs on listed sites go to yt-dlp; everything else uses `fetch()`           |
+| `--ytdlp`     | Send **every** URL through yt-dlp, including hosts that are not listed      |
+| `--no-ytdlp`  | Never use yt-dlp — fetch a media page as the plain HTML it is               |
+
+`--no-ytdlp` wins when both are passed. A single command can mix modes freely:
+`grab-url https://youtu.be/ID https://example.com/f.iso` downloads the video with yt-dlp and the
+file with `fetch()`.
+
+```bash
+# Audio only, in a container of your choosing
+grab-url https://soundcloud.com/artist/track -a mp3
+
+# Cap the resolution, or name any yt-dlp format selector
+grab-url https://vimeo.com/76979871 -f "bestvideo[height<=720]+bestaudio"
+
+# A link carrying a playlist id grabs one item unless you ask for all of it
+grab-url "https://www.youtube.com/watch?v=ID&list=PL123" --playlist
+
+# Members-only or age-gated media, using a logged-in browser's cookies
+grab-url https://www.youtube.com/watch?v=ID --cookies-from-browser firefox
+
+# Anything else yt-dlp supports, passed straight through
+grab-url https://www.twitch.tv/videos/123 --ytdlp-args "--limit-rate 2M --write-subs"
+```
+
+Interrupted downloads resume: yt-dlp leaves a `.part` file next to the output, so re-running the
+same command picks up where it stopped.
+
+### Getting the binary
+
+`npm install grab-url` downloads the official standalone `yt-dlp` build for your platform into
+`~/.grab-url/bin`. It is a single self-contained executable — no Python, no package manager and
+no elevation — and the step is best-effort: a machine with no network or a locked-down `$HOME`
+still installs grab-url fine, just without the media path until yt-dlp arrives another way.
+
+```bash
+npx grab-url --install-ytdlp     # fetch or refresh it by hand
+npm run ytdlp:sidecar            # fetch it under Tauri's externalBin naming
+```
+
+At run time the binary is looked for in this order:
+
+1. `GRAB_YTDLP_PATH` — an explicit path, which always wins.
+2. **Bundled beside the host application** — a Tauri `externalBin` sidecar, a macOS `.app`
+   bundle's `Resources`, or an AppImage's `usr/bin`. A packaged desktop build ships its own copy
+   and never touches the user's `PATH`.
+3. The managed copy in `~/.grab-url/bin` (`GRAB_YTDLP_DIR` redirects it), then `yt-dlp` on `PATH`.
+
+Each candidate is *run*, not just stat-ed, so a stale sidecar built for another architecture
+falls through to the next tier instead of failing the transfer. Set `GRAB_SKIP_YTDLP_INSTALL=1`
+to opt out of the `postinstall` download entirely.
+
+### Bundling yt-dlp in a Tauri app
+
+`scripts/install-yt-dlp.mjs --sidecar` writes the binary under Tauri's target-triple naming, which
+is what `bundle.externalBin` expects:
+
+```bash
+node scripts/install-yt-dlp.mjs --sidecar --out-dir src-tauri/binaries
+# → src-tauri/binaries/yt-dlp-x86_64-unknown-linux-gnu
+```
+
+Cross-compiling? Pass the triple you are building for:
+
+```bash
+node scripts/install-yt-dlp.mjs --sidecar --target aarch64-apple-darwin
+node scripts/install-yt-dlp.mjs --sidecar --target x86_64-pc-windows-msvc
+```
+
+Then declare it in `src-tauri/tauri.conf.json`, and run the fetch from `beforeBuildCommand` so a
+clean checkout builds without a manual step:
+
+```json
+{
+  "build": {
+    "beforeBuildCommand": "node ../scripts/install-yt-dlp.mjs --sidecar"
+  },
+  "bundle": {
+    "externalBin": ["binaries/yt-dlp"]
+  }
+}
+```
+
+Tauri strips the triple when it installs the sidecar, so the packaged app ends up with a plain
+`yt-dlp` next to its executable — exactly where tier 2 of the search above looks.
 
 ## SFTP, torrents and magnet links
 
@@ -148,7 +275,7 @@ control file. Job records and logs live under the download state directory
 
 | Key      | Action                                                    |
 | -------- | --------------------------------------------------------- |
-| `p`      | Pause / resume every transfer (aria2c children included)   |
+| `p`      | Pause / resume every transfer (aria2c and yt-dlp children included) |
 | `a`      | Prompt for another URL to add to the running session       |
 | `Ctrl+C` | Cancel — with the option to keep going in the background  |
 
@@ -185,7 +312,10 @@ await downloader.downloadMultipleFiles([
 | [keyboard-controls.ts](keyboard-controls.ts)    | Pause / resume / cancel keybindings while downloads run            |
 | [download-spinners.ts](download-spinners.ts)    | Spinner frames used by progress bars                               |
 | [display/](display/)                            | Progress bar formatting and spinner configuration                  |
-| [transfer/](transfer/)                          | Single-file & multi-file transfer engines, resume state, and the aria2c bridge |
+| [transfer/](transfer/)                          | Single-file & multi-file transfer engines, resume state, and the aria2c / yt-dlp bridges |
+| [transfer/media-domains.ts](transfer/media-domains.ts) | The ~720-site domain list and its suffix matcher            |
+| [transfer/ytdlp-transfer.ts](transfer/ytdlp-transfer.ts) | yt-dlp bridge — arg building, progress parsing, the transfer |
+| [transfer/ytdlp-binary.ts](transfer/ytdlp-binary.ts) | Finding yt-dlp: env var, bundled sidecar, managed copy, `PATH` |
 
 ## Dependencies
 
@@ -194,6 +324,7 @@ await downloader.downloadMultipleFiles([
 - [`cli-table3`](https://github.com/cli-table/cli-table3) — final stats table
 - [`@grab-url/loading-animations`](../loading-animations) — spinner frame data
 - [`aria2c`](https://aria2.github.io/) — *external binary*, only needed for SFTP, torrent and magnet transfers
+- [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) — *external binary*, only needed for media sites; installed automatically on `npm install`
 
 ## License
 
